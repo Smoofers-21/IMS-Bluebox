@@ -1,10 +1,10 @@
 # Demo and portfolio guide
 
-**Status:** walkthrough for the implemented Milestone 1 and 2 features. Run it on fake data after SQL Server CI succeeds. The teacher-server walkthrough, live OMDb smoke check, and final screenshots remain review tasks; this guide is not proof they have been completed.
+**Status:** walkthrough for the implemented Milestone 1 and 2 features. The reviewed code passed [SQL Server CI](validation.md#verified-results); run the presentation on verified fake data in the intended Windows setup. The teacher-server walkthrough, live OMDb smoke check, and final screenshots remain review tasks; this guide is not proof they have been completed.
 
 ## Fake data plan
 
-Use two fictional warehouses (North Loop and West End), one manager, two staff members, and a small mix of movies and games. Include separate format entries for at least one title.
+The explicit `--seed-demo` command creates two fictional warehouses (North Loop and West End), one active manager (jordan.lee), one active staff member (avery.chen), one inactive staff member (sam.rivera), and six catalog entries. Moonlight Signal has separate Blu-ray/DVD entries; three games have separate platform formats. Set the shared initial demo password privately. See [initial data setup](development.md#3-choose-initial-data).
 
 Prepare balances that cover zero stock, a small quantity, and enough stock for ordinary movements. Establish opening quantities through recorded check-ins so inventory and movement history reconcile. Do not publish working passwords or connection credentials in the guide.
 
@@ -38,7 +38,7 @@ The numeric examples assume no intervening movements. Use a fresh demo dataset o
 
 ## Portfolio presentation
 
-Once implemented, explain the business problem, walk through one normal movement and one rejected movement, then show the relational model and linked correction history. Emphasize decisions and verified behavior rather than the number of screens.
+For the presentation, explain the business problem, walk through one normal movement and one rejected movement, then show the relational model and linked correction history. Emphasize decisions and verified behavior rather than the number of screens.
 
 Suggested screenshot set after validation:
 
@@ -48,4 +48,6 @@ Suggested screenshot set after validation:
 - Activity history with a linked correction.
 - Item details with movie metadata.
 
-Only add a demo link, screenshots, test results, or implementation claims after they exist and have been verified. This is a fictional class/portfolio project, not a deployed business system.
+The [validation record](validation.md) contains verified test results. Add screenshots and a live demo link after the corresponding manual verification/deployment. This is a fictional class/portfolio project, not a deployed business system.
+
+For class hand-in, follow the [submission guide](submission.md) and include the requested `.slnx` with its project files. Public hosting follows grading and uses a separate fake-data database.

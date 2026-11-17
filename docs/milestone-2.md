@@ -1,8 +1,8 @@
 # Milestone 2 review
 
-This branch adds the remaining planned warehouse features using the instructor's `Program.Main` / `MapRoutes` structure and parameterized ADO.NET helpers. It uses the existing five tables and supplied columns. No schema change, teacher-server access, or automatic seeding is needed to start the app.
+Milestone 2 implements the remaining agreed warehouse features using the instructor's `Program.Main` / `MapRoutes` structure and parameterized ADO.NET helpers. It uses the existing five tables and supplied columns. The app requires a configured SQL Server connection and an initial account for use; it does not apply schema changes or seed data automatically. Follow the [development setup](development.md).
 
-## Delivered for review
+## Implemented features
 
 | Feature | Entry point | Key rule |
 | --- | --- | --- |
@@ -44,7 +44,7 @@ The existing foreign key preserves references. The one-reversal-per-entry rule i
 
 Local Release build and non-SQL tests run without connecting to the teacher server. Real integration tests use generated disposable SQL Server databases in GitHub Actions. Added coverage includes staff HTTP denial, manager forms/antiforgery, account password preservation and duplicate names, competing manager changes, retirement, correction chains/concurrency/rollback, and dashboard totals. OMDb tests use a fake HTTP provider, not a real key.
 
-Check [PR #4 checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/4/checks) for the latest SQL Server result. Final class readiness also requires a Windows walkthrough against the teacher's database, live OMDb smoke check, and screenshots using fake data. A passing earlier Milestone 1 run is not a substitute for the new run. Public deployment remains after grading, using a separate fake-data database.
+Reviewed commit `6b37024` passed both jobs in [run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232); see the [validation record](validation.md). Final class readiness also requires a Windows walkthrough against the teacher's database, live OMDb smoke check, and screenshots using fake data. The passing Milestone 2 run covers the expanded implementation. Public deployment remains after grading, using a separate fake-data database.
 
 Local verification: 25 tests passed; 26 SQL Server test groups were explicitly skipped locally. The movie-lookup JavaScript passed a headless Chromium component check with controlled responses, including safe text rendering, selection, fallback, keyboard handling, and stale-request cancellation. All 41 runtime SQL batches parsed as T-SQL; parsing is not SQL execution.
 

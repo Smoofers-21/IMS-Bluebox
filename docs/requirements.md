@@ -1,6 +1,6 @@
 # Requirements and acceptance criteria
 
-**Status:** Milestone 1 and Milestone 2 features are implemented for review. Milestone 1's disposable SQL Server CI passed; [PR #4 checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/4/checks) track the new suite. Windows/teacher-server verification remains a separate completion gate. See the [roadmap](roadmap.md).
+**Status:** both milestones’ application features are implemented and reviewed. Unit/routing and real SQL Server checks passed for commit `6b37024` in [run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232). Windows/teacher-server and live OMDb checks remain pending. See the [validation record](validation.md) and [roadmap](roadmap.md).
 
 ## Permissions
 
@@ -23,7 +23,8 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | AUTH-02 | Respect employment status | Inactive and terminated employees cannot sign in or continue authorized operations. |
 | AUTH-03 | Enforce roles | A staff account cannot perform manager operations through a page or direct request. |
 | AUTH-04 | Keep account setup simple | Managers create accounts; there is no public registration or forced initial password change. |
-| AUTH-05 | Preserve manager access | Deactivating or demoting the last active manager is rejected. |
+| AUTH-05 | Preserve manager access | Deactivating or demoting the last active manager is rejected, including competing account edits. |
+| AUTH-06 | Preserve password resets | A blank edit password retains the existing hash; a stale login-time hash upgrade cannot overwrite a manager’s password reset. |
 | CAT-01 | Maintain a movie/game catalog | Managers can create and edit required name, type, and format fields; blank required fields and invalid types are rejected. |
 | CAT-02 | Distinguish formats | The same title in DVD and Blu-ray editions has separate catalog entries and balances. |
 | CAT-03 | Keep metadata optional | Items can be saved without a poster or age rating. |
@@ -46,7 +47,7 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | RET-02 | Retire locations safely | A warehouse with stock cannot be deactivated. Its historical movements remain visible. |
 | VIEW-01 | Find stock | Inventory can be searched by item name/ID and filtered by location and item type, following the mockups. |
 | VIEW-02 | Review activity | Users can inspect employee-attributed movements and filter by item, movement type, and location; older results remain accessible through 100-row pages. |
-| VIEW-03 | Summarize inventory | Dashboard totals agree with the underlying inventory data and show recent movements. |
+| VIEW-03 | Summarize inventory | Dashboard totals and warehouse totals agree during concurrent stock updates; the same transaction returns the latest five movements. |
 
 Correction policy: each movement may have one full opposite-movement correction. A correction can itself be reversed once, producing a chain rather than multiple children for the same movement. Partial reversals are not supported. The server derives the item, warehouse, direction, and quantity from the selected entry; the manager supplies an explanation. Inactive/archived records must be reactivated by a manager before correction, and insufficient stock blocks reversal. All original entries remain unchanged.
 
@@ -55,9 +56,9 @@ Correction policy: each movement may have one full opposite-movement correction.
 - Use fake demonstration records, not real employee personal data.
 - Store password hashes using a supported library; do not create a custom hashing scheme.
 - Keep database credentials and the OMDb API key outside tracked files and browser responses.
-- Validate input on the server and use parameterized queries or the selected data access framework.
+- Validate input on the server and use parameterized ADO.NET queries.
 - Use database constraints alongside application validation.
-- Store timestamps in UTC. The mockups display Central time; label displayed times clearly.
+- Store timestamps in UTC. Activity and overview display labeled Central time (CST/CDT), including daylight-saving transitions.
 
 ## Validation approach
 

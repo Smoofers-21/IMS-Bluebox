@@ -1,6 +1,6 @@
 # Architecture and database design
 
-**Status:** Milestones 1 and 2 use this structure for inventory, manager tools, linked corrections, and optional movie metadata. The teacher's database connectivity/deployed schema remain unverified. Current implementation and test instructions are in the [development guide](development.md).
+**Status:** Milestones 1 and 2 use this structure for inventory, manager tools, linked corrections, and optional movie metadata. Disposable SQL Server verification passed for the supplied schema; the actual teacher-server connection and Windows walkthrough remain pending. See the [validation record](validation.md). Current implementation and test instructions are in the [development guide](development.md).
 
 ## Application structure
 
@@ -55,7 +55,7 @@ The supplied creation script already defines:
 - Foreign keys with `ON DELETE NO ACTION`.
 - UTC timestamp defaults using `SYSUTCDATETIME()`.
 
-The script requires a real expected database name and refuses to create tables when any of the five target names already exists. It is a fresh-schema installer, not an incremental update script. Inspect existing tables and prepare targeted changes later; do not drop/recreate populated tables to apply these plans.
+The script requires a real expected database name and refuses to create tables when any of the five target names already exists. It is a fresh-schema installer, not an incremental update script. Inspect existing tables before any targeted upgrade; do not drop/recreate populated tables to apply the design.
 
 ## Schema alignment
 
@@ -74,7 +74,7 @@ The [one-time SQL migration](../database/README.md) exists for older baseline in
 | LOCATION | Constrain status to ACTIVE/INACTIVE | Match warehouse availability rules |
 | ITEM | Reject blank `media_format` | Enforce the required catalog field |
 
-Runtime validation follows the supplied field lengths. Store movie metadata on the selected catalog item; do not require an external API call every time the catalog is opened. Consider a provider identifier if needed to retain the selected OMDb match, but it is not an agreed required field yet.
+Runtime validation follows the supplied field lengths. Store movie metadata on the selected catalog item; do not require an external API call every time the catalog is opened. The selected movie’s title and optional metadata are stored on the catalog item; the lookup match identifier is not an additional database field.
 
 ## Inventory consistency
 
@@ -100,6 +100,6 @@ The nonnegative quantity constraint is a useful final guard, but does not by its
 
 ## Configuration
 
-Configure SQL Server connectivity and the OMDb key securely outside source control using the configuration mechanism selected for the application. No credentials, connection string, or API key is included in these documents. Database access and OMDb access remain unverified until implementation setup.
+Configure `ConnectionStrings:BlueBox` (or the instructor’s `Database` fields) and optional `Omdb:ApiKey` through User Secrets, private environment variables, or an explicitly selected private JSON file. The [development guide](development.md) contains placeholders, not working credentials. Disposable SQL Server tests have passed; a live OMDb key and the teacher-server Windows setup still require manual verification.
 
 The overview reads aggregate totals, warehouse balances, and the latest five movements in one serializable transaction and one database round trip. Password-hash upgrades use a conditional comparison against the previously verified hash so they cannot overwrite a concurrent manager password reset.

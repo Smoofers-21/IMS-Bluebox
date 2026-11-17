@@ -1,6 +1,6 @@
 # BlueBox SQL Server scripts
 
-These scripts target the five-table SQL Server design supplied during planning. They are separate from the future C# application. No script has been run against the teacher's server by this project workspace.
+These scripts target the five-table SQL Server design supplied during planning. The C# application uses this schema through ADO.NET and does not apply DDL automatically. No script has been run against the teacher's server by this project workspace.
 
 The latest supplied DDL already contains the planned columns and constraints, with `poster_url NVARCHAR(2048)`. **Do not rerun 001 against that updated database.** A sanitized [current schema reference](reference/current-schema.sql) is retained for empty test databases; it is not an upgrade script.
 
@@ -8,12 +8,14 @@ The latest supplied DDL already contains the planned columns and constraints, wi
 
 | Situation | Script |
 | --- | --- |
-| The five warehouse tables already exist | Run [001_align_warehouse_schema.sql](001_align_warehouse_schema.sql) only |
+| The tables match the latest supplied DDL, including statuses, metadata, and correction link | No migration needed; configure the application connection |
+| The original five-table baseline exists without the alignment columns/constraints | Review and run [001_align_warehouse_schema.sql](001_align_warehouse_schema.sql) once |
+| The schema is partial or its version is unknown | Compare with the reference and review differences before choosing a migration |
 | You are preparing a new, empty BlueBox development database | Run [000_create_baseline.sql](000_create_baseline.sql), then 001 |
 
 `000` preserves the original creation script supplied by the project owner. It is not an upgrade script and refuses to run if a target table already exists. Neither script creates a database or grants permissions.
 
-## Apply the update in SSMS
+## Apply the one-time upgrade to an older baseline in SSMS
 
 1. Use a copy of your BlueBox database to check compatibility first when available. Confirm that you are changing only your assigned database.
 2. Open `001_align_warehouse_schema.sql` in a fresh SSMS query window connected to the intended server.
@@ -52,7 +54,7 @@ Changes within the migration transaction roll back if a schema or data constrain
 
 ## What DDL does not implement
 
-The future C# stock-operation service must still enforce:
+These application-level rules are implemented by the C# services and authorization policies; DDL alone does not provide them:
 
 - Manager-only corrections, with the same item/location and opposite movement direction as the original.
 - Active employee, item, and warehouse checks.
@@ -62,4 +64,8 @@ The future C# stock-operation service must still enforce:
 - Permanent history through application behavior and appropriate database access.
 - Last-active-manager protection.
 
-The correction foreign key identifies an original transaction; it does not, by itself, enforce manager authorization or compare values between the two rows. There is no uniqueness constraint deciding repeated-correction policy. That policy remains to be settled before building the correction workflow.
+The correction foreign key identifies an original transaction; it does not, by itself, enforce manager authorization or compare values between the two rows. The application permits one full reversal per history entry, including correction entries, forming a chain. It locks the selected entry and checks for an existing child within the same transaction. No uniqueness constraint alone enforces that one-child policy for direct SSMS writes. See the [correction guide](../docs/milestone-2.md#agreed-correction-policy).
+
+## Verified schema use
+
+The SQL Server CI suite applies `reference/current-schema.sql` only in generated disposable databases and passed for reviewed commit `6b37024`. See the [validation record](../docs/validation.md). It never targets the teacher’s server. The current-schema reference is also embedded by the test project, so retain the `database` folder when [packaging the solution](../docs/submission.md).

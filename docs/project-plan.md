@@ -1,6 +1,6 @@
 # BlueBox project plan
 
-**Planning baseline:** agreed with the project owner. This document records the original intended behavior; it is not an implementation or test report. Current progress is tracked in the [two-milestone roadmap](roadmap.md).
+**Project baseline, updated November 17, 2026:** this document records the agreed scope and current design decisions. Both milestones’ application features are implemented. See the [roadmap](roadmap.md) for remaining sign-off tasks and the [validation record](validation.md) for test evidence.
 
 ## Purpose
 
@@ -33,18 +33,20 @@ Build an internal warehouse inventory website for BlueBox, a fictional movie and
 
 | Component | Decision |
 | --- | --- |
-| Application language | C# |
+| Application language | C# on .NET 10; SDK 10.0.404 pinned in `global.json` |
 | Web framework | ASP.NET Core Razor Pages |
-| Database | Microsoft SQL Server |
+| Database | Microsoft SQL Server; CI uses a disposable SQL Server 2022 instance |
 | Database administration | SQL Server Management Studio (SSMS) |
 | Movie lookup | OMDb API, called by the server |
-| Data access and authentication libraries | Select during implementation; use supported framework facilities |
+| Data access | ADO.NET with Microsoft.Data.SqlClient 7.1.2 and the instructor’s SqlConnection/SqlCommand/DataTable helpers |
+| Authentication | Cookie authentication and ASP.NET Core `PasswordHasher<Employee>`; Staff/Manager authorization |
+| Solution and submission | `BlueBox.sln` in source/CI; generate `.slnx` for submission when requested |
 
-Exact .NET/SQL Server versions and hosting are not yet selected. SSMS is the database administration tool; the application connects to SQL Server itself.
+SSMS administers the database; the application connects to SQL Server itself. The teacher’s actual server version and Windows connection still require local verification. Public hosting is deferred until after grading and will use a separate database containing fake data.
 
 ## Screen plan
 
-Follow the supplied mockups' navigation and visual direction. Add simple manager administration screens to support the agreed workflows.
+The implemented screens follow the supplied mockups’ navigation and visual direction, with manager administration pages for the agreed workflows.
 
 | Screen | Purpose | Access |
 | --- | --- | --- |
@@ -94,7 +96,7 @@ A manager selects the mistaken transaction and records an opposite movement with
 - Managers create employee accounts and assign roles. No employee self-registration is provided.
 - Inactive or terminated employees cannot access the application.
 - The first manager is created during setup. The last active manager cannot be deactivated or demoted.
-- Passwords are stored using a supported salted password-hashing facility, never as plaintext. No first-login password-change requirement is planned.
+- Passwords are stored using a supported salted password-hashing facility, never as plaintext. There is no forced first-login password change. Blank passwords on account edits preserve the existing hash; login-time hash upgrades cannot overwrite an intervening manager password reset.
 
 ## Planning sources
 
@@ -111,11 +113,13 @@ The original assignment also discusses customer, rental, payment, and reporting 
 
 Where source documents differ, use the agreed decisions here: quantity-based inventory, the item/location composite key instead of a separate inventory ID, and the documented catalog metadata and retirement fields.
 
-## Before implementation
+## Current implementation and remaining work
 
-- Confirm compatible .NET and SQL Server versions and obtain connection configuration securely.
-- Inspect the actual existing tables before preparing non-destructive schema changes.
-- Choose the data access/authentication approach and reconcile it with the employee schema.
-- Correction policy settled during Milestone 2: one full reversal per entry, including correction entries, with stock and active-record checks.
+- The instructor’s explicit `Program.Main` / `MapRoutes` foundation and parameterized ADO.NET helpers are in place. Razor Pages render the screens; no Entity Framework or extra Identity tables are used.
+- The latest supplied five-table DDL already includes the required status, metadata, and correction fields. Milestone 2 requires no further migration on that aligned schema.
+- Stock writes and linked corrections are atomic. Dashboard totals and the latest five movements are read together in one serializable transaction and one database round trip.
+- Each history entry can be fully reversed once, including correction entries. Corrections require active records, adequate stock, and a manager explanation.
+- Build/unit/routing and disposable SQL Server checks passed for reviewed commit `6b37024`; see the validation record for exact evidence.
+- Complete the Windows/teacher-server walkthrough, live OMDb check, and final fake-data screenshots before class sign-off. Follow the submission guide if a `.slnx` file is required.
 
-See the [requirements](requirements.md), [database notes](architecture-and-database.md), and [roadmap](roadmap.md) for the next level of detail.
+See the [requirements](requirements.md), [database notes](architecture-and-database.md), [roadmap](roadmap.md), [validation record](validation.md), and [submission guide](submission.md).

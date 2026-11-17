@@ -19,7 +19,7 @@ The project owner combined the original six stages into two milestones. Use smal
 
 ## Milestone 2 — Complete demo and portfolio project
 
-Implementation is on `feature/milestone-2`. Checked features describe code delivered for review. [PR #4 checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/4/checks) track current SQL Server verification; the teacher-server walkthrough still gates final completion.
+Application implementation and code review are complete for commit `6b37024`. Both GitHub test jobs passed in [run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232). The [validation record](validation.md) separates those results from the pending teacher-server walkthrough.
 
 - [x] Manager tools for items, employee accounts, and locations.
 - [x] Last-active-manager protection when managing accounts.
@@ -27,11 +27,15 @@ Implementation is on `feature/milestone-2`. Checked features describe code deliv
 - [x] Zero-stock item/location retirement rules.
 - [x] Server-side OMDb movie lookup, manual fallback, optional posters and age ratings.
 - [x] Overview dashboard and responsive layouts following the existing visual style.
-- [x] Add real SQL Server tests for Milestone 2, including competing manager edits, retirement, and corrections; publish reports in GitHub Actions.
+- [x] Verify Milestone 2 unit/routing and real SQL Server tests, including competing manager edits, retirement, corrections, password reset protection, and dashboard consistency; publish reports in GitHub Actions.
 - [ ] Finish Windows/class walkthrough, live OMDb smoke check, and final fake-data screenshots.
 - [x] Update setup, requirements, correction policy, and demo/review documentation.
 
-**Complete when:** agreed features work together and the system is ready for class review and GitHub presentation.
+**Complete when:** agreed features pass automated checks and the Windows/teacher-server walkthrough, live OMDb check, and final demonstration materials are complete. Source and CI are ready for owner review; final class sign-off is still pending.
+
+## Class hand-in
+
+After the owner merges the implementation/documentation PRs, pull `main`, verify the Windows setup, and use the [submission guide](submission.md) to generate `.slnx` when required. Keep project folders and required build files alongside the solution. Submit according to the instructor’s requested format.
 
 ## After grading — Public deployment
 

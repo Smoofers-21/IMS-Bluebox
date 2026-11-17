@@ -51,9 +51,9 @@ Instead of a connection string, you can set the starter template's four fields i
 }
 ```
 
-`RoutePrefix` is the starter's `/{username}` landing route; set it privately to the instructor-assigned route name if required. Application pages remain at `/Inventory`, `/Catalog`, and the other documented routes. Prefer the teacher's certificate trust configuration; the starter's certificate exception is not hardcoded into public source.
+`RoutePrefix` is the starter's `/{username}` landing route; set it privately to the instructor-assigned route name if required. The assigned landing route sends signed-in users to `/Overview`. Application pages include `/Overview`, `/Inventory`, `/Catalog`, `/Activity`, and manager-only `/Admin` pages. Prefer the teacher's certificate trust configuration; the starter's certificate exception is not hardcoded into public source.
 
-For this workspace, the supplied values were saved outside the checkout in a permission-restricted private file. They are not pushed to GitHub or loaded by default. `BLUEBOX_PRIVATE_CONFIG` can point to such a file when deliberately running locally. On your Windows PC, use Manage User Secrets with your own private values. No teacher connection is required for build/unit checks.
+`BLUEBOX_PRIVATE_CONFIG` can point to a private JSON file outside the checkout; when set, the app loads that file explicitly. It is a local configuration option, not a file included in the repository or submission. On Windows, use Manage User Secrets or private environment variables. Build/unit checks need no teacher connection.
 
 ## 3. Choose initial data
 
@@ -133,7 +133,7 @@ OMDb calls use a fixed HTTPS endpoint, a five-second timeout, no automatic retry
 dotnet test BlueBox.sln --configuration Release
 ```
 
-By default, tests run **unit and anonymous-routing checks** without database access. Real SQL Server integration tests are explicitly skipped when `BLUEBOX_TEST_SQLSERVER` is unset. There is no SQLite backend or Entity Framework dependency. The earlier 27-test SQLite result does not validate this ADO.NET refactor.
+By default, tests run **unit and anonymous-routing checks** without database access. Real SQL Server integration tests are explicitly skipped when `BLUEBOX_TEST_SQLSERVER` is unset. There is no SQLite backend or Entity Framework dependency. The [validation record](validation.md) reports the current ADO.NET results.
 
 For SQL Server validation, set `BLUEBOX_TEST_SQLSERVER` privately to a connection string for a **disposable test instance with permission to create databases**, then run the same command. The test harness connects to `master`, creates uniquely named `BlueBoxTest_<guid>` databases, applies the sanitized supplied current-schema reference, and drops only those generated databases afterward. **Do not use the teacher's shared server for this mode.** The database named in the input connection string is not used as the test database.
 
@@ -141,12 +141,18 @@ GitHub Actions runs both modes for feature-branch pushes, pull requests, and mai
 
 ## Remaining verification
 
-Local unit/routing test results do not prove the teacher's server is reachable or SQL Server locking behaves identically. Milestone 1 passed [its SQL Server CI run](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44132304808). Verify the new Milestone 2 run and complete the Windows/teacher-database walkthrough for final sign-off. No remote database was modified by preparing this application.
+The reviewed local suite passed **25 tests**, with **26 SQL Server test groups intentionally skipped locally**. Milestone 2 commit `6b37024` passed both GitHub jobs in [run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232), including real SQL Server execution. See the [validation record](validation.md) for evidence and scope.
+
+The remaining tasks are the Windows/teacher-database walkthrough, a live OMDb lookup with a private key, and final fake-data screenshots. GitHub's disposable SQL Server result does not verify the teacher's network, account permissions, or certificate setup. No teacher database was accessed or modified from this workspace.
+
+## Class submission
+
+If the instructor requires `.slnx`, pull the merged `main` and follow the [submission guide](submission.md). It covers `dotnet sln BlueBox.sln migrate`, explicit `.slnx` build/test commands, the required project/build/database files, and ZIP verification. The repository and CI continue to use `BlueBox.sln`.
 
 ## Troubleshooting
 
 - **503 / temporarily unavailable:** inspect server-side logs for connection/schema errors. The browser intentionally does not receive raw database exceptions.
-- **Invalid column name:** confirm `001` was applied to the exact database in the connection string.
+- **Invalid column name:** compare the connected database with the supplied current-schema reference. The latest teacher DDL is already aligned; use `001` only for an older baseline after reviewing its missing columns/constraints.
 - **Unable to sign in:** check active status and a compatible password hash; a SQL row with a placeholder hash is not a usable login.
 - **Unsupported SDK:** install the version pinned in `global.json` and update the editor if necessary.
 - **No rows:** populate the empty demo database or provide existing fake records; the app does not seed automatically on startup.
