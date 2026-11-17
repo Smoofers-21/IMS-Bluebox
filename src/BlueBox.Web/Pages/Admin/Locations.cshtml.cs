@@ -28,7 +28,11 @@ public sealed class LocationsModel(AdministrationService admin, InventoryQueries
         if (ModelState.IsValid)
         {
             var result = await admin.SaveLocationAsync(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!, System.Globalization.CultureInfo.InvariantCulture), Id, Input, ct);
-            if (result.Success) { TempData["Success"] = result.Message; return RedirectToPage("/Admin/Locations", new { Id }); }
+            if (result.Success)
+            {
+                TempData["Success"] = result.Message;
+                return Id.HasValue ? RedirectToPage("/Admin/Locations", new { id = Id.Value }) : RedirectToPage("/Admin/Locations");
+            }
             ModelState.AddModelError("", result.Message);
         }
         Locations = await queries.LocationsAsync(ct: ct);

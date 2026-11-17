@@ -50,6 +50,8 @@ public sealed class MilestoneTwoTests
     {
         Assert.Equal("Jan 15, 2026 · 06:00 CST", DisplayTime.Central(new DateTime(2026, 1, 15, 12, 0, 0, DateTimeKind.Utc)));
         Assert.Equal("Jul 15, 2026 · 07:00 CDT", DisplayTime.Central(new DateTime(2026, 7, 15, 12, 0, 0, DateTimeKind.Utc)));
+        Assert.Equal("Nov 1, 2026 · 01:30 CDT", DisplayTime.Central(new DateTime(2026, 11, 1, 6, 30, 0, DateTimeKind.Utc)));
+        Assert.Equal("Nov 1, 2026 · 01:30 CST", DisplayTime.Central(new DateTime(2026, 11, 1, 7, 30, 0, DateTimeKind.Utc)));
     }
 
     [Fact]
@@ -61,6 +63,8 @@ public sealed class MilestoneTwoTests
         {
             Assert.Equal($"/Admin/{name}", links.GetPathByPage($"/Admin/{name}", values: new { id = (int?)null }));
             Assert.Equal($"/Admin/{name}/1", links.GetPathByPage($"/Admin/{name}", values: new { id = 1 }));
+            Assert.Equal($"/Admin/{name}?Search=demo", links.GetPathByPage($"/Admin/{name}", values: new { Search = "demo" }));
+            Assert.Equal($"/Admin/{name}/1?Search=demo", links.GetPathByPage($"/Admin/{name}", values: new { id = 1, Search = "demo" }));
         }
     }
 
@@ -165,6 +169,13 @@ public sealed class MilestoneTwoTests
         Assert.Equal(hash, await app.ScalarAsync("SELECT password_hash FROM dbo.EMPLOYEE WHERE username='new.staff'"));
         create.Password = "Replacement-password-42!";
         Assert.True((await admin.SaveEmployeeAsync(1, id, create)).Success);
+        var repository = scope.ServiceProvider.GetRequiredService<EmployeeRepository>();
+        var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Employee>>();
+        var employee = (await repository.FindByIdAsync(id))!;
+        // A login using an earlier hash cannot undo a manager's later password reset.
+        Assert.False(await repository.TryUpgradeHashAsync(id, (string)hash!, hasher.HashPassword(employee, TestApp.Password)));
+        Assert.Equal(employee.PasswordHash, (await repository.FindByIdAsync(id))!.PasswordHash);
+        Assert.True(await repository.TryUpgradeHashAsync(id, employee.PasswordHash, hasher.HashPassword(employee, create.Password)));
         using var client = app.Browser();
         Assert.Equal(HttpStatusCode.OK, (await TestApp.LoginAsync(client, "new.staff")).StatusCode);
         Assert.Equal(HttpStatusCode.Redirect, (await TestApp.LoginAsync(client, "new.staff", create.Password)).StatusCode);
@@ -297,12 +308,29 @@ public sealed class MilestoneTwoTests
     {
         await using var app = new TestApp(); await app.InitializeAsync(); await using var scope = app.Services.CreateAsyncScope();
         var overview = scope.ServiceProvider.GetRequiredService<OverviewQueries>();
-        var summary = await overview.SummaryAsync();
+        var snapshot = await overview.LoadAsync();
+        var summary = snapshot.Summary;
         Assert.Equal(await app.ScalarAsync("SELECT SUM(CAST(quantity_on_hand AS bigint)) FROM dbo.CURRENT_INVENTORY"), summary.Units);
         Assert.Equal(6, summary.ActiveItems); Assert.Equal(2, summary.ActiveLocations);
-        Assert.Equal(summary.Units, (await overview.WarehousesAsync()).Sum(w => w.Quantity));
+        Assert.Equal(summary.Units, snapshot.Warehouses.Sum(w => w.Quantity));
         await app.ExecuteAsync("INSERT INTO dbo.LOCATION (location_name, address, location_status) VALUES ('Empty warehouse', 'Demo', 'ACTIVE');");
-        Assert.Contains(await overview.WarehousesAsync(), w => w.Name == "Empty warehouse" && w.Quantity == 0);
+        Assert.Contains((await overview.LoadAsync()).Warehouses, w => w.Name == "Empty warehouse" && w.Quantity == 0);
+        async Task ChangeStock()
+        {
+            await using var writer = app.Services.CreateAsyncScope();
+            var stock = writer.ServiceProvider.GetRequiredService<StockService>();
+            for (var n = 0; n < 8; n++) Assert.True((await stock.RecordAsync(new(2, 1, 1, "CHECK IN", 1, "Dashboard concurrency test"))).Success);
+        }
+        async Task CheckSnapshots()
+        {
+            for (var n = 0; n < 8; n++)
+            {
+                var current = await overview.LoadAsync();
+                Assert.Equal(current.Summary.Units, current.Warehouses.Sum(w => w.Quantity));
+                Assert.Equal(5, current.Recent.Count);
+            }
+        }
+        await Task.WhenAll(ChangeStock(), CheckSnapshots());
     }
 }
 

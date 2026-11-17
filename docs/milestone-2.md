@@ -46,4 +46,11 @@ Local Release build and non-SQL tests run without connecting to the teacher serv
 
 Check [PR #4 checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/4/checks) for the latest SQL Server result. Final class readiness also requires a Windows walkthrough against the teacher's database, live OMDb smoke check, and screenshots using fake data. A passing earlier Milestone 1 run is not a substitute for the new run. Public deployment remains after grading, using a separate fake-data database.
 
-Local verification: 25 tests passed; 26 SQL Server test groups were explicitly skipped locally. The movie-lookup JavaScript passed a headless Chromium component check with controlled responses, including safe text rendering, selection, fallback, keyboard handling, and stale-request cancellation. All 42 runtime SQL batches parsed as T-SQL; parsing is not SQL execution.
+Local verification: 25 tests passed; 26 SQL Server test groups were explicitly skipped locally. The movie-lookup JavaScript passed a headless Chromium component check with controlled responses, including safe text rendering, selection, fallback, keyboard handling, and stale-request cancellation. All 41 runtime SQL batches parsed as T-SQL; parsing is not SQL execution.
+
+## Review fixes
+
+- Manager save redirects omit empty optional route values, avoiding a post-save error while preserving a supplied catalog search.
+- Overview totals, warehouse totals, and five recent entries are read in one serializable transaction and one database round trip. A stock update cannot leave conflicting totals on the same page, and the dashboard no longer loads a full 100-row activity page to show five entries.
+- Login-time password-hash upgrades compare the previously verified hash before writing. A manager's intervening password reset cannot be overwritten by an older login attempt. The update reads `@@ROWCOUNT` explicitly.
+- Regression checks cover all three manager create forms, catalog editing, invalid-password messages without echoing the submitted password, concurrent dashboard/stock activity, stale hash upgrades, retirement races, and both sides of the Central-time daylight-saving transition.

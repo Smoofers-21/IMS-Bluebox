@@ -113,6 +113,8 @@ The loopback URLs above are local development addresses, not a public portfolio 
 7. In Activity, use Older/Newer to browse history in pages of 100; search and location/movement filters stay applied. Changing filters starts again at page 1.
 8. In a disposable test database, exercise competing check-outs and confirm no overselling or lost history.
 
+The overview reads all sections in one serializable transaction and one database round trip, so its stock totals remain consistent during concurrent movements.
+
 Stock updates use a serializable SQL Server transaction and a conditional balance update. Log insertion and balance update commit together; a failure rolls both back. SQL Server deadlock victims receive a bounded whole-operation retry. Client-side previews are informational; the server rechecks access, record status, and stock.
 
 Activity and overview display **Central time (CST/CDT)**, with UTC retained in the database and HTML machine-readable timestamps. Follow the [Milestone 2 review](milestone-2.md) for manager/correction/OMDb checks.

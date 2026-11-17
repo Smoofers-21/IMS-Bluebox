@@ -101,3 +101,5 @@ The nonnegative quantity constraint is a useful final guard, but does not by its
 ## Configuration
 
 Configure SQL Server connectivity and the OMDb key securely outside source control using the configuration mechanism selected for the application. No credentials, connection string, or API key is included in these documents. Database access and OMDb access remain unverified until implementation setup.
+
+The overview reads aggregate totals, warehouse balances, and the latest five movements in one serializable transaction and one database round trip. Password-hash upgrades use a conditional comparison against the previously verified hash so they cannot overwrite a concurrent manager password reset.

@@ -25,7 +25,9 @@ SELECT employee_id, first_name, last_name, username, password_hash, access_role,
 Source: [src/BlueBox.Web/Data/EmployeeRepository.cs](../src/BlueBox.Web/Data/EmployeeRepository.cs#L25)
 
 ```sql
-UPDATE dbo.EMPLOYEE SET password_hash = @hash WHERE employee_id = @id;
+UPDATE dbo.EMPLOYEE SET password_hash = @hash
+WHERE employee_id = @id AND password_hash COLLATE Latin1_General_100_BIN2 = @previous;
+SELECT @@ROWCOUNT;
 ```
 
 ## 4. AdministrationService
@@ -318,26 +320,28 @@ VALUES ('BlueBox', 'Manager', @username, @hash, 'MANAGER', 'ACTIVE');
 
 ## 34. OverviewQueries
 
-Source: [src/BlueBox.Web/Services/OverviewQueries.cs](../src/BlueBox.Web/Services/OverviewQueries.cs#L13)
+Source: [src/BlueBox.Web/Services/OverviewQueries.cs](../src/BlueBox.Web/Services/OverviewQueries.cs#L14)
 
 ```sql
 SELECT COALESCE((SELECT SUM(CAST(quantity_on_hand AS bigint)) FROM dbo.CURRENT_INVENTORY), 0) AS units,
     (SELECT COUNT(*) FROM dbo.ITEM WHERE item_status='ACTIVE') AS items,
     (SELECT COUNT(*) FROM dbo.LOCATION WHERE location_status='ACTIVE') AS locations,
     (SELECT COUNT_BIG(*) FROM dbo.TRANSACTION_LOG) AS movements;
-```
 
-## 35. OverviewQueries
-
-Source: [src/BlueBox.Web/Services/OverviewQueries.cs](../src/BlueBox.Web/Services/OverviewQueries.cs#L25)
-
-```sql
 SELECT l.location_name, l.location_status, COALESCE(SUM(CAST(b.quantity_on_hand AS bigint)), 0) AS units
 FROM dbo.LOCATION AS l LEFT JOIN dbo.CURRENT_INVENTORY AS b ON b.location_id=l.location_id
 GROUP BY l.location_id, l.location_name, l.location_status ORDER BY l.location_name, l.location_id;
+
+SELECT TOP (5) t.transaction_id, i.item_name, i.media_format, l.location_name, t.transaction_type,
+    t.quantity_moved, e.first_name + ' ' + e.last_name AS employee_name, t.transaction_datetime
+FROM dbo.TRANSACTION_LOG AS t
+INNER JOIN dbo.ITEM AS i ON i.item_id=t.item_id
+INNER JOIN dbo.LOCATION AS l ON l.location_id=t.location_id
+INNER JOIN dbo.EMPLOYEE AS e ON e.employee_id=t.employee_id
+ORDER BY t.transaction_datetime DESC, t.transaction_id DESC;
 ```
 
-## 36. StockService
+## 35. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L24)
 
@@ -352,7 +356,7 @@ SELECT CASE
     ELSE 0 END;
 ```
 
-## 37. StockService
+## 36. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L47)
 
@@ -361,7 +365,7 @@ SELECT quantity_on_hand FROM dbo.CURRENT_INVENTORY WITH (UPDLOCK, HOLDLOCK)
 WHERE item_id = @item AND location_id = @location;
 ```
 
-## 38. StockService
+## 37. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L59)
 
@@ -371,7 +375,7 @@ WHERE item_id = @item AND location_id = @location AND quantity_on_hand = @curren
 SELECT @@ROWCOUNT;
 ```
 
-## 39. StockService
+## 38. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L63)
 
@@ -381,7 +385,7 @@ VALUES (@item, @location, @next, SYSUTCDATETIME());
 SELECT @@ROWCOUNT;
 ```
 
-## 40. StockService
+## 39. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L73)
 
@@ -391,7 +395,7 @@ INSERT INTO dbo.TRANSACTION_LOG
 VALUES (@employee, @item, @location, @direction, @quantity, SYSUTCDATETIME(), @notes, @corrects);
 ```
 
-## 41. StockService
+## 40. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L96)
 
@@ -400,7 +404,7 @@ SELECT item_id, location_id, transaction_type, quantity_moved
 FROM dbo.TRANSACTION_LOG WITH (UPDLOCK, HOLDLOCK) WHERE transaction_id=@id;
 ```
 
-## 42. StockService
+## 41. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L106)
 

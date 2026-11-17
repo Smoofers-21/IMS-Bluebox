@@ -29,7 +29,11 @@ public sealed class EmployeesModel(AdministrationService admin) : PageModel
         if (ModelState.IsValid)
         {
             var result = await admin.SaveEmployeeAsync(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!, System.Globalization.CultureInfo.InvariantCulture), Id, Input, ct);
-            if (result.Success) { TempData["Success"] = result.Message; return RedirectToPage("/Admin/Employees", new { Id }); }
+            if (result.Success)
+            {
+                TempData["Success"] = result.Message;
+                return Id.HasValue ? RedirectToPage("/Admin/Employees", new { id = Id.Value }) : RedirectToPage("/Admin/Employees");
+            }
             ModelState.AddModelError("", result.Message);
         }
         Input.Password = null;

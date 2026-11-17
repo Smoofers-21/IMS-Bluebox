@@ -20,12 +20,20 @@ public sealed class EmployeeRepository(SqlDatabase database)
         return ReadOne(await database.FillDataTableViaCommandAsync(command, ct));
     }
 
-    public async Task UpdateHashAsync(int id, string hash, CancellationToken ct = default)
+    public async Task<bool> TryUpgradeHashAsync(int id, string previousHash, string hash, CancellationToken ct = default)
     {
-        using var command = new SqlCommand("UPDATE dbo.EMPLOYEE SET password_hash = @hash WHERE employee_id = @id;");
+        using var command = new SqlCommand("""
+            UPDATE dbo.EMPLOYEE SET password_hash = @hash
+            WHERE employee_id = @id AND password_hash COLLATE Latin1_General_100_BIN2 = @previous;
+            SELECT @@ROWCOUNT;
+            """);
         command.Parameters.Add(SqlDatabase.Parameter("@id", SqlDbType.Int, id));
         command.Parameters.Add(SqlDatabase.Parameter("@hash", SqlDbType.VarChar, hash, 255));
-        await database.ExecSqlCommandAsync(command, ct);
+        command.Parameters.Add(SqlDatabase.Parameter("@previous", SqlDbType.VarChar, previousHash, 255));
+        await using var connection = await database.OpenConnectionAsync(ct);
+        command.Connection = connection;
+        command.CommandTimeout = 30;
+        return Convert.ToInt32(await command.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture) == 1;
     }
 
     private static Employee? ReadOne(DataTable table)

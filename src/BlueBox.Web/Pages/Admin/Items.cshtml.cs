@@ -3,6 +3,7 @@ using BlueBox.Web.Models;
 using BlueBox.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Routing;
 
 namespace BlueBox.Web.Pages.Admin;
 
@@ -31,7 +32,14 @@ public sealed class ItemsModel(AdministrationService admin, InventoryQueries que
         if (ModelState.IsValid)
         {
             var result = await admin.SaveItemAsync(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!, System.Globalization.CultureInfo.InvariantCulture), Id, Input, ct);
-            if (result.Success) { TempData["Success"] = result.Message; return RedirectToPage("/Admin/Items", new { Id, Search }); }
+            if (result.Success)
+            {
+                TempData["Success"] = result.Message;
+                var values = new RouteValueDictionary();
+                if (Id.HasValue) values["id"] = Id.Value;
+                if (!string.IsNullOrWhiteSpace(Search)) values["Search"] = Search;
+                return RedirectToPage("/Admin/Items", values);
+            }
             ModelState.AddModelError("", result.Message);
         }
         Items = await queries.CatalogAsync(Search, null, ct);
