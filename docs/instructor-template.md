@@ -1,6 +1,6 @@
 # Instructor template adaptation and code review
 
-Milestone 1 now uses the supplied `WebAppWithDB_Starter_v2` foundation. The original paste contained live connection details; it is not committed. Those values are configured privately.
+Both milestones use the supplied `WebAppWithDB_Starter_v2` foundation. The original paste contained live connection details; it is not committed. Those values are configured privately.
 
 ## Preserved foundation
 
@@ -15,13 +15,13 @@ Milestone 1 now uses the supplied `WebAppWithDB_Starter_v2` foundation. The orig
 | ExecSqlStringAsync / ExecSqlCommandAsync | Same helper approach with async SqlConnection/ExecuteNonQuery |
 | Microsoft.Data.SqlClient and System.Data | Direct ADO.NET; no Entity Framework dependency |
 
-Razor Pages continue to render the existing screens, encode output, and handle form antiforgery. They call the ADO.NET helpers through small repositories/services. The template's demonstration datetime HTML and Bootstrap CDN are replaced by the actual local BlueBox screens/assets. If the instructor additionally forbids Razor Pages or requires all HTML inside Program, that is a separate requirement to confirm; the supplied starter does not explicitly state that restriction.
+Razor Pages continue to render the existing screens, encode output, and handle form antiforgery. They call the ADO.NET helpers through small repositories/services. The template's demonstration datetime HTML and Bootstrap CDN are replaced by the actual local BlueBox screens/assets. The explicit Program/Main/MapRoutes foundation and direct ADO.NET data-access approach remain in place.
 
 The template's hardcoded DB fields map to `Database:Server`, `Database:Name`, `Database:Username`, and `Database:Password`, or an existing private `ConnectionStrings:BlueBox`. The configurable `Database:RoutePrefix` preserves the assigned-path concept without publishing an account name in source. See [development setup](development.md).
 
 ## Corrections and optimizations
 
-- Removed Entity Framework, its model context, SQLite, and unused entity types.
+- Use direct ADO.NET without Entity Framework, SQLite, or extra Identity tables.
 - Repaired the pasted Markdown-style CDN links and malformed quoted markup by using local assets and valid C#.
 - Use bounded, parameterized SELECTs and explicit SQL parameter types/lengths. Search text is never interpolated into SQL.
 - Use `COUNT_BIG`/bigint stock totals where aggregation can exceed a single warehouse's int balance.
@@ -41,15 +41,24 @@ The latest DDL contains the five tables, planned statuses/metadata, correction l
 
 A sanitized [schema reference](../database/reference/current-schema.sql) preserves the supplied definitions without the real database name. It is for an empty test database, not a migration. A [runtime query catalog](sql-query-catalog.md) documents application SELECT/INSERT/UPDATE statements separately from DDL and test utilities. No application DELETE workflow exists.
 
-## Validation limits
+## Verified validation and limits
 
-The earlier 27-check SQLite result applies to the former EF implementation, not this refactor. Current local tests cover configuration, basic validation, anonymous routing, antiforgery, role policy, and headers. SQL Server integration scenarios are explicitly skipped locally without a disposable instance.
+The external-review fixes at `936bec2` passed [run 44199421841](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44199421841), including the SQL-enabled suite. Versioned local/CI counts are recorded in the validation record; current results are on PR #5 checks. The SQL job applies the supplied current schema to generated disposable databases and exercises real stock/HTTP workflows, rollback, and competing updates. See the [validation record](validation.md).
 
-The SQL Server CI job applies the supplied current schema to generated test databases and exercises the real ADO.NET stock/HTTP workflows, including rollback and competing updates. Live verification was left to Windows/GitHub at the project owner's request. No teacher database schema, records, or stock were changed from this workspace.
+Windows access to the teacher's actual server and a live OMDb smoke check remain pending. No teacher schema, records, or stock were changed from this workspace.
 
 ## PR #2 review fixes
 
 - Movement inputs have no POST-time defaults. Missing fields fail required validation; initial quantity/direction defaults are assigned on GET only.
 - Setup accepts 12–256 character passwords, sharing the login maximum through `PasswordPolicy`.
 - Activity uses bounded 100-row pages with a one-row lookahead, deterministic ordering, and filter-preserving Older/Newer links. No full-history download or separate total-count query is needed.
-- Local regression tests exercise actual model binding and password boundaries. SQL Server regressions verify unchanged stock/history for incomplete posts, maximum-length-password sign-in, and navigation across more than 100 filtered movements. Live SQL checks remain pending Windows/GitHub execution.
+- Local regression tests exercise actual model binding and password boundaries. SQL Server regressions verify unchanged stock/history for incomplete posts, maximum-length-password sign-in, and navigation across more than 100 filtered movements. These scenarios passed in disposable SQL Server CI; the teacher-server Windows walkthrough remains separate.
+
+## Milestone 2 review fixes
+
+- Omit empty optional route values when redirecting after manager saves; HTTP tests cover all three administration forms and catalog editing.
+- Read overview in one READ COMMITTED batch, deriving total units from returned warehouse totals. Stock/history writes continue using serializable transactions.
+- Compare the previously verified password hash before a login-time upgrade, so a concurrent manager password reset cannot be overwritten. Read `@@ROWCOUNT` explicitly.
+- Exercise manager/retirement/correction concurrency, atomic rollback, safe metadata handling, and Central-time daylight-saving transitions. See the [Milestone 2 review guide](milestone-2.md).
+
+For the consolidated PR #5 external-review fixes, see [the resolution](pr4-review-resolution.md). Parent X locks coordinate retirement, credential stamps revoke stale sessions, and format/type cannot change after history exists. These changes use the supplied schema.

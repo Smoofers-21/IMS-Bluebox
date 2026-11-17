@@ -1,0 +1,13 @@
+@page
+@model BlueBox.Web.Pages.OverviewModel
+@{ ViewData["Title"] = "Overview"; ViewData["Section"] = "Overview"; }
+<div class="page-heading"><div><p class="eyebrow">WAREHOUSE OVERVIEW</p><h1>Your stock, at a glance.</h1><p class="muted">Catalog, warehouse balances, and recent movement.</p></div><a class="button primary" asp-page="/Inventory/Move">Move stock →</a></div>
+<div class="summary-grid"><section class="panel metric"><span>Total units on hand</span><strong>@Model.Summary.Units.ToString("N0")</strong></section><section class="panel metric"><span>Active catalog items</span><strong>@Model.Summary.ActiveItems</strong></section><section class="panel metric"><span>Active warehouses</span><strong>@Model.Summary.ActiveLocations</strong></section><section class="panel metric"><span>Recorded movements</span><strong>@Model.Summary.Movements.ToString("N0")</strong></section></div>
+<div class="dashboard-grid spaced"><section class="panel"><h2>Stock by warehouse</h2>
+@foreach(var warehouse in Model.Warehouses) { <div class="warehouse-total"><div><strong>@warehouse.Name</strong><small class="cell-subtitle">@warehouse.Status</small></div><span class="count-chip">@warehouse.Quantity.ToString("N0") units</span></div> }
+@if(Model.Warehouses.Count == 0) { <p class="muted">No warehouses yet. A manager can add one.</p> }
+<a class="back-link spaced" asp-page="/Inventory/Index">View inventory →</a></section>
+<section class="panel"><h2>Recent movements</h2>
+@foreach(var movement in Model.Recent) { <div class="recent-movement"><div><strong>@movement.Name</strong><small class="cell-subtitle">@movement.Format · @movement.Location · @movement.Employee</small><small class="cell-subtitle">@BlueBox.Web.Models.DisplayTime.Central(movement.Time)</small></div><span class="badge">@(movement.Direction == "CHECK IN" ? "+" : "−")@movement.Quantity</span></div> }
+@if(Model.Recent.Count == 0) { <p class="muted">No stock movements recorded yet.</p> }
+<a class="back-link spaced" asp-page="/Activity/Index">View activity →</a></section></div>

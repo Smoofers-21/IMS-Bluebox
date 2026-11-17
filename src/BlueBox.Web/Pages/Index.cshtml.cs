@@ -5,5 +5,5 @@ namespace BlueBox.Web.Pages;
 
 public sealed class IndexModel : PageModel
 {
-    public IActionResult OnGet() => RedirectToPage("/Inventory/Index");
+    public IActionResult OnGet() => RedirectToPage("/Overview");
 }

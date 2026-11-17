@@ -1,10 +1,10 @@
 # Demo and portfolio guide
 
-**Status:** demonstration plan. Milestone 1 provides the sign-in, catalog, inventory, movement, and activity flow. Manager editing, corrections, retirement actions, and OMDb scenarios below require Milestone 2. The walkthrough is not evidence that the teacher's SQL Server has been verified; see [development setup](development.md).
+**Status:** walkthrough for the implemented Milestone 1 and 2 features. Check the [current validation record](validation.md#verified-results) and latest PR #5 checks, then run the presentation on verified fake data in the intended Windows setup. The teacher-server walkthrough, live OMDb smoke check, and final screenshots remain review tasks; this guide is not proof they have been completed.
 
 ## Fake data plan
 
-Use two fictional warehouses (North Loop and West End), one manager, two staff members, and a small mix of movies and games. Include separate format entries for at least one title.
+The explicit `--seed-demo` command creates two fictional warehouses (North Loop and West End), one active manager (jordan.lee), one active staff member (avery.chen), one inactive staff member (sam.rivera), and six catalog entries. Moonlight Signal has separate Blu-ray/DVD entries; three games have separate platform formats. Set the shared initial demo password privately. See [initial data setup](development.md#3-choose-initial-data).
 
 Prepare balances that cover zero stock, a small quantity, and enough stock for ordinary movements. Establish opening quantities through recorded check-ins so inventory and movement history reconcile. Do not publish working passwords or connection credentials in the guide.
 
@@ -21,8 +21,9 @@ Prepare balances that cover zero stock, a small quantity, and enough stock for o
 | 7 | Sign in as manager and add a movie | Select an OMDb match and review returned metadata; item starts with zero stock |
 | 8 | Add a game or demonstrate unavailable movie metadata | Optional manual fields do not block saving |
 | 9 | Correct the mistaken check-out of 4 | Linked check-in of 4, required explanation, balance restored to 15 |
-| 10 | Attempt to archive the stocked item | Rejected because stock remains |
-| 11 | Archive a separate zero-stock item | Historical information stays accessible |
+| 10 | Reverse that correction from its own activity entry | One new linked check-out of 4; both earlier entries remain unchanged |
+| 11 | Attempt to archive the stocked item | Rejected because stock remains |
+| 12 | Archive a separate zero-stock item | Historical information stays accessible |
 
 The numeric examples assume no intervening movements. Use a fresh demo dataset or document actual starting balances before presenting.
 
@@ -37,7 +38,7 @@ The numeric examples assume no intervening movements. Use a fresh demo dataset o
 
 ## Portfolio presentation
 
-Once implemented, explain the business problem, walk through one normal movement and one rejected movement, then show the relational model and linked correction history. Emphasize decisions and verified behavior rather than the number of screens.
+For the presentation, explain the business problem, walk through one normal movement and one rejected movement, then show the relational model and linked correction history. Emphasize decisions and verified behavior rather than the number of screens.
 
 Suggested screenshot set after validation:
 
@@ -47,4 +48,8 @@ Suggested screenshot set after validation:
 - Activity history with a linked correction.
 - Item details with movie metadata.
 
-Only add a demo link, screenshots, test results, or implementation claims after they exist and have been verified. This is a fictional class/portfolio project, not a deployed business system.
+The [validation record](validation.md) contains verified test results. Add screenshots and a live demo link after the corresponding manual verification/deployment. This is a fictional class/portfolio project, not a deployed business system.
+
+For class hand-in, follow the [submission guide](submission.md) and include the requested `.slnx` with its project files. Public hosting follows grading and uses a separate fake-data database.
+
+When demonstrating editing, show that an item’s type/format become fixed after its first movement, that resetting a staff password ends its old session, and that saving the signed-in manager’s own account gives a clear sign-out notice.

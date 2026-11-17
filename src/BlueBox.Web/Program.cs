@@ -22,6 +22,9 @@ public partial class Program
         builder.Services.AddScoped<EmployeeRepository>();
         builder.Services.AddScoped<StockService>();
         builder.Services.AddScoped<InventoryQueries>();
+        builder.Services.AddScoped<AdministrationService>();
+        builder.Services.AddScoped<OverviewQueries>();
+        builder.Services.AddHttpClient<OmdbClient>(client => client.Timeout = TimeSpan.FromSeconds(5)).RemoveAllLoggers();
         builder.Services.AddScoped<EmployeeCookieEvents>();
         builder.Services.AddScoped<IPasswordHasher<Employee>, PasswordHasher<Employee>>();
         builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
@@ -38,6 +41,8 @@ public partial class Program
         builder.Services.AddRazorPages(options =>
         {
             options.Conventions.AuthorizeFolder("/");
+            options.Conventions.AuthorizeFolder("/Admin", "Manager");
+            options.Conventions.AuthorizePage("/Activity/Correct", "Manager");
             options.Conventions.AllowAnonymousToPage("/Account/Login");
         });
         var app = builder.Build();
@@ -67,7 +72,7 @@ public partial class Program
             context.Response.Headers.XContentTypeOptions = "nosniff";
             context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
             context.Response.Headers.XFrameOptions = "DENY";
-            context.Response.Headers.ContentSecurityPolicy = "default-src 'self';script-src 'self';style-src 'self';img-src 'self' data:;font-src 'self';connect-src 'self';frame-ancestors 'none';base-uri 'self';form-action 'self';";
+            context.Response.Headers.ContentSecurityPolicy = "default-src 'self';script-src 'self';style-src 'self';img-src 'self' https: data:;font-src 'self';connect-src 'self';frame-ancestors 'none';base-uri 'self';form-action 'self';";
             context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
             context.Response.Headers.CacheControl = "no-store";
             await next(context);
@@ -90,7 +95,7 @@ public partial class Program
         // It is a route name, not a credential; never publish database passwords.
         var route = app.Configuration["Database:RoutePrefix"] ?? "bluebox";
         if (!Regex.IsMatch(route, "^[A-Za-z0-9_-]{1,50}$", RegexOptions.CultureInvariant)
-            || new[] { "Inventory", "Catalog", "Activity", "Account", "Error", "api" }.Contains(route, StringComparer.OrdinalIgnoreCase))
+            || new[] { "Inventory", "Catalog", "Activity", "Account", "Admin", "Overview", "Error", "api" }.Contains(route, StringComparer.OrdinalIgnoreCase))
             throw new InvalidOperationException("Database:RoutePrefix must contain 1–50 letters, digits, underscores, or hyphens.");
         app.MapGet("/", () => Results.Redirect($"/{route}", permanent: false));
         app.MapGet($"/{route}", HandleRoot);
@@ -103,7 +108,7 @@ public partial class Program
     }
 
     private static IResult HandleRoot(HttpContext context) => Results.Redirect(
-        context.User.Identity?.IsAuthenticated == true ? "/Inventory" : "/Account/Login");
+        context.User.Identity?.IsAuthenticated == true ? "/Overview" : "/Account/Login");
 
     private static IResult HandleError(HttpContext context, ILogger<Program> logger)
     {

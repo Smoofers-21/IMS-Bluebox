@@ -1,6 +1,6 @@
-# Running and reviewing Milestone 1
+# Running and reviewing BlueBox
 
-Milestone 1 implements employee sign-in, read-only catalog/details, warehouse inventory, check-in/check-out with a live balance preview, and permanent activity history. Manager editing, corrections, OMDb, and the overview dashboard remain Milestone 2 work.
+Milestones 1 and 2 implement sign-in, catalog/warehouse browsing, ordinary stock movements, manager administration, linked correction chains, safe retirement, optional OMDb metadata, and the overview dashboard. Complete the verification steps below before final class/portfolio sign-off.
 
 ## Prerequisites
 
@@ -51,9 +51,9 @@ Instead of a connection string, you can set the starter template's four fields i
 }
 ```
 
-`RoutePrefix` is the starter's `/{username}` landing route; set it privately to the instructor-assigned route name if required. Application pages remain at `/Inventory`, `/Catalog`, and the other documented routes. Prefer the teacher's certificate trust configuration; the starter's certificate exception is not hardcoded into public source.
+`RoutePrefix` is the starter's `/{username}` landing route; set it privately to the instructor-assigned route name if required. The assigned landing route sends signed-in users to `/Overview`. Application pages include `/Overview`, `/Inventory`, `/Catalog`, `/Activity`, and manager-only `/Admin` pages. Prefer the teacher's certificate trust configuration; the starter's certificate exception is not hardcoded into public source.
 
-For this workspace, the supplied values were saved outside the checkout in a permission-restricted private file. They are not pushed to GitHub or loaded by default. `BLUEBOX_PRIVATE_CONFIG` can point to such a file when deliberately running locally. On your Windows PC, use Manage User Secrets with your own private values. No teacher connection is required for build/unit checks.
+`BLUEBOX_PRIVATE_CONFIG` can point to a private JSON file outside the checkout; when set, the app loads that file explicitly. It is a local configuration option, not a file included in the repository or submission. On Windows, use Manage User Secrets or private environment variables. Build/unit checks need no teacher connection.
 
 ## 3. Choose initial data
 
@@ -85,7 +85,7 @@ dotnet run --project src/BlueBox.Web -- --create-manager
 
 This adds the first manager only; it refuses when an active manager already exists or the requested username is taken. It does not change existing passwords, stock, or history. Remove the Bootstrap values afterward. Existing employee password hashes must be compatible with ASP.NET Core `PasswordHasher<Employee>`; placeholder/plaintext values cannot sign in.
 
-Account administration is scheduled for Milestone 2. There is no public registration.
+After setup, active managers use Manage → Employees to create/edit accounts or set a new password. A blank edit password preserves the hash. Password/username changes revoke existing sessions on their next request. Self-edits warn and explicitly sign out the current user. There is no public registration.
 
 ## 4. Build and run
 
@@ -104,7 +104,7 @@ The loopback URLs above are local development addresses, not a public portfolio 
 
 ## 5. Review the workflow
 
-1. Sign in as staff; browse Catalog and Inventory.
+1. Sign in as staff; review Overview totals, then browse Catalog and Inventory.
 2. Select a warehouse/item, check in a positive quantity, and compare the preview with the saved balance.
 3. Check out available stock and find the attributed entry in Activity.
 4. Attempt to check out too much; verify stock/history remain unchanged.
@@ -113,9 +113,19 @@ The loopback URLs above are local development addresses, not a public portfolio 
 7. In Activity, use Older/Newer to browse history in pages of 100; search and location/movement filters stay applied. Changing filters starts again at page 1.
 8. In a disposable test database, exercise competing check-outs and confirm no overselling or lost history.
 
+The overview uses one READ COMMITTED batch and derives its total units from the returned warehouse totals. Counts and recent movements can advance independently without a serializable dashboard read transaction.
+
 Stock updates use a serializable SQL Server transaction and a conditional balance update. Log insertion and balance update commit together; a failure rolls both back. SQL Server deadlock victims receive a bounded whole-operation retry. Client-side previews are informational; the server rechecks access, record status, and stock.
 
-Milestone 1 shows activity times explicitly in **UTC**. Central-time display from the mockups can be added during Milestone 2 refinement.
+Activity and overview display **Central time (CST/CDT)**, trying the IANA and Windows identifiers. If neither is available, values and captions explicitly show **UTC**. UTC remains in the database and HTML machine-readable timestamps. Follow the [Milestone 2 review](milestone-2.md) for manager/correction/OMDb checks.
+
+## Optional OMDb setup
+
+Store `Omdb:ApiKey` in Manage User Secrets (or `Omdb__ApiKey` as an environment variable). Never paste a working key into tracked files or browser code. A missing key does not prevent startup or manual item creation.
+
+In Manage → Catalog items, choose Movie, enter a title, and select Search movies. Choose the correct title/year, review the returned name/poster URL/age rating, choose the format, and save. `Rated` is the age classification, not the IMDb review score. Games use manual fields. Unavailable posters/ratings remain empty. Poster URLs must use HTTPS; external images load directly in the browser with no referrer. The application never fetches arbitrary poster URLs on the server.
+
+OMDb calls use a fixed HTTPS endpoint, a five-second timeout, no automatic retry, and disabled HTTP-client URL logging to keep the API key out of request logs. Provider errors show a manual-entry message. The tests use a fake provider and do not consume a real API key or quota.
 
 ## Automated checks
 
@@ -123,20 +133,26 @@ Milestone 1 shows activity times explicitly in **UTC**. Central-time display fro
 dotnet test BlueBox.sln --configuration Release
 ```
 
-By default, tests run **unit and anonymous-routing checks** without database access. Real SQL Server integration tests are explicitly skipped when `BLUEBOX_TEST_SQLSERVER` is unset. There is no SQLite backend or Entity Framework dependency. The earlier 27-test SQLite result does not validate this ADO.NET refactor.
+By default, tests run **unit and anonymous-routing checks** without database access. Real SQL Server integration tests are explicitly skipped when `BLUEBOX_TEST_SQLSERVER` is unset. There is no SQLite backend or Entity Framework dependency. The [validation record](validation.md) reports the current ADO.NET results.
 
 For SQL Server validation, set `BLUEBOX_TEST_SQLSERVER` privately to a connection string for a **disposable test instance with permission to create databases**, then run the same command. The test harness connects to `master`, creates uniquely named `BlueBoxTest_<guid>` databases, applies the sanitized supplied current-schema reference, and drops only those generated databases afterward. **Do not use the teacher's shared server for this mode.** The database named in the input connection string is not used as the test database.
 
-GitHub Actions runs both modes. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
+GitHub Actions runs both modes on pull requests and pushes to main. Newer commits cancel older runs within the same PR/ref; feature pushes no longer start duplicate push/PR runs. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
 
 ## Remaining verification
 
-Local unit/routing test results do not prove the teacher's server is reachable or SQL Server locking behaves identically. Record the SQL Server CI result and complete the Windows/teacher-database walkthrough before merging the implementation PR. No remote database was modified by preparing this application.
+See the [validation record](validation.md) and [PR #5’s latest checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks) for results of the current implementation. Baseline run/commit counts are preserved as historical evidence, not proof of later code changes. PR #5 includes the external-review fixes and already contains PR #4; merge #5 directly after its checks pass.
+
+The remaining tasks are the Windows/teacher-database walkthrough, a live OMDb lookup with a private key, and final fake-data screenshots. Disposable SQL Server CI does not verify the teacher’s network, permissions, or certificate setup. No teacher database was accessed or modified from this workspace.
+
+## Class submission
+
+If the instructor requires `.slnx`, pull the merged `main` and follow the [submission guide](submission.md). It covers `dotnet sln BlueBox.sln migrate`, explicit `.slnx` build/test commands, the required project/build/database files, and ZIP verification. The repository and CI continue to use `BlueBox.sln`.
 
 ## Troubleshooting
 
 - **503 / temporarily unavailable:** inspect server-side logs for connection/schema errors. The browser intentionally does not receive raw database exceptions.
-- **Invalid column name:** confirm `001` was applied to the exact database in the connection string.
+- **Invalid column name:** compare the connected database with the supplied current-schema reference. The latest teacher DDL is already aligned; use `001` only for an older baseline after reviewing its missing columns/constraints.
 - **Unable to sign in:** check active status and a compatible password hash; a SQL row with a placeholder hash is not a usable login.
 - **Unsupported SDK:** install the version pinned in `global.json` and update the editor if necessary.
 - **No rows:** populate the empty demo database or provide existing fake records; the app does not seed automatically on startup.

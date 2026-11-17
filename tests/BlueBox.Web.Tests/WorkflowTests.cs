@@ -177,6 +177,6 @@ public sealed class WorkflowTests
     public async Task ReturnUrlCannotRedirectToAnExternalSite()
     {
         await using var app = new TestApp(); await app.InitializeAsync(); using var client = app.Browser();
-        Assert.Equal("/Inventory", (await TestApp.LoginAsync(client, returnUrl: "https://example.com")).Headers.Location?.OriginalString);
+        Assert.Equal("/Overview", (await TestApp.LoginAsync(client, returnUrl: "https://example.com")).Headers.Location?.OriginalString);
     }
 }

@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -48,7 +52,44 @@ jobs:
       - name: Run real SQL Server integration suite
         run: |
           test -n "$BLUEBOX_TEST_SQLSERVER"
-          dotnet test BlueBox.sln --no-restore --configuration Release
+          dotnet test BlueBox.sln --no-restore --configuration Release --logger "trx;LogFileName=sql-server.trx" --results-directory TestResults/SqlServer
+      - name: Summarize SQL Server test results
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          report = Path('TestResults/SqlServer/sql-server.trx')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('## SQL Server test results\n\n')
+              if not report.exists():
+                  summary.write('No test report was produced; check setup/build steps.\n')
+              else:
+                  ns = {'t': 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'}
+                  root = ET.parse(report).getroot()
+                  counters = root.find('t:ResultSummary/t:Counters', ns)
+                  if counters is not None:
+                      summary.write(f"Passed: {counters.get('passed')}; failed: {counters.get('failed')}; total: {counters.get('total')}.\n\n")
+                      print(f"::notice::SQL Server suite: {counters.get('passed')} passed, {counters.get('failed')} failed, {counters.get('total')} total.")
+                  for test in root.findall('t:Results/t:UnitTestResult', ns):
+                      if test.get('outcome') != 'Failed':
+                          continue
+                      name = test.get('testName', 'Test')
+                      message = test.findtext('t:Output/t:ErrorInfo/t:Message', '', ns)
+                      stack = test.findtext('t:Output/t:ErrorInfo/t:StackTrace', '', ns)
+                      details = (name + '\n' + message + '\n' + stack)[:6000].replace('```', "'''")
+                      summary.write('```text\n' + details + '\n```\n\n')
+                      annotation = details.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                      print('::error::' + annotation)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sql-server-test-results
+          path: TestResults/SqlServer/*.trx
+          if-no-files-found: ignore
       - name: Remove disposable SQL Server
         if: always()
         run: docker rm -f bluebox-sql

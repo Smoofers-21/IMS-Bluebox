@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Collections.Concurrent;
 using BlueBox.Web.Data;
 using BlueBox.Web.Models;
 using BlueBox.Web.Services;
@@ -37,10 +38,13 @@ public sealed partial class TestApp : WebApplicationFactory<Program>
     private readonly string? sqlServer = Environment.GetEnvironmentVariable("BLUEBOX_TEST_SQLSERVER");
     private readonly string databaseName = $"BlueBoxTest_{Guid.NewGuid():N}";
     private bool databaseCreated;
+    public ConcurrentQueue<Exception> ServerErrors { get; } = new();
+    public ConcurrentQueue<string> DatabaseWarnings { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
+        builder.ConfigureLogging(logging => logging.AddProvider(new ExceptionCapture(ServerErrors, DatabaseWarnings)));
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<SqlDatabase>();
@@ -49,6 +53,22 @@ public sealed partial class TestApp : WebApplicationFactory<Program>
                 ["ConnectionStrings:BlueBox"] = sqlServer is null ? "Server=localhost;Database=Unused;Integrated Security=True" : ConnectionString(databaseName)
             }).Build(), sp.GetRequiredService<ILogger<SqlDatabase>>()));
         });
+    }
+
+    private sealed class ExceptionCapture(ConcurrentQueue<Exception> errors, ConcurrentQueue<string> warnings) : ILoggerProvider
+    {
+        public ILogger CreateLogger(string categoryName) => new CaptureLogger(errors, warnings, categoryName);
+        public void Dispose() { }
+        private sealed class CaptureLogger(ConcurrentQueue<Exception> errors, ConcurrentQueue<string> warnings, string category) : ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+            public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Warning;
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                if (exception is not null && logLevel >= LogLevel.Error) errors.Enqueue(exception);
+                if (logLevel == LogLevel.Warning && category == typeof(SqlDatabase).FullName) warnings.Enqueue(formatter(state, exception));
+            }
+        }
     }
 
     public async Task InitializeAsync(string? password = null)

@@ -30,6 +30,8 @@ public sealed record InventoryRow
 public sealed record ActivityRow
 {
     public long Id { get; init; }
+    public long? CorrectsId { get; init; }
+    public long? CorrectionId { get; init; }
     public string Name { get; init; } = "";
     public string Format { get; init; } = "";
     public string Location { get; init; } = "";
@@ -103,7 +105,8 @@ public sealed class InventoryQueries(SqlDatabase database)
         using var command = SearchCommand("""
             SELECT t.transaction_id, i.item_name, i.media_format, l.location_name,
                 t.transaction_type, t.quantity_moved, e.first_name + ' ' + e.last_name AS employee_name,
-                t.transaction_datetime, t.notes
+                t.transaction_datetime, t.notes, t.corrects_transaction_id,
+                (SELECT MIN(c.transaction_id) FROM dbo.TRANSACTION_LOG AS c WHERE c.corrects_transaction_id=t.transaction_id) AS correction_id
             FROM dbo.TRANSACTION_LOG AS t
             INNER JOIN dbo.ITEM AS i ON i.item_id = t.item_id
             INNER JOIN dbo.LOCATION AS l ON l.location_id = t.location_id
@@ -121,6 +124,8 @@ public sealed class InventoryQueries(SqlDatabase database)
         var rows = table.AsEnumerable().Take(ActivityPageSize).Select(r => new ActivityRow
         {
             Id = r.Field<long>("transaction_id"),
+            CorrectsId = r.Field<long?>("corrects_transaction_id"),
+            CorrectionId = r.Field<long?>("correction_id"),
             Name = r.Field<string>("item_name")!,
             Format = r.Field<string>("media_format")!,
             Location = r.Field<string>("location_name")!,
@@ -131,6 +136,39 @@ public sealed class InventoryQueries(SqlDatabase database)
             Notes = r.Field<string?>("notes")
         }).ToList();
         return new ActivityPage(rows, table.Rows.Count > ActivityPageSize);
+    }
+
+    public async Task<ActivityRow?> MovementAsync(long id, CancellationToken ct = default)
+    {
+        using var command = new SqlCommand("""
+            SELECT t.transaction_id, t.transaction_type, t.quantity_moved, t.transaction_datetime, t.notes,
+                t.corrects_transaction_id, i.item_name, i.media_format, l.location_name,
+                e.first_name + ' ' + e.last_name AS employee_name,
+                (SELECT MIN(c.transaction_id) FROM dbo.TRANSACTION_LOG AS c WHERE c.corrects_transaction_id=t.transaction_id) AS correction_id
+            FROM dbo.TRANSACTION_LOG AS t
+            INNER JOIN dbo.ITEM AS i ON i.item_id=t.item_id
+            INNER JOIN dbo.LOCATION AS l ON l.location_id=t.location_id
+            INNER JOIN dbo.EMPLOYEE AS e ON e.employee_id=t.employee_id
+            WHERE t.transaction_id=@id;
+            """);
+        command.Parameters.Add(SqlDatabase.Parameter("@id", SqlDbType.BigInt, id));
+        var table = await database.FillDataTableViaCommandAsync(command, ct);
+        if (table.Rows.Count == 0) return null;
+        var r = table.Rows[0];
+        return new ActivityRow
+        {
+            Id = r.Field<long>("transaction_id"),
+            CorrectsId = r.Field<long?>("corrects_transaction_id"),
+            CorrectionId = r.Field<long?>("correction_id"),
+            Name = r.Field<string>("item_name")!,
+            Format = r.Field<string>("media_format")!,
+            Location = r.Field<string>("location_name")!,
+            Direction = r.Field<string>("transaction_type")!,
+            Quantity = r.Field<int>("quantity_moved"),
+            Employee = r.Field<string>("employee_name")!,
+            Time = DateTime.SpecifyKind(r.Field<DateTime>("transaction_datetime"), DateTimeKind.Utc),
+            Notes = r.Field<string?>("notes")
+        };
     }
 
     public async Task<List<Location>> LocationsAsync(bool activeOnly = false, CancellationToken ct = default)
@@ -150,6 +188,13 @@ public sealed class InventoryQueries(SqlDatabase database)
     {
         var table = await database.FillDataTableViaSqlAsync("SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item_status FROM dbo.ITEM WHERE item_status = 'ACTIVE' ORDER BY item_name, media_format, item_id;", ct);
         return table.AsEnumerable().Select(ReadItem).ToList();
+    }
+
+    public async Task<bool> ItemHasHistoryAsync(int id, CancellationToken ct = default)
+    {
+        using var command = new SqlCommand("SELECT TOP (1) transaction_id FROM dbo.TRANSACTION_LOG WHERE item_id=@id;");
+        command.Parameters.Add(SqlDatabase.Parameter("@id", SqlDbType.Int, id));
+        return (await database.FillDataTableViaCommandAsync(command, ct)).Rows.Count > 0;
     }
 
     public async Task<Item?> ItemAsync(int id, CancellationToken ct = default)

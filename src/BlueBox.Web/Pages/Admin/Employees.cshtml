@@ -1,0 +1,19 @@
+@page "{id:int?}"
+@model BlueBox.Web.Pages.Admin.EmployeesModel
+@{ ViewData["Title"] = "Manage employees"; ViewData["Section"] = "Admin"; }
+<partial name="_Navigation" />
+<div class="page-heading"><div><p class="eyebrow">MANAGER TOOLS</p><h1>Manage employees</h1><p class="muted">Create accounts, assign roles, and manage employee access.</p></div></div>
+@if(TempData["Success"] is string message) { <div class="notice" role="status">@message</div> }
+<div class="admin-grid"><section class="panel"><h2>@(Model.Id.HasValue ? $"Edit employee #{Model.Id}" : "New employee")</h2>
+@if(Model.Id?.ToString(System.Globalization.CultureInfo.InvariantCulture) == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value) { <p class="notice">You are editing your own account. Saving will sign you out; you can sign in again only if the account remains active.</p> }
+<form method="post"><div asp-validation-summary="All" class="validation" role="alert"></div>
+<div class="form-row"><div><label asp-for="Input.FirstName">First name</label><input asp-for="Input.FirstName" maxlength="50" required /></div><div><label asp-for="Input.LastName">Last name</label><input asp-for="Input.LastName" maxlength="50" required /></div></div>
+<label asp-for="Input.Username">Username</label><input asp-for="Input.Username" maxlength="50" autocomplete="off" required />
+<label asp-for="Input.Password">@(Model.Id.HasValue ? "New password (optional)" : "Password")</label><input asp-for="Input.Password" type="password" minlength="12" maxlength="256" autocomplete="new-password" />
+<p class="help">12–256 characters. Leave blank when editing to keep the existing password.</p>
+<div class="form-row"><div><label asp-for="Input.Role">Role</label><select asp-for="Input.Role"><option value="STAFF">Staff</option><option value="MANAGER">Manager</option></select></div><div><label asp-for="Input.Status">Status</label><select asp-for="Input.Status"><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option><option value="TERMINATED">Terminated</option></select></div></div>
+<p class="help">Keep at least one active manager. Role and status changes take effect on the employee’s next request.</p>
+<div class="form-actions"><a class="button" asp-page="Employees" asp-route-id="">New employee</a><button class="button primary" type="submit">Save employee</button></div></form></section>
+<section class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Employee</th><th>Role / status</th><th>Action</th></tr></thead><tbody>
+@foreach(var e in Model.Employees) { <tr><td>@e.FirstName @e.LastName<small class="cell-subtitle">#@e.Id · @e.Username</small></td><td>@e.Role<small class="cell-subtitle">@e.Status</small></td><td><a class="button small" asp-page="Employees" asp-route-id="@e.Id">Edit</a></td></tr> }
+</tbody></table></div></section></div>

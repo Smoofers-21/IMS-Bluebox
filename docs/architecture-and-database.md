@@ -1,6 +1,6 @@
 # Architecture and database design
 
-**Status:** Milestone 1 uses this structure for sign-in, catalog, inventory, movements, and activity. The teacher's database connectivity/deployed schema remain unverified. Current implementation and test instructions are in the [development guide](development.md).
+**Status:** Milestones 1 and 2 use this structure for inventory, manager tools, linked corrections, and optional movie metadata. Disposable SQL Server verification passed for the supplied schema; the actual teacher-server connection and Windows walkthrough remain pending. See the [validation record](validation.md). Current implementation and test instructions are in the [development guide](development.md).
 
 ## Application structure
 
@@ -39,7 +39,7 @@ erDiagram
     TRANSACTION_LOG o|--o{ TRANSACTION_LOG : referenced_by_correction
 ```
 
-The self-reference above is a proposed addition, not present in the supplied creation script. Its cardinality shows what a simple optional foreign key permits; the final application policy for repeated corrections is still to be settled.
+The current supplied schema includes this self-reference. The foreign key alone permits multiple references; the application serializes corrections against the selected entry and permits one child reversal per entry. Corrections can themselves be corrected, forming a chain. No existing history row is edited or deleted.
 
 Current Inventory resolves the item/location relationship. It has no direct foreign key to Employee or Transaction Log. A movement's item and location identify the balance it affects.
 
@@ -55,15 +55,15 @@ The supplied creation script already defines:
 - Foreign keys with `ON DELETE NO ACTION`.
 - UTC timestamp defaults using `SYSUTCDATETIME()`.
 
-The script requires a real expected database name and refuses to create tables when any of the five target names already exists. It is a fresh-schema installer, not an incremental update script. Inspect existing tables and prepare targeted changes later; do not drop/recreate populated tables to apply these plans.
+The script requires a real expected database name and refuses to create tables when any of the five target names already exists. It is a fresh-schema installer, not an incremental update script. Inspect existing tables before any targeted upgrade; do not drop/recreate populated tables to apply the design.
 
-## Planned schema adjustments
+## Schema alignment
 
-Field names below are proposals; changes have not been applied.
+The latest supplied DDL already includes the columns and constraints below. Milestone 2 uses them without requiring another migration.
 
-A [reviewable SQL migration](../database/README.md) now implements these schema additions for the supplied baseline. Its presence does not mean it has been applied to the teacher's database.
+The [one-time SQL migration](../database/README.md) exists for older baseline installations. Do not rerun it on the already-aligned teacher database.
 
-| Table | Proposed change | Reason |
+| Table | Aligned field / rule | Reason |
 | --- | --- | --- |
 | ITEM | Nullable `poster_url` | OMDb movie poster or manually entered game poster |
 | ITEM | Nullable `age_rating` | Age classification, such as PG-13 or T; not a review score |
@@ -74,7 +74,7 @@ A [reviewable SQL migration](../database/README.md) now implements these schema 
 | LOCATION | Constrain status to ACTIVE/INACTIVE | Match warehouse availability rules |
 | ITEM | Reject blank `media_format` | Enforce the required catalog field |
 
-Choose suitable field lengths during implementation. Store movie metadata on the selected catalog item; do not require an external API call every time the catalog is opened. Consider a provider identifier if needed to retain the selected OMDb match, but it is not an agreed required field yet.
+Runtime validation follows the supplied field lengths. Store movie metadata on the selected catalog item; do not require an external API call every time the catalog is opened. The selected movie’s title and optional metadata are stored on the catalog item; the lookup match identifier is not an additional database field.
 
 ## Inventory consistency
 
@@ -95,9 +95,20 @@ The nonnegative quantity constraint is a useful final guard, but does not by its
 - No application workflow directly edits stock balances or edits/deletes log entries.
 - Foreign keys prevent deleting referenced parents; they do not prevent direct deletion of the log itself. Application/database access must respect history retention.
 - Corrections retain both entries and reference the same item/location with the opposite direction and a required explanation.
+- After any movement exists for an item, its type/format are fixed; create a new entry for another edition. Name and optional metadata remain editable.
 - Archive an item only when all its warehouse balances are zero. Deactivate a warehouse only when all its balances are zero.
 - Manager authorization and zero-stock checks must be enforced when saving, not just when showing a button.
 
 ## Configuration
 
-Configure SQL Server connectivity and the OMDb key securely outside source control using the configuration mechanism selected for the application. No credentials, connection string, or API key is included in these documents. Database access and OMDb access remain unverified until implementation setup.
+Configure `ConnectionStrings:BlueBox` (or the instructor’s `Database` fields) and optional `Omdb:ApiKey` through User Secrets, private environment variables, or an explicitly selected private JSON file. The [development guide](development.md) contains placeholders, not working credentials. Disposable SQL Server tests have passed; a live OMDb key and the teacher-server Windows setup still require manual verification.
+
+Retirement/edit operations acquire an exclusive lock on the parent item/warehouse before reading balances. This avoids the parent/child lock-upgrade cycle with ordinary movements. The existing indexed serializable movement transaction remains in place; no new index or database isolation setting is required.
+
+The overview explicitly uses READ COMMITTED in one batch. Total units are derived from the returned warehouse totals, so those numbers agree without a serializable dashboard transaction. Counts and recent movements may reflect later commits. Password-hash upgrades compare the previously verified hash before writing; cookie credential stamps revoke old sessions after password/username changes without adding a column.
+
+## Poster and encoding decisions
+
+Manual HTTPS poster URLs remain supported for movies and games. Only managers can save them; the browser loads images with no referrer. CSP allows HTTPS image sources, and the server never fetches arbitrary poster URLs. Restricting all posters to the movie CDN would exclude the agreed manual game posters.
+
+VARCHAR fields retain the supplied database/column code page. Unlike NVARCHAR poster URLs, they do not guarantee arbitrary Unicode storage on a non-Unicode code page. Full Unicode support is a separate schema/encoding decision with the teacher; an assumed Windows-1252 or ASCII-only policy is not imposed here.

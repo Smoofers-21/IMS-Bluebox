@@ -12,22 +12,30 @@ The project owner combined the original six stages into two milestones. Use smal
 - [x] Check-in/check-out with balance previews and server-side validation.
 - [x] Atomic stock/history writes and permanent activity browsing.
 - [x] Instructor-template ADO.NET data access, unit/routing checks, and a real SQL Server integration path.
-- [ ] Verify the GitHub Actions SQL Server run.
+- [x] Verify the Milestone 1 GitHub Actions SQL Server run ([run 44132304808](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44132304808), commit `02e60c5`).
 - [ ] Owner applies/reviews DDL and tests on Windows against the teacher's database.
 
 **Complete when:** an employee can sign in, find warehouse stock, record movements, and review accurate history on the intended SQL Server setup. Invalid movements leave inventory unchanged. Unit/routing results alone do not close this milestone.
 
 ## Milestone 2 — Complete demo and portfolio project
 
-- [ ] Manager tools for items, employee accounts, and locations.
-- [ ] Last-active-manager protection when managing accounts.
-- [ ] Manager corrections linked to originals, with a settled repeated-correction policy.
-- [ ] Zero-stock item/location retirement rules.
-- [ ] Server-side OMDb movie lookup, manual fallback, optional posters and age ratings.
-- [ ] Overview dashboard and visual refinement against the supplied mockups.
-- [ ] Full feature testing, screenshots, and final class/demo documentation.
+PR #5 consolidates the application, documentation, and schema-compatible external-review fixes. It already contains PR #4 and can be merged directly after its latest checks pass. See the [review resolution](pr4-review-resolution.md), [current CI](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks), and [validation record](validation.md); teacher-server verification remains separate.
 
-**Complete when:** agreed features work together and the system is ready for class review and GitHub presentation.
+- [x] Manager tools for items, employee accounts, and locations.
+- [x] Last-active-manager protection when managing accounts.
+- [x] Manager corrections linked to originals, with a settled repeated-correction policy.
+- [x] Zero-stock item/location retirement rules.
+- [x] Server-side OMDb movie lookup, manual fallback, optional posters and age ratings.
+- [x] Overview dashboard and responsive layouts following the existing visual style.
+- [x] Verify Milestone 2 unit/routing and real SQL Server tests, including competing manager edits, retirement, corrections, password reset protection, and dashboard consistency; publish reports in GitHub Actions.
+- [ ] Finish Windows/class walkthrough, live OMDb smoke check, and final fake-data screenshots.
+- [x] Update setup, requirements, correction policy, and demo/review documentation.
+
+**Complete when:** agreed features pass automated checks and the Windows/teacher-server walkthrough, live OMDb check, and final demonstration materials are complete. Source and CI are ready for owner review; final class sign-off is still pending.
+
+## Class hand-in
+
+After the owner merges consolidated PR #5, pull `main`, verify the Windows setup, and use the [submission guide](submission.md) to generate `.slnx` when required. Keep project folders and required build files alongside the solution. Submit according to the instructor’s requested format.
 
 ## After grading — Public deployment
 

@@ -15,7 +15,7 @@ public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Emp
     [BindProperty, Required, StringLength(PasswordPolicy.MaximumLength)] public string Password { get; set; } = "";
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
 
-    public IActionResult OnGet() => User.Identity?.IsAuthenticated == true ? RedirectToPage("/Inventory/Index") : Page();
+    public IActionResult OnGet() => User.Identity?.IsAuthenticated == true ? RedirectToPage("/Overview") : Page();
 
     public async Task<IActionResult> OnPostAsync(CancellationToken ct)
     {
@@ -36,10 +36,15 @@ public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Emp
         }
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
-            employee.PasswordHash = hasher.HashPassword(employee, Password);
-            await employees.UpdateHashAsync(employee.EmployeeId, employee.PasswordHash, ct);
+            var upgraded = hasher.HashPassword(employee, Password);
+            if (!await employees.TryUpgradeHashAsync(employee.EmployeeId, employee.PasswordHash, upgraded, ct))
+            {
+                ModelState.AddModelError("", "Your account changed while signing in. Please try again.");
+                return Page();
+            }
+            employee.PasswordHash = upgraded;
         }
         await HttpContext.SignInAsync(EmployeeCookieEvents.CreatePrincipal(employee));
-        return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl!) : RedirectToPage("/Inventory/Index");
+        return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl!) : RedirectToPage("/Overview");
     }
 }
