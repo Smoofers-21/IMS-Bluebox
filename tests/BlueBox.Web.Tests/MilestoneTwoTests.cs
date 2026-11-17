@@ -4,6 +4,7 @@ using BlueBox.Web.Data;
 using BlueBox.Web.Models;
 using BlueBox.Web.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -49,6 +50,18 @@ public sealed class MilestoneTwoTests
     {
         Assert.Equal("Jan 15, 2026 · 06:00 CST", DisplayTime.Central(new DateTime(2026, 1, 15, 12, 0, 0, DateTimeKind.Utc)));
         Assert.Equal("Jul 15, 2026 · 07:00 CDT", DisplayTime.Central(new DateTime(2026, 7, 15, 12, 0, 0, DateTimeKind.Utc)));
+    }
+
+    [Fact]
+    public async Task AdministrationLinksResolveForNewAndExistingRecords()
+    {
+        await using var app = new TestApp(); using var client = app.Browser();
+        var links = app.Services.GetRequiredService<LinkGenerator>();
+        foreach (var name in new[] { "Items", "Employees", "Locations" })
+        {
+            Assert.Equal($"/Admin/{name}", links.GetPathByPage($"/Admin/{name}", values: new { id = (int?)null }));
+            Assert.Equal($"/Admin/{name}/1", links.GetPathByPage($"/Admin/{name}", values: new { id = 1 }));
+        }
     }
 
     [SqlServerFact]
@@ -98,6 +111,42 @@ public sealed class MilestoneTwoTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(0, await app.ScalarAsync("SELECT COUNT(*) FROM dbo.ITEM WHERE item_name='Missing type'"));
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsync("/Admin/Items", new FormUrlEncodedContent(new Dictionary<string, string>()))).StatusCode);
+
+        var id = Convert.ToInt32(await app.ScalarAsync("SELECT item_id FROM dbo.ITEM WHERE item_name='HTTP test movie'"), System.Globalization.CultureInfo.InvariantCulture);
+        response = await client.PostAsync($"/Admin/Items/{id}", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["Input.Name"] = "HTTP edited movie", ["Input.Type"] = "MOVIE", ["Input.Format"] = "Blu-ray", ["Input.Status"] = "ACTIVE",
+            ["__RequestVerificationToken"] = await TestApp.TokenAsync(client, $"/Admin/Items/{id}")
+        }));
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal($"/Admin/Items/{id}", response.Headers.Location!.OriginalString);
+        Assert.Equal("Blu-ray", await app.ScalarAsync($"SELECT media_format FROM dbo.ITEM WHERE item_id={id}"));
+
+        response = await client.PostAsync("/Admin/Locations", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["Input.Name"] = "HTTP warehouse", ["Input.Address"] = "Demo address", ["Input.Status"] = "ACTIVE",
+            ["__RequestVerificationToken"] = await TestApp.TokenAsync(client, "/Admin/Locations")
+        }));
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal(1, await app.ScalarAsync("SELECT COUNT(*) FROM dbo.LOCATION WHERE location_name='HTTP warehouse'"));
+
+        response = await client.PostAsync("/Admin/Employees", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["Input.FirstName"] = "HTTP", ["Input.LastName"] = "Staff", ["Input.Username"] = "http.staff", ["Input.Role"] = "STAFF", ["Input.Status"] = "ACTIVE", ["Input.Password"] = "tiny",
+            ["__RequestVerificationToken"] = await TestApp.TokenAsync(client, "/Admin/Employees")
+        }));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var invalid = await response.Content.ReadAsStringAsync();
+        Assert.Contains("minimum length of 12", invalid); Assert.DoesNotContain("value=\"tiny\"", invalid);
+        Assert.Equal(0, await app.ScalarAsync("SELECT COUNT(*) FROM dbo.EMPLOYEE WHERE username='http.staff'"));
+        response = await client.PostAsync("/Admin/Employees", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["Input.FirstName"] = "HTTP", ["Input.LastName"] = "Staff", ["Input.Username"] = "http.staff", ["Input.Role"] = "STAFF", ["Input.Status"] = "ACTIVE", ["Input.Password"] = TestApp.Password,
+            ["__RequestVerificationToken"] = await TestApp.TokenAsync(client, "/Admin/Employees")
+        }));
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        using var createdEmployee = app.Browser();
+        Assert.Equal(HttpStatusCode.Redirect, (await TestApp.LoginAsync(createdEmployee, "http.staff")).StatusCode);
     }
 
     [SqlServerFact]

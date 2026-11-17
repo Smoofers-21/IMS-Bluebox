@@ -31,7 +31,7 @@ public sealed class ItemsModel(AdministrationService admin, InventoryQueries que
         if (ModelState.IsValid)
         {
             var result = await admin.SaveItemAsync(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!, System.Globalization.CultureInfo.InvariantCulture), Id, Input, ct);
-            if (result.Success) { TempData["Success"] = result.Message; return RedirectToPage(new { Id, Search }); }
+            if (result.Success) { TempData["Success"] = result.Message; return RedirectToPage("/Admin/Items", new { Id, Search }); }
             ModelState.AddModelError("", result.Message);
         }
         Items = await queries.CatalogAsync(Search, null, ct);
