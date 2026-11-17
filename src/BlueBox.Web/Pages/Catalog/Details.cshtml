@@ -1,0 +1,14 @@
+@page "{id:int}"
+@model BlueBox.Web.Pages.Catalog.DetailsModel
+@{
+    ViewData["Title"] = Model.Item.ItemName;
+    ViewData["Section"] = "Catalog";
+}
+<a class="back-link" asp-page="Index">← Item catalog</a>
+<div class="page-heading"><div><p class="eyebrow">ITEM #@Model.Item.ItemId</p><h1>@Model.Item.ItemName</h1><p class="muted">@Model.Item.MediaFormat · @(Model.Item.ItemType == "GAME" ? "Game" : "Movie")</p></div><span class="badge">@Model.Item.ItemStatus</span></div>
+<div class="detail-grid"><section class="panel poster-panel"><h2>Poster</h2><div class="poster-placeholder"><span aria-hidden="true">@(Model.Item.ItemType == "GAME" ? "◇" : "◒")</span><strong>@Model.Item.ItemName</strong><small>@Model.Item.MediaFormat</small></div><p class="help">Poster lookup arrives in Milestone 2.</p></section><div>
+<section class="panel"><h2>Item information</h2><dl class="info-grid"><div><dt>Type</dt><dd>@Model.Item.ItemType</dd></div><div><dt>Media format</dt><dd>@Model.Item.MediaFormat</dd></div><div><dt>Age rating</dt><dd>@(Model.Item.AgeRating ?? "Not provided")</dd></div></dl></section>
+<section class="panel spaced"><h2>Stock by location</h2><div class="table-scroll"><table><thead><tr><th>Warehouse</th><th>On hand</th><th>Action</th></tr></thead><tbody>
+@foreach (var row in Model.Balances) { <tr><td>@row.Location @if(row.LocationStatus != "ACTIVE") { <span class="badge">Inactive</span> }</td><td><strong>@row.OnHand</strong></td><td>@if(Model.Item.ItemStatus == "ACTIVE" && row.LocationStatus == "ACTIVE") { <a class="button small" asp-page="/Inventory/Move" asp-route-itemId="@Model.Item.ItemId" asp-route-locationId="@row.LocationId">Move stock</a> }</td></tr> }
+</tbody></table></div>@if(Model.Balances.Count == 0) { <p class="muted">No warehouse locations have been added.</p> }</section>
+</div></div>

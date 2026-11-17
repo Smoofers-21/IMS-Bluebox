@@ -1,6 +1,6 @@
 # Demo and portfolio guide
 
-**Status:** proposed demonstration. There is no running application or captured screenshot in this repository yet. These scenarios are a future walkthrough, not evidence of passing tests.
+**Status:** demonstration plan. Milestone 1 provides the sign-in, catalog, inventory, movement, and activity flow. Manager editing, corrections, retirement actions, and OMDb scenarios below require Milestone 2. The walkthrough is not evidence that the teacher's SQL Server has been verified; see [development setup](development.md).
 
 ## Fake data plan
 

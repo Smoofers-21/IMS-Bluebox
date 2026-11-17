@@ -4,6 +4,11 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # User-specific files
+# Local application configuration (use user secrets for credentials).
+**/appsettings.Development.json
+**/appsettings.*.Local.json
+**/TestResults/
+
 *.rsuser
 *.suo
 *.user
