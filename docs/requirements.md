@@ -1,6 +1,6 @@
 # Requirements and acceptance criteria
 
-**Status:** requirements baseline. Milestone 1 implements sign-in, browsing, ordinary movements, and history; manager administration, corrections, OMDb, and dashboard behavior remain Milestone 2 work. Local unit/routing checks do not replace the pending SQL Server integration and Windows review. See the [roadmap](roadmap.md).
+**Status:** Milestone 1 and Milestone 2 features are implemented for review. Milestone 1's disposable SQL Server CI passed; Milestone 2 CI and Windows/teacher-server verification remain separate completion gates. See the [roadmap](roadmap.md).
 
 ## Permissions
 
@@ -48,7 +48,7 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | VIEW-02 | Review activity | Users can inspect employee-attributed movements and filter by item, movement type, and location; older results remain accessible through 100-row pages. |
 | VIEW-03 | Summarize inventory | Dashboard totals agree with the underlying inventory data and show recent movements. |
 
-The final policy for repeated corrections and corrections that cannot be fully reversed because stock has already moved remains an implementation-planning detail. Do not claim those cases are resolved by the current schema.
+Correction policy: each movement may have one full opposite-movement correction. A correction can itself be reversed once, producing a chain rather than multiple children for the same movement. Partial reversals are not supported. The server derives the item, warehouse, direction, and quantity from the selected entry; the manager supplies an explanation. Inactive/archived records must be reactivated by a manager before correction, and insufficient stock blocks reversal. All original entries remain unchanged.
 
 ## Data and security expectations
 
@@ -61,6 +61,6 @@ The final policy for repeated corrections and corrections that cannot be fully r
 
 ## Validation approach
 
-Focused integration tests now exercise sign-in, permissions, stock updates, rollback, competing check-outs, and the HTTP workflow. Correction links and OMDb fallback will be validated in Milestone 2. See the [development guide](development.md#automated-checks) for the distinction between local checks and SQL Server integration validation.
+Focused integration tests now exercise sign-in, permissions, stock updates, rollback, competing check-outs, and the HTTP workflow. Milestone 2 adds tests for manager HTTP authorization, last-manager protection, retirement, correction chains/rollback/concurrency, dashboard totals, and OMDb fallback using a fake HTTP provider. A configured live OMDb account still requires a manual smoke check. See the [development guide](development.md#automated-checks) for the distinction between local checks and SQL Server integration validation.
 
 See the [demo guide](demo-guide.md) for the presentation sequence.

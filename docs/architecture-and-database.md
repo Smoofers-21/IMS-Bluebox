@@ -1,6 +1,6 @@
 # Architecture and database design
 
-**Status:** Milestone 1 uses this structure for sign-in, catalog, inventory, movements, and activity. The teacher's database connectivity/deployed schema remain unverified. Current implementation and test instructions are in the [development guide](development.md).
+**Status:** Milestones 1 and 2 use this structure for inventory, manager tools, linked corrections, and optional movie metadata. The teacher's database connectivity/deployed schema remain unverified. Current implementation and test instructions are in the [development guide](development.md).
 
 ## Application structure
 
@@ -39,7 +39,7 @@ erDiagram
     TRANSACTION_LOG o|--o{ TRANSACTION_LOG : referenced_by_correction
 ```
 
-The self-reference above is a proposed addition, not present in the supplied creation script. Its cardinality shows what a simple optional foreign key permits; the final application policy for repeated corrections is still to be settled.
+The current supplied schema includes this self-reference. The foreign key alone permits multiple references; the application serializes corrections against the selected entry and permits one child reversal per entry. Corrections can themselves be corrected, forming a chain. No existing history row is edited or deleted.
 
 Current Inventory resolves the item/location relationship. It has no direct foreign key to Employee or Transaction Log. A movement's item and location identify the balance it affects.
 
@@ -57,13 +57,13 @@ The supplied creation script already defines:
 
 The script requires a real expected database name and refuses to create tables when any of the five target names already exists. It is a fresh-schema installer, not an incremental update script. Inspect existing tables and prepare targeted changes later; do not drop/recreate populated tables to apply these plans.
 
-## Planned schema adjustments
+## Schema alignment
 
-Field names below are proposals; changes have not been applied.
+The latest supplied DDL already includes the columns and constraints below. Milestone 2 uses them without requiring another migration.
 
-A [reviewable SQL migration](../database/README.md) now implements these schema additions for the supplied baseline. Its presence does not mean it has been applied to the teacher's database.
+The [one-time SQL migration](../database/README.md) exists for older baseline installations. Do not rerun it on the already-aligned teacher database.
 
-| Table | Proposed change | Reason |
+| Table | Aligned field / rule | Reason |
 | --- | --- | --- |
 | ITEM | Nullable `poster_url` | OMDb movie poster or manually entered game poster |
 | ITEM | Nullable `age_rating` | Age classification, such as PG-13 or T; not a review score |
@@ -74,7 +74,7 @@ A [reviewable SQL migration](../database/README.md) now implements these schema 
 | LOCATION | Constrain status to ACTIVE/INACTIVE | Match warehouse availability rules |
 | ITEM | Reject blank `media_format` | Enforce the required catalog field |
 
-Choose suitable field lengths during implementation. Store movie metadata on the selected catalog item; do not require an external API call every time the catalog is opened. Consider a provider identifier if needed to retain the selected OMDb match, but it is not an agreed required field yet.
+Runtime validation follows the supplied field lengths. Store movie metadata on the selected catalog item; do not require an external API call every time the catalog is opened. Consider a provider identifier if needed to retain the selected OMDb match, but it is not an agreed required field yet.
 
 ## Inventory consistency
 

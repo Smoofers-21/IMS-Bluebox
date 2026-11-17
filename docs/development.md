@@ -1,6 +1,6 @@
-# Running and reviewing Milestone 1
+# Running and reviewing BlueBox
 
-Milestone 1 implements employee sign-in, read-only catalog/details, warehouse inventory, check-in/check-out with a live balance preview, and permanent activity history. Manager editing, corrections, OMDb, and the overview dashboard remain Milestone 2 work.
+Milestones 1 and 2 implement sign-in, catalog/warehouse browsing, ordinary stock movements, manager administration, linked correction chains, safe retirement, optional OMDb metadata, and the overview dashboard. Complete the verification steps below before final class/portfolio sign-off.
 
 ## Prerequisites
 
@@ -85,7 +85,7 @@ dotnet run --project src/BlueBox.Web -- --create-manager
 
 This adds the first manager only; it refuses when an active manager already exists or the requested username is taken. It does not change existing passwords, stock, or history. Remove the Bootstrap values afterward. Existing employee password hashes must be compatible with ASP.NET Core `PasswordHasher<Employee>`; placeholder/plaintext values cannot sign in.
 
-Account administration is scheduled for Milestone 2. There is no public registration.
+After setup, active managers use Manage → Employees to create/edit accounts or set a new password. Existing passwords remain unchanged when the password field is blank. There is no public registration.
 
 ## 4. Build and run
 
@@ -104,7 +104,7 @@ The loopback URLs above are local development addresses, not a public portfolio 
 
 ## 5. Review the workflow
 
-1. Sign in as staff; browse Catalog and Inventory.
+1. Sign in as staff; review Overview totals, then browse Catalog and Inventory.
 2. Select a warehouse/item, check in a positive quantity, and compare the preview with the saved balance.
 3. Check out available stock and find the attributed entry in Activity.
 4. Attempt to check out too much; verify stock/history remain unchanged.
@@ -115,7 +115,15 @@ The loopback URLs above are local development addresses, not a public portfolio 
 
 Stock updates use a serializable SQL Server transaction and a conditional balance update. Log insertion and balance update commit together; a failure rolls both back. SQL Server deadlock victims receive a bounded whole-operation retry. Client-side previews are informational; the server rechecks access, record status, and stock.
 
-Milestone 1 shows activity times explicitly in **UTC**. Central-time display from the mockups can be added during Milestone 2 refinement.
+Activity and overview display **Central time (CST/CDT)**, with UTC retained in the database and HTML machine-readable timestamps. Follow the [Milestone 2 review](milestone-2.md) for manager/correction/OMDb checks.
+
+## Optional OMDb setup
+
+Store `Omdb:ApiKey` in Manage User Secrets (or `Omdb__ApiKey` as an environment variable). Never paste a working key into tracked files or browser code. A missing key does not prevent startup or manual item creation.
+
+In Manage → Catalog items, choose Movie, enter a title, and select Search movies. Choose the correct title/year, review the returned name/poster URL/age rating, choose the format, and save. `Rated` is the age classification, not the IMDb review score. Games use manual fields. Unavailable posters/ratings remain empty. Poster URLs must use HTTPS; external images load directly in the browser with no referrer. The application never fetches arbitrary poster URLs on the server.
+
+OMDb calls use a fixed HTTPS endpoint, a five-second timeout, no automatic retry, and disabled HTTP-client URL logging to keep the API key out of request logs. Provider errors show a manual-entry message. The tests use a fake provider and do not consume a real API key or quota.
 
 ## Automated checks
 
@@ -127,11 +135,11 @@ By default, tests run **unit and anonymous-routing checks** without database acc
 
 For SQL Server validation, set `BLUEBOX_TEST_SQLSERVER` privately to a connection string for a **disposable test instance with permission to create databases**, then run the same command. The test harness connects to `master`, creates uniquely named `BlueBoxTest_<guid>` databases, applies the sanitized supplied current-schema reference, and drops only those generated databases afterward. **Do not use the teacher's shared server for this mode.** The database named in the input connection string is not used as the test database.
 
-GitHub Actions runs both modes. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
+GitHub Actions runs both modes for feature-branch pushes, pull requests, and main; concurrent duplicate builds for the same branch are canceled. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
 
 ## Remaining verification
 
-Local unit/routing test results do not prove the teacher's server is reachable or SQL Server locking behaves identically. Record the SQL Server CI result and complete the Windows/teacher-database walkthrough before merging the implementation PR. No remote database was modified by preparing this application.
+Local unit/routing test results do not prove the teacher's server is reachable or SQL Server locking behaves identically. Milestone 1 passed [its SQL Server CI run](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44132304808). Verify the new Milestone 2 run and complete the Windows/teacher-database walkthrough for final sign-off. No remote database was modified by preparing this application.
 
 ## Troubleshooting
 

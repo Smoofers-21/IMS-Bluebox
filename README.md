@@ -2,7 +2,7 @@
 
 A browser-based internal inventory management project for a fictional movie and game rental business. BlueBox lets employees track warehouse quantities, record stock movements, and review who changed inventory and when.
 
-**Status: Milestone 1 implemented; SQL Server and Windows/teacher-database review pending.** Sign-in, read-only catalog, inventory, stock movements, and activity history are implemented. Local unit/routing checks run without a database; real SQL Server integration checks require a disposable test instance. Manager administration, corrections, OMDb integration, and the dashboard are Milestone 2 work.
+**Status: Milestone 2 implementation in review.** Manager administration, linked corrections (including corrections of corrections), zero-stock retirement, OMDb lookup, and the overview dashboard extend the working inventory system. Milestone 1 passed GitHub's disposable SQL Server checks. Milestone 2 SQL Server checks and the Windows/teacher-database walkthrough must be verified before final sign-off.
 
 ## Project at a glance
 
@@ -13,7 +13,7 @@ A browser-based internal inventory management project for a fictional movie and 
 | Application | C# / .NET 10 with ASP.NET Core Razor Pages |
 | Database | Microsoft SQL Server, managed through SQL Server Management Studio (SSMS) |
 | Data access | ADO.NET (`SqlConnection`, `SqlCommand`, `DataTable`), based on the instructor’s template |
-| External integration | OMDb for movie posters and age classifications (Milestone 2) |
+| External integration | OMDb for optional movie posters and age classifications |
 | Inventory model | Quantities per catalog item and warehouse location |
 | Users | Staff and managers |
 
@@ -27,7 +27,16 @@ A browser-based internal inventory management project for a fictional movie and 
 - Permanent movement history identifying the item, warehouse, employee, quantity, and time.
 - Private demo-data seeding and first-manager setup commands.
 
-Milestone 2 adds manager corrections and administration, OMDb movie lookup, and the overview dashboard. The [roadmap](docs/roadmap.md) tracks both milestones and verification still needed.
+## Milestone 2 capabilities
+
+- Manager screens for catalog items, employee accounts, and warehouses.
+- Last-active-manager protection, including competing account changes.
+- Full opposite-movement corrections with explanations and permanent links; a correction can itself be corrected once.
+- Zero-stock checks before item archival or warehouse deactivation.
+- Server-side OMDb search and movie selection, optional posters/age ratings, and manual fallback.
+- Overview totals, stock by warehouse, recent activity, and labeled Central time.
+
+The [roadmap](docs/roadmap.md) distinguishes implementation from final verification. See the [Milestone 2 review guide](docs/milestone-2.md) for decisions and review steps.
 
 **Scope:** warehouse stock only. Customer rentals, payments, late fees, streaming, and kiosk inventory are outside the initial project.
 
@@ -35,7 +44,8 @@ Milestone 2 adds manager corrections and administration, OMDb movie lookup, and 
 
 ```mermaid
 flowchart LR
-    A[Employee signs in] --> B[Warehouse inventory]
+    A[Employee signs in] --> O[Overview]
+    O --> B[Warehouse inventory]
     B --> C[Find item and warehouse]
     C --> D[Choose check-in or check-out]
     D --> E[Enter quantity and preview balance]
@@ -77,7 +87,7 @@ dotnet run --project src/BlueBox.Web
 
 Open `BlueBox.sln` in a Visual Studio release supporting .NET 10 on Windows, or use VS Code/the CLI on Mac. No database is created, altered, or seeded automatically when the website starts. The teacher's database has not been accessed or changed from this workspace.
 
-The connection string belongs in user secrets or an environment variable. Never commit credentials, real employee data, or API keys. OMDb is not called in Milestone 1.
+The connection string belongs in user secrets or an environment variable. Never commit credentials, real employee data, or API keys. Configure `Omdb:ApiKey` privately to enable movie lookup; manual entry works without a key.
 
 ## Validation
 
@@ -85,10 +95,10 @@ The connection string belongs in user secrets or an environment variable. Never 
 dotnet test BlueBox.sln --configuration Release
 ```
 
-The default suite runs unit/routing checks and explicitly skips database integration checks when no test instance is configured. SQL Server mode applies the supplied current schema to generated disposable databases and runs the real HTTP/stock workflow. GitHub Actions is configured for both paths. See [test setup and limits](docs/development.md#automated-checks).
+The default suite runs unit/routing checks and explicitly skips database integration checks when no test instance is configured. SQL Server mode applies the supplied current schema to generated disposable databases and runs the real HTTP/stock workflow. GitHub Actions runs both paths for feature-branch pushes, pull requests, and main. See [test setup and limits](docs/development.md#automated-checks).
 
 The Windows walkthrough against the teacher's SQL Server remains required before calling the milestone complete. Do not use the shared teacher server for automated tests that create/drop test databases.
 
 ## Portfolio focus
 
-The project demonstrates relational database design, employee authentication, role policy, transactional stock updates, and audit history in C#. External API integration is scheduled for Milestone 2. Verified SQL Server results, screenshots, and a public demo link will be added as those capabilities are validated and deployed.
+The project demonstrates relational database design, employee authentication, role policy, transactional stock updates, and audit history in C#. It also includes server-side external API integration, manager administration, and linked audit corrections. Screenshots and a public demo link will be added after final validation and deployment.

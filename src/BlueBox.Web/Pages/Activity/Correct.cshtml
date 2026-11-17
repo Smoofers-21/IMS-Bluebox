@@ -1,0 +1,19 @@
+@page "{id:long}"
+@model BlueBox.Web.Pages.Activity.CorrectModel
+@{ ViewData["Title"] = "Correct movement"; ViewData["Section"] = "Activity"; }
+<a class="back-link" asp-page="Index">← Activity log</a>
+<div class="page-heading"><div><p class="eyebrow">MANAGER CORRECTION</p><h1>Movement #@Model.Movement.Id</h1><p class="muted">Record a full opposite movement and keep the original history.</p></div></div>
+<div class="movement-grid"><section class="panel">
+<h2>@Model.Movement.Name · @Model.Movement.Format</h2>
+<dl class="info-grid"><div><dt>Warehouse</dt><dd>@Model.Movement.Location</dd></div><div><dt>Original movement</dt><dd>@Model.Movement.Direction · @Model.Movement.Quantity units</dd></div><div><dt>Recorded by</dt><dd>@Model.Movement.Employee</dd></div></dl>
+<p class="help spaced">@BlueBox.Web.Models.DisplayTime.Central(Model.Movement.Time) · @(Model.Movement.Notes ?? "No notes")</p>
+@if(Model.Movement.CorrectsId.HasValue) { <p>This entry corrects <a class="back-link" asp-page="Correct" asp-route-id="@Model.Movement.CorrectsId">movement #@Model.Movement.CorrectsId</a>.</p> }
+@if(Model.Movement.CorrectionId.HasValue) {
+    <div class="notice">Already corrected by <a asp-page="Correct" asp-route-id="@Model.Movement.CorrectionId">movement #@Model.Movement.CorrectionId</a>. Open that entry to reverse the correction.</div>
+} else {
+    <form method="post"><div asp-validation-summary="All" class="validation" role="alert"></div>
+    <label asp-for="Explanation">Required explanation</label><textarea asp-for="Explanation" maxlength="255" rows="3" required></textarea>
+    <p class="help">This will record @(Model.Movement.Direction == "CHECK IN" ? "a check-out" : "a check-in") of @Model.Movement.Quantity units at @Model.Movement.Location. The item and warehouse must be active, and stock cannot go below zero.</p>
+    <div class="form-actions"><a class="button" asp-page="Index">Cancel</a><button class="button primary" type="submit">Confirm correction</button></div></form>
+}
+</section><aside class="panel"><h2>Permanent history</h2><p class="muted">Each movement can be reversed once. A correction can also be reversed by opening its entry. Every link keeps the full quantity, employee, time, and explanation.</p></aside></div>

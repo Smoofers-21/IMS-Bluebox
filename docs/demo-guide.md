@@ -1,6 +1,6 @@
 # Demo and portfolio guide
 
-**Status:** demonstration plan. Milestone 1 provides the sign-in, catalog, inventory, movement, and activity flow. Manager editing, corrections, retirement actions, and OMDb scenarios below require Milestone 2. The walkthrough is not evidence that the teacher's SQL Server has been verified; see [development setup](development.md).
+**Status:** walkthrough for the implemented Milestone 1 and 2 features. Run it on fake data after SQL Server CI succeeds. The teacher-server walkthrough, live OMDb smoke check, and final screenshots remain review tasks; this guide is not proof they have been completed.
 
 ## Fake data plan
 
@@ -21,8 +21,9 @@ Prepare balances that cover zero stock, a small quantity, and enough stock for o
 | 7 | Sign in as manager and add a movie | Select an OMDb match and review returned metadata; item starts with zero stock |
 | 8 | Add a game or demonstrate unavailable movie metadata | Optional manual fields do not block saving |
 | 9 | Correct the mistaken check-out of 4 | Linked check-in of 4, required explanation, balance restored to 15 |
-| 10 | Attempt to archive the stocked item | Rejected because stock remains |
-| 11 | Archive a separate zero-stock item | Historical information stays accessible |
+| 10 | Reverse that correction from its own activity entry | One new linked check-out of 4; both earlier entries remain unchanged |
+| 11 | Attempt to archive the stocked item | Rejected because stock remains |
+| 12 | Archive a separate zero-stock item | Historical information stays accessible |
 
 The numeric examples assume no intervening movements. Use a fresh demo dataset or document actual starting balances before presenting.
 

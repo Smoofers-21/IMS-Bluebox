@@ -15,7 +15,7 @@ public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Emp
     [BindProperty, Required, StringLength(PasswordPolicy.MaximumLength)] public string Password { get; set; } = "";
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
 
-    public IActionResult OnGet() => User.Identity?.IsAuthenticated == true ? RedirectToPage("/Inventory/Index") : Page();
+    public IActionResult OnGet() => User.Identity?.IsAuthenticated == true ? RedirectToPage("/Overview") : Page();
 
     public async Task<IActionResult> OnPostAsync(CancellationToken ct)
     {
@@ -40,6 +40,6 @@ public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Emp
             await employees.UpdateHashAsync(employee.EmployeeId, employee.PasswordHash, ct);
         }
         await HttpContext.SignInAsync(EmployeeCookieEvents.CreatePrincipal(employee));
-        return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl!) : RedirectToPage("/Inventory/Index");
+        return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl!) : RedirectToPage("/Overview");
     }
 }

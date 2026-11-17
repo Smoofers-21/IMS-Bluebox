@@ -85,7 +85,7 @@ The recorded employee comes from the signed-in account. The server supplies the 
 
 ### Correct an error
 
-A manager selects the mistaken transaction and records an opposite movement with a required explanation and a reference to the original. The original entry remains unchanged. Corrections also obey stock rules; an insufficient-stock correction cannot force a negative balance. More complex correction cases will be resolved before implementation, without silently rewriting history.
+A manager selects the mistaken transaction and records an opposite movement with a required explanation and a reference to the original. The original entry remains unchanged. Corrections also obey stock rules; an insufficient-stock correction cannot force a negative balance. Each entry can be fully reversed once; a correction may itself be reversed once, creating a chain. Partial corrections and duplicate reversals of the same entry are rejected. Archived items or inactive warehouses must be reactivated before recording a correction.
 
 ### Retire records and manage accounts
 
@@ -116,6 +116,6 @@ Where source documents differ, use the agreed decisions here: quantity-based inv
 - Confirm compatible .NET and SQL Server versions and obtain connection configuration securely.
 - Inspect the actual existing tables before preparing non-destructive schema changes.
 - Choose the data access/authentication approach and reconcile it with the employee schema.
-- Settle correction safeguards, including repeated corrections, before implementing them.
+- Correction policy settled during Milestone 2: one full reversal per entry, including correction entries, with stock and active-record checks.
 
 See the [requirements](requirements.md), [database notes](architecture-and-database.md), and [roadmap](roadmap.md) for the next level of detail.

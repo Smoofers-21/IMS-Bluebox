@@ -3,7 +3,11 @@ name: Build and test
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, 'feature/**']
+
+concurrency:
+  group: build-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

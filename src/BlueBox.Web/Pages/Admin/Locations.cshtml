@@ -1,0 +1,16 @@
+@page "{id:int?}"
+@model BlueBox.Web.Pages.Admin.LocationsModel
+@{ ViewData["Title"] = "Manage warehouses"; ViewData["Section"] = "Admin"; }
+<partial name="_Navigation" />
+<div class="page-heading"><div><p class="eyebrow">MANAGER TOOLS</p><h1>Manage warehouses</h1><p class="muted">Keep warehouse information and availability up to date.</p></div></div>
+@if(TempData["Success"] is string message) { <div class="notice" role="status">@message</div> }
+<div class="admin-grid"><section class="panel"><h2>@(Model.Id.HasValue ? $"Edit warehouse #{Model.Id}" : "New warehouse")</h2>
+<form method="post"><input type="hidden" asp-for="Id" /><div asp-validation-summary="All" class="validation" role="alert"></div>
+<label asp-for="Input.Name">Warehouse name</label><input asp-for="Input.Name" maxlength="100" required />
+<label asp-for="Input.Address">Address</label><input asp-for="Input.Address" maxlength="255" required />
+<label asp-for="Input.Status">Status</label><select asp-for="Input.Status"><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select>
+<p class="help">Deactivation requires zero stock. Historical movements remain available.</p>
+<div class="form-actions"><a class="button" asp-page="Locations" asp-route-id="">New warehouse</a><button class="button primary" type="submit">Save warehouse</button></div></form></section>
+<section class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Warehouse</th><th>Status</th><th>Action</th></tr></thead><tbody>
+@foreach(var l in Model.Locations) { <tr><td>@l.LocationName<small class="cell-subtitle">#@l.LocationId · @l.Address</small></td><td>@l.LocationStatus</td><td><a class="button small" asp-page="Locations" asp-route-id="@l.LocationId">Edit</a></td></tr> }
+</tbody></table></div></section></div>

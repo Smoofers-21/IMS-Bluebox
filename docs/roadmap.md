@@ -12,20 +12,23 @@ The project owner combined the original six stages into two milestones. Use smal
 - [x] Check-in/check-out with balance previews and server-side validation.
 - [x] Atomic stock/history writes and permanent activity browsing.
 - [x] Instructor-template ADO.NET data access, unit/routing checks, and a real SQL Server integration path.
-- [ ] Verify the GitHub Actions SQL Server run.
+- [x] Verify the Milestone 1 GitHub Actions SQL Server run ([run 44132304808](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44132304808), commit `02e60c5`).
 - [ ] Owner applies/reviews DDL and tests on Windows against the teacher's database.
 
 **Complete when:** an employee can sign in, find warehouse stock, record movements, and review accurate history on the intended SQL Server setup. Invalid movements leave inventory unchanged. Unit/routing results alone do not close this milestone.
 
 ## Milestone 2 — Complete demo and portfolio project
 
-- [ ] Manager tools for items, employee accounts, and locations.
-- [ ] Last-active-manager protection when managing accounts.
-- [ ] Manager corrections linked to originals, with a settled repeated-correction policy.
-- [ ] Zero-stock item/location retirement rules.
-- [ ] Server-side OMDb movie lookup, manual fallback, optional posters and age ratings.
-- [ ] Overview dashboard and visual refinement against the supplied mockups.
-- [ ] Full feature testing, screenshots, and final class/demo documentation.
+Implementation is on `feature/milestone-2`. Checked features describe code delivered for review; SQL Server CI and the teacher-server walkthrough still gate completion.
+
+- [x] Manager tools for items, employee accounts, and locations.
+- [x] Last-active-manager protection when managing accounts.
+- [x] Manager corrections linked to originals, with a settled repeated-correction policy.
+- [x] Zero-stock item/location retirement rules.
+- [x] Server-side OMDb movie lookup, manual fallback, optional posters and age ratings.
+- [x] Overview dashboard and responsive layouts following the existing visual style.
+- [ ] Verify Milestone 2 SQL Server CI, finish Windows/class walkthrough, and capture final screenshots.
+- [x] Update setup, requirements, correction policy, and demo/review documentation.
 
 **Complete when:** agreed features work together and the system is ready for class review and GitHub presentation.
 

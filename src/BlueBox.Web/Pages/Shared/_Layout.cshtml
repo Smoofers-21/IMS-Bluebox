@@ -14,14 +14,16 @@
     <div class="workspace-label">BLUEBOX <span>/</span> INVENTORY WORKSPACE</div>
     <div class="app-shell">
         <header class="app-header">
-            <a class="brand" asp-page="/Inventory/Index"><span class="brand-mark" aria-hidden="true"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="m12 3 9 5v8l-9 5-9-5V8z"/><path d="m3 8 9 5 9-5M12 13v8M7.5 5.5l9 5"/></svg></span> BlueBox</a>
+            <a class="brand" asp-page="/Overview"><span class="brand-mark" aria-hidden="true"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="m12 3 9 5v8l-9 5-9-5V8z"/><path d="m3 8 9 5 9-5M12 13v8M7.5 5.5l9 5"/></svg></span> BlueBox</a>
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <nav aria-label="Main navigation">
+                    <a asp-page="/Overview" aria-current="@(section == "Overview" ? "page" : null)">Overview</a>
                     <a asp-page="/Catalog/Index" aria-current="@(section == "Catalog" ? "page" : null)">Catalog</a>
                     <a asp-page="/Inventory/Index" aria-current="@(section == "Inventory" ? "page" : null)">Inventory</a>
                     <a asp-page="/Inventory/Move" aria-current="@(section == "Move" ? "page" : null)">Move stock</a>
                     <a asp-page="/Activity/Index" aria-current="@(section == "Activity" ? "page" : null)">Activity</a>
+                    @if(User.IsInRole("MANAGER")) { <a asp-page="/Admin/Items" asp-route-id="" aria-current="@(section == "Admin" ? "page" : null)">Manage</a> }
                 </nav>
                 <div class="account">
                     <span><strong>@User.Identity.Name</strong><small>@(User.IsInRole("MANAGER") ? "Manager" : "Staff")</small></span>
