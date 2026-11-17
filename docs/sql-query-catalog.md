@@ -48,111 +48,119 @@ SELECT COUNT(*) FROM dbo.EMPLOYEE WITH (HOLDLOCK) WHERE employee_id = @actor AND
 
 ## 6. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L36)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L37)
 
 ```sql
-SELECT item_id FROM dbo.ITEM WITH (UPDLOCK, HOLDLOCK) WHERE item_id = @id;
+SELECT item_type, media_format FROM dbo.ITEM WITH (XLOCK, HOLDLOCK) WHERE item_id = @id;
 ```
 
 ## 7. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L41)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L47)
+
+```sql
+SELECT TOP (1) transaction_id FROM dbo.TRANSACTION_LOG WHERE item_id=@id;
+```
+
+## 8. AdministrationService
+
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L54)
 
 ```sql
 SELECT COUNT(*) FROM dbo.CURRENT_INVENTORY WITH (HOLDLOCK) WHERE item_id = @id AND quantity_on_hand <> 0;
 ```
 
-## 8. AdministrationService
+## 9. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L47)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L60)
 
 ```sql
 UPDATE dbo.ITEM SET item_name=@name, item_type=@type, media_format=@format, poster_url=@poster, age_rating=@rating, item_status=@status WHERE item_id=@id;
 ```
 
-## 9. AdministrationService
+## 10. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L49)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L62)
 
 ```sql
 INSERT INTO dbo.ITEM (item_name, item_type, media_format, poster_url, age_rating, item_status) VALUES (@name, @type, @format, @poster, @rating, @status);
 ```
 
-## 10. AdministrationService
-
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L69)
-
-```sql
-SELECT location_id FROM dbo.LOCATION WITH (UPDLOCK, HOLDLOCK) WHERE location_id=@id;
-```
-
 ## 11. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L74)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L82)
+
+```sql
+SELECT location_id FROM dbo.LOCATION WITH (XLOCK, HOLDLOCK) WHERE location_id=@id;
+```
+
+## 12. AdministrationService
+
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L87)
 
 ```sql
 SELECT COUNT(*) FROM dbo.CURRENT_INVENTORY WITH (HOLDLOCK) WHERE location_id=@id AND quantity_on_hand <> 0;
 ```
 
-## 12. AdministrationService
+## 13. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L80)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L93)
 
 ```sql
 UPDATE dbo.LOCATION SET location_name=@name, address=@address, location_status=@status WHERE location_id=@id;
 ```
 
-## 13. AdministrationService
+## 14. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L82)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L95)
 
 ```sql
 INSERT INTO dbo.LOCATION (location_name, address, location_status) VALUES (@name, @address, @status);
 ```
 
-## 14. AdministrationService
+## 15. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L102)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L115)
 
 ```sql
 SELECT COUNT(*) FROM dbo.EMPLOYEE WITH (UPDLOCK, HOLDLOCK);
 ```
 
-## 15. AdministrationService
+## 16. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L107)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L120)
 
 ```sql
 SELECT COUNT(*) FROM dbo.EMPLOYEE WHERE employee_id=@id;
 ```
 
-## 16. AdministrationService
+## 17. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L110)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L123)
 
 ```sql
 SELECT COUNT(*) FROM dbo.EMPLOYEE WHERE employment_status='ACTIVE' AND access_role='MANAGER' AND employee_id<>@id;
 ```
 
-## 17. AdministrationService
+## 18. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L114)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L127)
 
 ```sql
 UPDATE dbo.EMPLOYEE SET first_name=@first, last_name=@last, username=@username, access_role=@role,
     employment_status=@status, password_hash=COALESCE(@hash, password_hash) WHERE employee_id=@id;
 ```
 
-## 18. AdministrationService
+## 19. AdministrationService
 
-Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L117)
+Source: [src/BlueBox.Web/Services/AdministrationService.cs](../src/BlueBox.Web/Services/AdministrationService.cs#L130)
 
 ```sql
 INSERT INTO dbo.EMPLOYEE (first_name, last_name, username, access_role, employment_status, password_hash)
 VALUES (@first, @last, @username, @role, @status, @hash);
 ```
 
-## 19. DemoSeeder
+## 20. DemoSeeder
 
 Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L16)
 
@@ -164,7 +172,7 @@ SELECT (SELECT COUNT_BIG(*) FROM dbo.EMPLOYEE WITH (UPDLOCK,HOLDLOCK))
     + (SELECT COUNT_BIG(*) FROM dbo.TRANSACTION_LOG WITH (UPDLOCK,HOLDLOCK));
 ```
 
-## 20. DemoSeeder
+## 21. DemoSeeder
 
 Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L33)
 
@@ -173,7 +181,7 @@ INSERT INTO dbo.EMPLOYEE (first_name,last_name,username,password_hash,access_rol
 OUTPUT INSERTED.employee_id VALUES (@first,@last,@username,@hash,@role,@status);
 ```
 
-## 21. DemoSeeder
+## 22. DemoSeeder
 
 Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L45)
 
@@ -182,7 +190,7 @@ INSERT INTO dbo.LOCATION (location_name,address,location_status)
 OUTPUT INSERTED.location_id VALUES (@name,@address,'ACTIVE');
 ```
 
-## 22. DemoSeeder
+## 23. DemoSeeder
 
 Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L61)
 
@@ -191,7 +199,7 @@ INSERT INTO dbo.ITEM (item_name,item_type,media_format,age_rating,item_status)
 OUTPUT INSERTED.item_id VALUES (@name,@type,@format,@rating,'ACTIVE');
 ```
 
-## 23. DemoSeeder
+## 24. DemoSeeder
 
 Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L71)
 
@@ -203,7 +211,7 @@ IF @quantity > 0
     VALUES (@employee,@item,@location,'CHECK IN',@quantity,SYSUTCDATETIME(),'Opening demonstration stock');
 ```
 
-## 24. InventoryQueries
+## 25. InventoryQueries
 
 Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L52)
 
@@ -218,7 +226,7 @@ GROUP BY i.item_id, i.item_name, i.item_type, i.media_format, i.age_rating, i.it
 ORDER BY i.item_name, i.media_format, i.item_id;
 ```
 
-## 25. InventoryQueries
+## 26. InventoryQueries
 
 Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L76)
 
@@ -233,7 +241,7 @@ WHERE (@search = '' OR CHARINDEX(@search, i.item_name) > 0 OR TRY_CONVERT(int, @
 ORDER BY i.item_name, l.location_name, i.media_format, i.item_id, l.location_id;
 ```
 
-## 26. InventoryQueries
+## 27. InventoryQueries
 
 Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L105)
 
@@ -252,7 +260,7 @@ ORDER BY t.transaction_datetime DESC, t.transaction_id DESC
 OFFSET @offset ROWS FETCH NEXT @take ROWS ONLY;
 ```
 
-## 27. InventoryQueries
+## 28. InventoryQueries
 
 Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L143)
 
@@ -268,7 +276,7 @@ INNER JOIN dbo.EMPLOYEE AS e ON e.employee_id=t.employee_id
 WHERE t.transaction_id=@id;
 ```
 
-## 28. InventoryQueries
+## 29. InventoryQueries
 
 Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L176)
 
@@ -276,7 +284,7 @@ Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Servic
 SELECT location_id, location_name, address, location_status FROM dbo.LOCATION WHERE @active = 0 OR location_status = 'ACTIVE' ORDER BY location_name, location_id;
 ```
 
-## 29. InventoryQueries
+## 30. InventoryQueries
 
 Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L189)
 
@@ -284,23 +292,31 @@ Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Servic
 SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item_status FROM dbo.ITEM WHERE item_status = 'ACTIVE' ORDER BY item_name, media_format, item_id;
 ```
 
-## 30. InventoryQueries
+## 31. InventoryQueries
 
 Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L195)
+
+```sql
+SELECT TOP (1) transaction_id FROM dbo.TRANSACTION_LOG WHERE item_id=@id;
+```
+
+## 32. InventoryQueries
+
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L202)
 
 ```sql
 SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item_status FROM dbo.ITEM WHERE item_id = @id;
 ```
 
-## 31. InventoryQueries
+## 33. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L203)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L210)
 
 ```sql
 SELECT quantity_on_hand FROM dbo.CURRENT_INVENTORY WHERE item_id = @item AND location_id = @location;
 ```
 
-## 32. ManagerBootstrap
+## 34. ManagerBootstrap
 
 Source: [src/BlueBox.Web/Services/ManagerBootstrap.cs](../src/BlueBox.Web/Services/ManagerBootstrap.cs#L17)
 
@@ -309,7 +325,7 @@ SELECT COUNT_BIG(*) FROM dbo.EMPLOYEE WITH (UPDLOCK, HOLDLOCK)
 WHERE (access_role = 'MANAGER' AND employment_status = 'ACTIVE') OR username = @username;
 ```
 
-## 33. ManagerBootstrap
+## 35. ManagerBootstrap
 
 Source: [src/BlueBox.Web/Services/ManagerBootstrap.cs](../src/BlueBox.Web/Services/ManagerBootstrap.cs#L24)
 
@@ -318,19 +334,19 @@ INSERT INTO dbo.EMPLOYEE (first_name, last_name, username, password_hash, access
 VALUES ('BlueBox', 'Manager', @username, @hash, 'MANAGER', 'ACTIVE');
 ```
 
-## 34. OverviewQueries
+## 36. OverviewQueries
 
-Source: [src/BlueBox.Web/Services/OverviewQueries.cs](../src/BlueBox.Web/Services/OverviewQueries.cs#L14)
+Source: [src/BlueBox.Web/Services/OverviewQueries.cs](../src/BlueBox.Web/Services/OverviewQueries.cs#L17)
 
 ```sql
-SELECT COALESCE((SELECT SUM(CAST(quantity_on_hand AS bigint)) FROM dbo.CURRENT_INVENTORY), 0) AS units,
-    (SELECT COUNT(*) FROM dbo.ITEM WHERE item_status='ACTIVE') AS items,
-    (SELECT COUNT(*) FROM dbo.LOCATION WHERE location_status='ACTIVE') AS locations,
-    (SELECT COUNT_BIG(*) FROM dbo.TRANSACTION_LOG) AS movements;
-
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 SELECT l.location_name, l.location_status, COALESCE(SUM(CAST(b.quantity_on_hand AS bigint)), 0) AS units
 FROM dbo.LOCATION AS l LEFT JOIN dbo.CURRENT_INVENTORY AS b ON b.location_id=l.location_id
 GROUP BY l.location_id, l.location_name, l.location_status ORDER BY l.location_name, l.location_id;
+
+SELECT (SELECT COUNT(*) FROM dbo.ITEM WHERE item_status='ACTIVE') AS items,
+    (SELECT COUNT(*) FROM dbo.LOCATION WHERE location_status='ACTIVE') AS locations,
+    (SELECT COUNT_BIG(*) FROM dbo.TRANSACTION_LOG) AS movements;
 
 SELECT TOP (5) t.transaction_id, i.item_name, i.media_format, l.location_name, t.transaction_type,
     t.quantity_moved, e.first_name + ' ' + e.last_name AS employee_name, t.transaction_datetime
@@ -341,7 +357,7 @@ INNER JOIN dbo.EMPLOYEE AS e ON e.employee_id=t.employee_id
 ORDER BY t.transaction_datetime DESC, t.transaction_id DESC;
 ```
 
-## 35. StockService
+## 37. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L24)
 
@@ -356,7 +372,7 @@ SELECT CASE
     ELSE 0 END;
 ```
 
-## 36. StockService
+## 38. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L47)
 
@@ -365,7 +381,7 @@ SELECT quantity_on_hand FROM dbo.CURRENT_INVENTORY WITH (UPDLOCK, HOLDLOCK)
 WHERE item_id = @item AND location_id = @location;
 ```
 
-## 37. StockService
+## 39. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L59)
 
@@ -375,7 +391,7 @@ WHERE item_id = @item AND location_id = @location AND quantity_on_hand = @curren
 SELECT @@ROWCOUNT;
 ```
 
-## 38. StockService
+## 40. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L63)
 
@@ -385,7 +401,7 @@ VALUES (@item, @location, @next, SYSUTCDATETIME());
 SELECT @@ROWCOUNT;
 ```
 
-## 39. StockService
+## 41. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L73)
 
@@ -395,7 +411,7 @@ INSERT INTO dbo.TRANSACTION_LOG
 VALUES (@employee, @item, @location, @direction, @quantity, SYSUTCDATETIME(), @notes, @corrects);
 ```
 
-## 40. StockService
+## 42. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L96)
 
@@ -404,7 +420,7 @@ SELECT item_id, location_id, transaction_type, quantity_moved
 FROM dbo.TRANSACTION_LOG WITH (UPDLOCK, HOLDLOCK) WHERE transaction_id=@id;
 ```
 
-## 41. StockService
+## 43. StockService
 
 Source: [src/BlueBox.Web/Services/StockService.cs](../src/BlueBox.Web/Services/StockService.cs#L106)
 

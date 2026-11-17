@@ -7,10 +7,11 @@
 <div class="admin-grid">
 <section class="panel"><h2>@(Model.Id.HasValue ? $"Edit item #{Model.Id}" : "New item")</h2>
 <form method="post" id="item-form">
-<input type="hidden" asp-for="Id" />
+
 <div asp-validation-summary="All" class="validation" role="alert"></div>
 <label asp-for="Input.Name">Title</label><input asp-for="Input.Name" maxlength="150" required />
-<div class="form-row"><div><label asp-for="Input.Type">Type</label><select asp-for="Input.Type"><option value="MOVIE">Movie</option><option value="GAME">Game</option></select></div><div><label asp-for="Input.Format">Format / platform</label><input asp-for="Input.Format" maxlength="30" placeholder="DVD, Blu-ray, PS5…" required /></div></div>
+<div class="form-row"><div><label asp-for="Input.Type">Type</label><select asp-for="Input.Type" disabled="@Model.HasHistory"><option value="MOVIE">Movie</option><option value="GAME">Game</option></select></div><div><label asp-for="Input.Format">Format / platform</label><input asp-for="Input.Format" readonly="@Model.HasHistory" maxlength="30" placeholder="DVD, Blu-ray, PS5…" required /></div></div>
+@if(Model.HasHistory) { <input type="hidden" asp-for="Input.Type" id="item-type-value" /><p class="help">Type and format are fixed after the first stock movement. Create a new catalog entry for another edition.</p> }
 <section class="lookup-box" id="movie-lookup" aria-label="Optional movie lookup">
 <h3>Find a movie</h3><p class="help">Search OMDb, select the title and year, then review the metadata before saving.</p>
 <label for="movie-title">Movie search</label><input id="movie-title" maxlength="150" placeholder="Movie title" />

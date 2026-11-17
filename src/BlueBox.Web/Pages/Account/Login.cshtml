@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Staff sign-in";
 }
+@if(TempData["Notice"] is string notice) { <div class="notice" role="status">@notice</div> }
 <div class="login-grid">
     <section class="login-story">
         <p class="eyebrow">BLUEBOX INVENTORY</p>

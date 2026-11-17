@@ -8,7 +8,7 @@ namespace BlueBox.Web.Pages.Admin;
 
 public sealed class LocationsModel(AdministrationService admin, InventoryQueries queries) : PageModel
 {
-    [BindProperty(SupportsGet = true)] public int? Id { get; set; }
+    [BindProperty(SupportsGet = true), FromRoute] public int? Id { get; set; }
     [BindProperty] public LocationInput Input { get; set; } = new();
     public List<Location> Locations { get; private set; } = [];
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)

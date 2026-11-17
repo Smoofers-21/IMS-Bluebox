@@ -9,9 +9,10 @@ namespace BlueBox.Web.Pages.Admin;
 
 public sealed class ItemsModel(AdministrationService admin, InventoryQueries queries, OmdbClient movies) : PageModel
 {
-    [BindProperty(SupportsGet = true)] public int? Id { get; set; }
+    [BindProperty(SupportsGet = true), FromRoute] public int? Id { get; set; }
     [BindProperty(SupportsGet = true)] public string? Search { get; set; }
     [BindProperty] public ItemInput Input { get; set; } = new();
+    public bool HasHistory { get; private set; }
     public List<CatalogRow> Items { get; private set; } = [];
 
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
@@ -23,6 +24,7 @@ public sealed class ItemsModel(AdministrationService admin, InventoryQueries que
             if (item is null) return NotFound();
             Input = new() { Name = item.ItemName, Type = item.ItemType, Format = item.MediaFormat, PosterUrl = item.PosterUrl, AgeRating = item.AgeRating, Status = item.ItemStatus };
         }
+        HasHistory = Id.HasValue && await queries.ItemHasHistoryAsync(Id.Value, ct);
         Items = await queries.CatalogAsync(Search, null, ct);
         return Page();
     }
@@ -42,6 +44,7 @@ public sealed class ItemsModel(AdministrationService admin, InventoryQueries que
             }
             ModelState.AddModelError("", result.Message);
         }
+        HasHistory = Id.HasValue && await queries.ItemHasHistoryAsync(Id.Value, ct);
         Items = await queries.CatalogAsync(Search, null, ct);
         return Page();
     }

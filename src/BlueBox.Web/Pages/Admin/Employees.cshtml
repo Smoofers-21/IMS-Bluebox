@@ -5,7 +5,8 @@
 <div class="page-heading"><div><p class="eyebrow">MANAGER TOOLS</p><h1>Manage employees</h1><p class="muted">Create accounts, assign roles, and manage employee access.</p></div></div>
 @if(TempData["Success"] is string message) { <div class="notice" role="status">@message</div> }
 <div class="admin-grid"><section class="panel"><h2>@(Model.Id.HasValue ? $"Edit employee #{Model.Id}" : "New employee")</h2>
-<form method="post"><input type="hidden" asp-for="Id" /><div asp-validation-summary="All" class="validation" role="alert"></div>
+@if(Model.Id?.ToString(System.Globalization.CultureInfo.InvariantCulture) == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value) { <p class="notice">You are editing your own account. Saving will sign you out; you can sign in again only if the account remains active.</p> }
+<form method="post"><div asp-validation-summary="All" class="validation" role="alert"></div>
 <div class="form-row"><div><label asp-for="Input.FirstName">First name</label><input asp-for="Input.FirstName" maxlength="50" required /></div><div><label asp-for="Input.LastName">Last name</label><input asp-for="Input.LastName" maxlength="50" required /></div></div>
 <label asp-for="Input.Username">Username</label><input asp-for="Input.Username" maxlength="50" autocomplete="off" required />
 <label asp-for="Input.Password">@(Model.Id.HasValue ? "New password (optional)" : "Password")</label><input asp-for="Input.Password" type="password" minlength="12" maxlength="256" autocomplete="new-password" />

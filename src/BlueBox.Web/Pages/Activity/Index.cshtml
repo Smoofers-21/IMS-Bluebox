@@ -7,7 +7,7 @@
 <div class="page-heading"><div><p class="eyebrow">MOVEMENT HISTORY</p><h1>Activity log</h1><p class="muted">See what moved, where it moved, and who recorded it.</p></div></div>
 @if(TempData["Success"] is string message) { <div class="notice" role="status">@message</div> }
 <form method="get" class="filter-bar" role="search"><label class="search-field"><span class="sr-only">Search by item name or ID</span><input asp-for="Search" maxlength="150" placeholder="Search by item name or ID" /></label><label><span class="sr-only">Movement type</span><select asp-for="Direction"><option value="">All movements</option><option value="CHECK IN">Check in</option><option value="CHECK OUT">Check out</option></select></label><label><span class="sr-only">Warehouse</span><select asp-for="LocationId"><option value="">All locations</option>@foreach(var l in Model.Locations) { <option value="@l.LocationId">@l.LocationName</option> }</select></label><button type="submit" class="button">Filter</button><a class="text-button" asp-page="Index">Reset</a></form>
-<section class="panel table-panel" aria-label="Stock movement history"><div class="table-scroll"><table><thead><tr><th>Log ID</th><th>Item</th><th>Movement</th><th>Warehouse</th><th>Qty</th><th>Employee</th><th>Recorded (Central)</th><th>Notes</th></tr></thead><tbody>
+<section class="panel table-panel" aria-label="Stock movement history"><div class="table-scroll"><table><thead><tr><th>Log ID</th><th>Item</th><th>Movement</th><th>Warehouse</th><th>Qty</th><th>Employee</th><th>Recorded time</th><th>Notes</th></tr></thead><tbody>
 @foreach(var row in Model.Rows) { <tr><td class="muted">#@row.Id
 @if(row.CorrectsId.HasValue) { <small class="cell-subtitle">Reverses #@row.CorrectsId</small> }
 @if(row.CorrectionId.HasValue) { <small class="cell-subtitle">Reversed by #@row.CorrectionId</small> }
@@ -15,7 +15,7 @@
 </td><td><strong>@row.Name</strong><small class="cell-subtitle">@row.Format</small></td><td><span class="badge @(row.Direction == "CHECK IN" ? "neutral" : "")">@(row.Direction == "CHECK IN" ? "Check in" : "Check out")</span></td><td>@row.Location</td><td class="movement-quantity">@(row.Direction == "CHECK IN" ? "+" : "−")@row.Quantity</td><td>@row.Employee</td><td class="nowrap"><time datetime="@DateTime.SpecifyKind(row.Time, DateTimeKind.Utc).ToString("O")">@BlueBox.Web.Models.DisplayTime.Central(row.Time)</time></td><td class="notes">@(row.Notes ?? "—")</td></tr> }
 </tbody></table></div>@if(Model.Rows.Count == 0) { <div class="empty-state"><h2>No movements found</h2><p>Record a stock movement, return to an earlier page, or try another filter.</p></div> }
 <div class="table-caption activity-pager">
-    <span>Page @Model.PageNumber · @Model.Rows.Count movements · Times shown in Central time (CST/CDT)</span>
+    <span>Page @Model.PageNumber · @Model.Rows.Count movements · Times shown in @BlueBox.Web.Models.DisplayTime.ZoneLabel</span>
     <nav aria-label="Activity pages">
         @if (Model.PageNumber > 1)
         {

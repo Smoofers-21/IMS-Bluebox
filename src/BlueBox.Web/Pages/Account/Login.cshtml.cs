@@ -42,6 +42,7 @@ public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Emp
                 ModelState.AddModelError("", "Your account changed while signing in. Please try again.");
                 return Page();
             }
+            employee.PasswordHash = upgraded;
         }
         await HttpContext.SignInAsync(EmployeeCookieEvents.CreatePrincipal(employee));
         return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl!) : RedirectToPage("/Overview");

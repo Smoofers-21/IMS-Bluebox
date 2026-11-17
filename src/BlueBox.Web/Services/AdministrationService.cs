@@ -33,9 +33,22 @@ public sealed class AdministrationService(SqlDatabase database, IPasswordHasher<
             if (!await IsManagerAsync(connection, transaction, actor, token)) return new SaveResult(false, "An active manager account is required.");
             if (id.HasValue)
             {
-                using var item = SqlDatabase.Command("SELECT item_id FROM dbo.ITEM WITH (UPDLOCK, HOLDLOCK) WHERE item_id = @id;", connection, transaction,
+                // Take the parent X lock before touching balances/history. Movements hold a parent S lock.
+                using var item = SqlDatabase.Command("SELECT item_type, media_format FROM dbo.ITEM WITH (XLOCK, HOLDLOCK) WHERE item_id = @id;", connection, transaction,
                     SqlDatabase.Parameter("@id", SqlDbType.Int, id));
-                if (await item.ExecuteScalarAsync(token) is null) return new SaveResult(false, "Item no longer exists.");
+                string previousType, previousFormat;
+                await using (var reader = await item.ExecuteReaderAsync(token))
+                {
+                    if (!await reader.ReadAsync(token)) return new SaveResult(false, "Item no longer exists.");
+                    previousType = reader.GetString(0); previousFormat = reader.GetString(1);
+                }
+                if (input.Type != previousType || input.Format.Trim() != previousFormat)
+                {
+                    using var history = SqlDatabase.Command("SELECT TOP (1) transaction_id FROM dbo.TRANSACTION_LOG WHERE item_id=@id;", connection, transaction,
+                        SqlDatabase.Parameter("@id", SqlDbType.Int, id));
+                    if (await history.ExecuteScalarAsync(token) is not null)
+                        return new SaveResult(false, "Type and format are fixed once stock has moved. Create a new item for another edition.");
+                }
                 if (input.Status == "ARCHIVED")
                 {
                     using var stock = SqlDatabase.Command("SELECT COUNT(*) FROM dbo.CURRENT_INVENTORY WITH (HOLDLOCK) WHERE item_id = @id AND quantity_on_hand <> 0;", connection, transaction,
@@ -66,7 +79,7 @@ public sealed class AdministrationService(SqlDatabase database, IPasswordHasher<
             if (!await IsManagerAsync(connection, transaction, actor, token)) return new SaveResult(false, "An active manager account is required.");
             if (id.HasValue)
             {
-                using var location = SqlDatabase.Command("SELECT location_id FROM dbo.LOCATION WITH (UPDLOCK, HOLDLOCK) WHERE location_id=@id;", connection, transaction,
+                using var location = SqlDatabase.Command("SELECT location_id FROM dbo.LOCATION WITH (XLOCK, HOLDLOCK) WHERE location_id=@id;", connection, transaction,
                     SqlDatabase.Parameter("@id", SqlDbType.Int, id));
                 if (await location.ExecuteScalarAsync(token) is null) return new SaveResult(false, "Warehouse no longer exists.");
                 if (input.Status == "INACTIVE")

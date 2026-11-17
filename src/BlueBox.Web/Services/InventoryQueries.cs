@@ -190,6 +190,13 @@ public sealed class InventoryQueries(SqlDatabase database)
         return table.AsEnumerable().Select(ReadItem).ToList();
     }
 
+    public async Task<bool> ItemHasHistoryAsync(int id, CancellationToken ct = default)
+    {
+        using var command = new SqlCommand("SELECT TOP (1) transaction_id FROM dbo.TRANSACTION_LOG WHERE item_id=@id;");
+        command.Parameters.Add(SqlDatabase.Parameter("@id", SqlDbType.Int, id));
+        return (await database.FillDataTableViaCommandAsync(command, ct)).Rows.Count > 0;
+    }
+
     public async Task<Item?> ItemAsync(int id, CancellationToken ct = default)
     {
         using var command = new SqlCommand("SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item_status FROM dbo.ITEM WHERE item_id = @id;");

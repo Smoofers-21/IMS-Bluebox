@@ -119,7 +119,11 @@ public sealed class MilestoneTwoTests
         var id = Convert.ToInt32(await app.ScalarAsync("SELECT item_id FROM dbo.ITEM WHERE item_name='HTTP test movie'"), System.Globalization.CultureInfo.InvariantCulture);
         response = await client.PostAsync($"/Admin/Items/{id}", new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            ["Input.Name"] = "HTTP edited movie", ["Input.Type"] = "MOVIE", ["Input.Format"] = "Blu-ray", ["Input.Status"] = "ACTIVE",
+            ["Id"] = "1",
+            ["Input.Name"] = "HTTP edited movie",
+            ["Input.Type"] = "MOVIE",
+            ["Input.Format"] = "Blu-ray",
+            ["Input.Status"] = "ACTIVE",
             ["__RequestVerificationToken"] = await TestApp.TokenAsync(client, $"/Admin/Items/{id}")
         }));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
@@ -128,7 +132,9 @@ public sealed class MilestoneTwoTests
 
         response = await client.PostAsync("/Admin/Locations", new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            ["Input.Name"] = "HTTP warehouse", ["Input.Address"] = "Demo address", ["Input.Status"] = "ACTIVE",
+            ["Input.Name"] = "HTTP warehouse",
+            ["Input.Address"] = "Demo address",
+            ["Input.Status"] = "ACTIVE",
             ["__RequestVerificationToken"] = await TestApp.TokenAsync(client, "/Admin/Locations")
         }));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
@@ -136,7 +142,12 @@ public sealed class MilestoneTwoTests
 
         response = await client.PostAsync("/Admin/Employees", new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            ["Input.FirstName"] = "HTTP", ["Input.LastName"] = "Staff", ["Input.Username"] = "http.staff", ["Input.Role"] = "STAFF", ["Input.Status"] = "ACTIVE", ["Input.Password"] = "tiny",
+            ["Input.FirstName"] = "HTTP",
+            ["Input.LastName"] = "Staff",
+            ["Input.Username"] = "http.staff",
+            ["Input.Role"] = "STAFF",
+            ["Input.Status"] = "ACTIVE",
+            ["Input.Password"] = "tiny",
             ["__RequestVerificationToken"] = await TestApp.TokenAsync(client, "/Admin/Employees")
         }));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -145,7 +156,12 @@ public sealed class MilestoneTwoTests
         Assert.Equal(0, await app.ScalarAsync("SELECT COUNT(*) FROM dbo.EMPLOYEE WHERE username='http.staff'"));
         response = await client.PostAsync("/Admin/Employees", new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            ["Input.FirstName"] = "HTTP", ["Input.LastName"] = "Staff", ["Input.Username"] = "http.staff", ["Input.Role"] = "STAFF", ["Input.Status"] = "ACTIVE", ["Input.Password"] = TestApp.Password,
+            ["Input.FirstName"] = "HTTP",
+            ["Input.LastName"] = "Staff",
+            ["Input.Username"] = "http.staff",
+            ["Input.Role"] = "STAFF",
+            ["Input.Status"] = "ACTIVE",
+            ["Input.Password"] = TestApp.Password,
             ["__RequestVerificationToken"] = await TestApp.TokenAsync(client, "/Admin/Employees")
         }));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
@@ -286,6 +302,7 @@ public sealed class MilestoneTwoTests
         var token = await TestApp.TokenAsync(client, "/Activity/Correct/1");
         var response = await client.PostAsync("/Activity/Correct/1", new FormUrlEncodedContent(new Dictionary<string, string>
         {
+            ["Id"] = "2",
             ["Explanation"] = "HTTP correction",
             ["Quantity"] = "99999",
             ["ItemId"] = "6",
@@ -374,6 +391,19 @@ public sealed class OmdbTests
         using var handler = new StubHandler(_ => Json(body));
         Assert.Empty((await Client(handler).SearchAsync("demo")).Matches);
         Assert.Null((await Client(handler).DetailAsync("tt1234567")).Movie);
+    }
+
+    [Theory]
+    [InlineData("Too many results.", "more specific title")]
+    [InlineData("Movie not found!", "No movie matches")]
+    [InlineData("Invalid API key!", "unavailable")]
+    public async Task ProviderErrorsGiveAccurateSafeMessages(string error, string expected)
+    {
+        using var handler = new StubHandler(_ => Json(System.Text.Json.JsonSerializer.Serialize(new { Response = "False", Error = error })));
+        var result = await Client(handler).SearchAsync("demo");
+        Assert.Empty(result.Matches); Assert.Contains(expected, result.Message ?? "");
+        Assert.DoesNotContain("fake-test-key", result.Message ?? "");
+        Assert.DoesNotContain("Invalid API key", result.Message ?? "");
     }
 
     [Fact]

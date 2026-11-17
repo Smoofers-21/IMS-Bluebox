@@ -23,6 +23,13 @@ public sealed class OmdbClient(HttpClient http, IConfiguration configuration)
         using (data)
         {
             var root = data.RootElement;
+            if (Text(root, "Response") == "False")
+                return Text(root, "Error") switch
+                {
+                    "Too many results." => new([], "Too many movie matches. Enter a more specific title."),
+                    "Movie not found!" => new([], "No movie matches found. Try another title or enter it manually."),
+                    _ => new([], "Movie lookup is unavailable. You can continue with manual entry.")
+                };
             if (Text(root, "Response") != "True" || !root.TryGetProperty("Search", out var matches) || matches.ValueKind != JsonValueKind.Array)
                 return new([], "No movie matches found. Try another title or enter it manually.");
             return new(matches.EnumerateArray().Select(m => new MovieMatch(Text(m, "imdbID") ?? "", Text(m, "Title") ?? "", Text(m, "Year") ?? ""))

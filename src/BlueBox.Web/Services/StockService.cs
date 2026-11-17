@@ -38,8 +38,8 @@ public sealed class StockService(SqlDatabase database)
         if (rejected != 0) return new MovementResult(false, rejected switch
         {
             1 => "Your account is not permitted to record stock movements.",
-            2 => "Select an active catalog item.",
-            _ => "Select an active warehouse."
+            2 => corrects.HasValue ? "Reactivate this catalog item before correcting its movement." : "Select an active catalog item.",
+            _ => corrects.HasValue ? "Reactivate this warehouse before correcting its movement." : "Select an active warehouse."
         });
 
         // Lock this indexed item/location range, including a missing balance.

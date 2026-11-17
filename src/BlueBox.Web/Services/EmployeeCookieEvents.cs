@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using BlueBox.Web.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -7,6 +9,7 @@ namespace BlueBox.Web.Services;
 
 public sealed class EmployeeCookieEvents(EmployeeRepository employees) : CookieAuthenticationEvents
 {
+    private const string SessionStampClaim = "bluebox:session-stamp";
     public override async Task ValidatePrincipal(CookieValidatePrincipalContext context)
     {
         // The error route has no account data/actions and must still render
@@ -16,7 +19,8 @@ public sealed class EmployeeCookieEvents(EmployeeRepository employees) : CookieA
         var employee = int.TryParse(id, out var employeeId)
             ? await employees.FindByIdAsync(employeeId, context.HttpContext.RequestAborted)
             : null;
-        if (employee is null || employee.EmploymentStatus != "ACTIVE" || employee.AccessRole is not ("STAFF" or "MANAGER"))
+        if (employee is null || employee.EmploymentStatus != "ACTIVE" || employee.AccessRole is not ("STAFF" or "MANAGER")
+            || context.Principal?.FindFirstValue(SessionStampClaim) != SessionStamp(employee))
         {
             context.RejectPrincipal();
             await context.HttpContext.SignOutAsync();
@@ -34,6 +38,11 @@ public sealed class EmployeeCookieEvents(EmployeeRepository employees) : CookieA
     [
         new(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         new(ClaimTypes.Name, employee.DisplayName),
-        new(ClaimTypes.Role, employee.AccessRole)
+        new(ClaimTypes.Role, employee.AccessRole),
+        new(SessionStampClaim, SessionStamp(employee))
     ], CookieAuthenticationDefaults.AuthenticationScheme));
+
+    // A digest, not the stored password hash. Existing sessions end after either credential changes.
+    private static string SessionStamp(Models.Employee employee) => Convert.ToHexString(
+        SHA256.HashData(Encoding.UTF8.GetBytes(employee.Username + "\0" + employee.PasswordHash)));
 }

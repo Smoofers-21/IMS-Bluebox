@@ -5,7 +5,7 @@
 <div class="page-heading"><div><p class="eyebrow">MANAGER TOOLS</p><h1>Manage warehouses</h1><p class="muted">Keep warehouse information and availability up to date.</p></div></div>
 @if(TempData["Success"] is string message) { <div class="notice" role="status">@message</div> }
 <div class="admin-grid"><section class="panel"><h2>@(Model.Id.HasValue ? $"Edit warehouse #{Model.Id}" : "New warehouse")</h2>
-<form method="post"><input type="hidden" asp-for="Id" /><div asp-validation-summary="All" class="validation" role="alert"></div>
+<form method="post"><div asp-validation-summary="All" class="validation" role="alert"></div>
 <label asp-for="Input.Name">Warehouse name</label><input asp-for="Input.Name" maxlength="100" required />
 <label asp-for="Input.Address">Address</label><input asp-for="Input.Address" maxlength="255" required />
 <label asp-for="Input.Status">Status</label><select asp-for="Input.Status"><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select>

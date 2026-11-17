@@ -8,7 +8,7 @@ namespace BlueBox.Web.Pages.Activity;
 
 public sealed class CorrectModel(InventoryQueries queries, StockService stock) : PageModel
 {
-    [BindProperty(SupportsGet = true)] public long Id { get; set; }
+    [BindProperty(SupportsGet = true), FromRoute] public long Id { get; set; }
     [BindProperty, Required, StringLength(255)] public string Explanation { get; set; } = "";
     public ActivityRow Movement { get; private set; } = null!;
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
