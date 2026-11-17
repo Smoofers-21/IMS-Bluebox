@@ -43,7 +43,7 @@ A sanitized [schema reference](../database/reference/current-schema.sql) preserv
 
 ## Verified validation and limits
 
-The reviewed application at `6b37024` passed its Release build, 25 local tests (26 SQL Server groups skipped locally), and both GitHub jobs in [run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232). The SQL job applies the supplied current schema to generated disposable databases and exercises real stock/HTTP workflows, rollback, and competing updates. See the [validation record](validation.md).
+The external-review fixes at `936bec2` passed [run 44199421841](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44199421841), including the SQL-enabled suite. Versioned local/CI counts are recorded in the validation record; current results are on PR #5 checks. The SQL job applies the supplied current schema to generated disposable databases and exercises real stock/HTTP workflows, rollback, and competing updates. See the [validation record](validation.md).
 
 Windows access to the teacher's actual server and a live OMDb smoke check remain pending. No teacher schema, records, or stock were changed from this workspace.
 
@@ -57,6 +57,8 @@ Windows access to the teacher's actual server and a live OMDb smoke check remain
 ## Milestone 2 review fixes
 
 - Omit empty optional route values when redirecting after manager saves; HTTP tests cover all three administration forms and catalog editing.
-- Read overview totals, warehouse quantities, and the latest five movements in one serializable transaction and database round trip.
+- Read overview in one READ COMMITTED batch, deriving total units from returned warehouse totals. Stock/history writes continue using serializable transactions.
 - Compare the previously verified password hash before a login-time upgrade, so a concurrent manager password reset cannot be overwritten. Read `@@ROWCOUNT` explicitly.
 - Exercise manager/retirement/correction concurrency, atomic rollback, safe metadata handling, and Central-time daylight-saving transitions. See the [Milestone 2 review guide](milestone-2.md).
+
+For the consolidated PR #5 external-review fixes, see [the resolution](pr4-review-resolution.md). Parent X locks coordinate retirement, credential stamps revoke stale sessions, and format/type cannot change after history exists. These changes use the supplied schema.

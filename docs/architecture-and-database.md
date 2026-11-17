@@ -95,6 +95,7 @@ The nonnegative quantity constraint is a useful final guard, but does not by its
 - No application workflow directly edits stock balances or edits/deletes log entries.
 - Foreign keys prevent deleting referenced parents; they do not prevent direct deletion of the log itself. Application/database access must respect history retention.
 - Corrections retain both entries and reference the same item/location with the opposite direction and a required explanation.
+- After any movement exists for an item, its type/format are fixed; create a new entry for another edition. Name and optional metadata remain editable.
 - Archive an item only when all its warehouse balances are zero. Deactivate a warehouse only when all its balances are zero.
 - Manager authorization and zero-stock checks must be enforced when saving, not just when showing a button.
 
@@ -102,4 +103,12 @@ The nonnegative quantity constraint is a useful final guard, but does not by its
 
 Configure `ConnectionStrings:BlueBox` (or the instructor’s `Database` fields) and optional `Omdb:ApiKey` through User Secrets, private environment variables, or an explicitly selected private JSON file. The [development guide](development.md) contains placeholders, not working credentials. Disposable SQL Server tests have passed; a live OMDb key and the teacher-server Windows setup still require manual verification.
 
-The overview reads aggregate totals, warehouse balances, and the latest five movements in one serializable transaction and one database round trip. Password-hash upgrades use a conditional comparison against the previously verified hash so they cannot overwrite a concurrent manager password reset.
+Retirement/edit operations acquire an exclusive lock on the parent item/warehouse before reading balances. This avoids the parent/child lock-upgrade cycle with ordinary movements. The existing indexed serializable movement transaction remains in place; no new index or database isolation setting is required.
+
+The overview explicitly uses READ COMMITTED in one batch. Total units are derived from the returned warehouse totals, so those numbers agree without a serializable dashboard transaction. Counts and recent movements may reflect later commits. Password-hash upgrades compare the previously verified hash before writing; cookie credential stamps revoke old sessions after password/username changes without adding a column.
+
+## Poster and encoding decisions
+
+Manual HTTPS poster URLs remain supported for movies and games. Only managers can save them; the browser loads images with no referrer. CSP allows HTTPS image sources, and the server never fetches arbitrary poster URLs. Restricting all posters to the movie CDN would exclude the agreed manual game posters.
+
+VARCHAR fields retain the supplied database/column code page. Unlike NVARCHAR poster URLs, they do not guarantee arbitrary Unicode storage on a non-Unicode code page. Full Unicode support is a separate schema/encoding decision with the teacher; an assumed Windows-1252 or ASCII-only policy is not imposed here.

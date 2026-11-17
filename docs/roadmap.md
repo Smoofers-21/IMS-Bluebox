@@ -19,7 +19,7 @@ The project owner combined the original six stages into two milestones. Use smal
 
 ## Milestone 2 — Complete demo and portfolio project
 
-Application implementation and code review are complete for commit `6b37024`. Both GitHub test jobs passed in [run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232). The [validation record](validation.md) separates those results from the pending teacher-server walkthrough.
+PR #5 consolidates the application, documentation, and schema-compatible external-review fixes. It already contains PR #4 and can be merged directly after its latest checks pass. See the [review resolution](pr4-review-resolution.md), [current CI](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks), and [validation record](validation.md); teacher-server verification remains separate.
 
 - [x] Manager tools for items, employee accounts, and locations.
 - [x] Last-active-manager protection when managing accounts.
@@ -35,7 +35,7 @@ Application implementation and code review are complete for commit `6b37024`. Bo
 
 ## Class hand-in
 
-After the owner merges the implementation/documentation PRs, pull `main`, verify the Windows setup, and use the [submission guide](submission.md) to generate `.slnx` when required. Keep project folders and required build files alongside the solution. Submit according to the instructor’s requested format.
+After the owner merges consolidated PR #5, pull `main`, verify the Windows setup, and use the [submission guide](submission.md) to generate `.slnx` when required. Keep project folders and required build files alongside the solution. Submit according to the instructor’s requested format.
 
 ## After grading — Public deployment
 

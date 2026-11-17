@@ -2,7 +2,7 @@
 
 A browser-based internal inventory management project for a fictional movie and game rental business. BlueBox lets employees track warehouse quantities, record stock movements, and review who changed inventory and when.
 
-**Status: both milestones’ planned application features are implemented and reviewed.** The reviewed code at `6b37024` passed unit/routing and disposable SQL Server checks in [GitHub Actions](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232). Windows testing against the teacher’s database, a live OMDb check, and final screenshots remain before class/demo sign-off. See the [validation record](docs/validation.md) for the tested scope and remaining work.
+**Status: both milestones’ planned application features are implemented; owner review and target-setup verification remain.** [PR #5](https://github.com/Smoofers-21/IMS-Bluebox/pull/5) consolidates Milestone 2, the documentation refresh, and the schema-compatible external-review fixes. It can be merged directly after its latest checks pass; PR #4 is already included. See the [review resolution](docs/pr4-review-resolution.md) and [validation record](docs/validation.md). Windows testing against the teacher’s database, a live OMDb check, and final screenshots remain before class/demo sign-off.
 
 ## Project at a glance
 
@@ -20,7 +20,7 @@ A browser-based internal inventory management project for a fictional movie and 
 ## Milestone 1 capabilities
 
 - Employee sign-in with staff and manager permissions.
-- A searchable movie and game catalog, with separate entries for different formats.
+- A searchable movie and game catalog, with separate entries for different formats. Type/format are fixed after the first movement to preserve edition history.
 - Inventory quantities across warehouse locations.
 - Check-in and check-out with a preview of the resulting balance.
 - Protection against negative inventory and conflicting stock updates.
@@ -30,11 +30,11 @@ A browser-based internal inventory management project for a fictional movie and 
 ## Milestone 2 capabilities
 
 - Manager screens for catalog items, employee accounts, and warehouses.
-- Last-active-manager protection, including competing account changes.
+- Last-active-manager protection, including competing account changes, and session revocation after password/username changes.
 - Full opposite-movement corrections with explanations and permanent links; a correction can itself be corrected once.
 - Zero-stock checks before item archival or warehouse deactivation.
 - Server-side OMDb search and movie selection, optional posters/age ratings, and manual fallback.
-- Overview totals, stock by warehouse, recent activity, and labeled Central time.
+- Overview totals, stock by warehouse, recent activity, and labeled Central time (or an explicit UTC fallback).
 
 The [roadmap](docs/roadmap.md) distinguishes implemented features from final verification. The [Milestone 2 review guide](docs/milestone-2.md) describes manager workflows and correction rules.
 
@@ -69,8 +69,9 @@ Check-in means adding units to a warehouse; check-out means removing units from 
 | [Demo guide](docs/demo-guide.md) | Fake demonstration data, presentation walkthrough, and screenshot plan |
 | [SQL Server scripts](database/README.md) | When no migration is needed, older-baseline upgrades, and fresh-database setup |
 | [Instructor template adaptation](docs/instructor-template.md) | Required structure, corrections, and review findings |
-| [Runtime SQL query catalog](docs/sql-query-catalog.md) | All 41 runtime SQL batches, with source links |
+| [Runtime SQL query catalog](docs/sql-query-catalog.md) | Runtime SQL batches, with source links |
 | [Milestone 2 review](docs/milestone-2.md) | Manager administration, correction chains, retirement, and review fixes |
+| [External review resolution](docs/pr4-review-resolution.md) | Adopted fixes, schema-compatible decisions, and consolidated PR #5 merge path |
 | [Validation record](docs/validation.md) | Verified build/test results, CI links, and checks still pending |
 | [Class submission and `.slnx`](docs/submission.md) | Pulling the merged code, converting the solution, and packaging source files |
 
@@ -98,9 +99,9 @@ The connection string belongs in user secrets or an environment variable. Never 
 dotnet test BlueBox.sln --configuration Release
 ```
 
-The reviewed local suite passed 25 tests and explicitly skipped 26 SQL Server test groups without a configured disposable instance. Those skipped groups are executed by the SQL Server CI job; they are not claimed as local SQL passes. SQL Server mode applies the supplied current schema to generated disposable databases and runs the real HTTP/stock workflow. GitHub Actions runs both paths for feature-branch pushes, pull requests, and main. See [test setup and limits](docs/development.md#automated-checks).
+The default suite runs local unit/routing/provider checks and skips SQL Server groups when no disposable test instance is configured. SQL Server CI applies the supplied schema to generated disposable databases and runs real HTTP/stock/concurrency tests. The [validation record](docs/validation.md) distinguishes current results from historical baseline counts.
 
-The [verified Milestone 2 run](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232) passed both jobs. The workflow cancels older or duplicate branch/PR runs; a canceled duplicate is superseded by the successful run for the same/latest commit. The Windows walkthrough against the teacher's SQL Server remains required before final class sign-off. Do not use the shared teacher server for automated tests that create/drop test databases.
+GitHub Actions runs on pull requests and pushes to `main`. A newer commit cancels an older run of the same PR; feature pushes no longer start duplicate push/PR jobs. Check [PR #5’s latest run](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks) before merging. The Windows walkthrough against the teacher’s SQL Server remains required before final class sign-off; automated create/drop tests belong only on disposable instances.
 
 ## Class submission
 

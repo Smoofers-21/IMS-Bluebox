@@ -1,6 +1,6 @@
 # Requirements and acceptance criteria
 
-**Status:** both milestones’ application features are implemented and reviewed. Unit/routing and real SQL Server checks passed for commit `6b37024` in [run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232). Windows/teacher-server and live OMDb checks remain pending. See the [validation record](validation.md) and [roadmap](roadmap.md).
+**Status:** both milestones’ application features and schema-compatible external-review fixes are in consolidated PR #5, pending owner review/merge. Check [the latest PR checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks) for current validation; Windows/teacher-server and live OMDb checks remain separate. See the [validation record](validation.md) and [review resolution](pr4-review-resolution.md).
 
 ## Permissions
 
@@ -24,9 +24,9 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | AUTH-03 | Enforce roles | A staff account cannot perform manager operations through a page or direct request. |
 | AUTH-04 | Keep account setup simple | Managers create accounts; there is no public registration or forced initial password change. |
 | AUTH-05 | Preserve manager access | Deactivating or demoting the last active manager is rejected, including competing account edits. |
-| AUTH-06 | Preserve password resets | A blank edit password retains the existing hash; a stale login-time hash upgrade cannot overwrite a manager’s password reset. |
+| AUTH-06 | Preserve password resets | A blank edit password retains the existing hash; a stale login-time hash upgrade cannot overwrite a manager’s password reset. Password/username changes invalidate existing sessions on their next request, while login rehashing issues a valid new session. |
 | CAT-01 | Maintain a movie/game catalog | Managers can create and edit required name, type, and format fields; blank required fields and invalid types are rejected. |
-| CAT-02 | Distinguish formats | The same title in DVD and Blu-ray editions has separate catalog entries and balances. |
+| CAT-02 | Distinguish formats | The same title in DVD and Blu-ray editions has separate entries/balances. After the first movement, the item’s type and format cannot change, even when its stock returns to zero; other editions require a new entry. |
 | CAT-03 | Keep metadata optional | Items can be saved without a poster or age rating. |
 | CAT-04 | Use OMDb for movies | A manager selects a movie match and can review its returned poster and age classification before saving. |
 | CAT-05 | Handle missing external data | Failed lookup, no match, or unavailable fields leave manual item entry usable. Games use manual metadata. |
@@ -40,14 +40,14 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | INV-08 | Validate the final balance | The server rechecks stock when confirming a movement, regardless of the earlier screen preview. |
 | INV-09 | Use active records | Movements against archived items or inactive warehouses are rejected. |
 | HIST-01 | Attribute movements | Each entry stores the signed-in employee, item, location, direction, positive quantity, and server-generated UTC time. |
-| HIST-02 | Retain history | Application users cannot edit/delete historical movement entries or erase them through record retirement. |
+| HIST-02 | Retain history | Application users cannot edit/delete historical movement entries or erase them through retirement; item type/format cannot be relabeled after history exists. |
 | COR-01 | Restrict corrections | Only managers can submit a correction; an explanation and original-transaction reference are required. |
 | COR-02 | Preserve the original | A correction adds an opposite movement for the original item/location; the original remains unchanged. Corrections cannot bypass stock validation. |
 | RET-01 | Retire items safely | An item with stock at any warehouse cannot be archived. Archived items remain identifiable in history. |
 | RET-02 | Retire locations safely | A warehouse with stock cannot be deactivated. Its historical movements remain visible. |
 | VIEW-01 | Find stock | Inventory can be searched by item name/ID and filtered by location and item type, following the mockups. |
 | VIEW-02 | Review activity | Users can inspect employee-attributed movements and filter by item, movement type, and location; older results remain accessible through 100-row pages. |
-| VIEW-03 | Summarize inventory | Dashboard totals and warehouse totals agree during concurrent stock updates; the same transaction returns the latest five movements. |
+| VIEW-03 | Summarize inventory | Total units equal the sum of the returned warehouse totals. The READ COMMITTED batch also returns counts and five recent movements; those sections may reflect slightly later commits and do not hold serializable dashboard range locks. |
 
 Correction policy: each movement may have one full opposite-movement correction. A correction can itself be reversed once, producing a chain rather than multiple children for the same movement. Partial reversals are not supported. The server derives the item, warehouse, direction, and quantity from the selected entry; the manager supplies an explanation. Inactive/archived records must be reactivated by a manager before correction, and insufficient stock blocks reversal. All original entries remain unchanged.
 
@@ -58,10 +58,12 @@ Correction policy: each movement may have one full opposite-movement correction.
 - Keep database credentials and the OMDb API key outside tracked files and browser responses.
 - Validate input on the server and use parameterized ADO.NET queries.
 - Use database constraints alongside application validation.
-- Store timestamps in UTC. Activity and overview display labeled Central time (CST/CDT), including daylight-saving transitions.
+- Store timestamps in UTC. Activity and overview display labeled Central time (CST/CDT), including daylight-saving transitions. If neither Central time-zone ID is available, show clearly labeled UTC.
 
 ## Validation approach
 
 Focused integration tests now exercise sign-in, permissions, stock updates, rollback, competing check-outs, and the HTTP workflow. Milestone 2 adds tests for manager HTTP authorization, last-manager protection, retirement, correction chains/rollback/concurrency, dashboard totals, and OMDb fallback using a fake HTTP provider. A configured live OMDb account still requires a manual smoke check. See the [development guide](development.md#automated-checks) for the distinction between local checks and SQL Server integration validation.
 
 See the [demo guide](demo-guide.md) for the presentation sequence.
+
+Text columns follow the supplied DDL: most are VARCHAR and use their database/column code page, while poster URLs use NVARCHAR. Full Unicode names/notes are not guaranteed by a non-Unicode code page. This revision does not assume Windows-1252, impose ASCII-only inputs, or change the schema.

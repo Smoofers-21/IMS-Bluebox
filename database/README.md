@@ -63,6 +63,7 @@ These application-level rules are implemented by the C# services and authorizati
 - Updating `last_updated_at` on each stock change; its default only initializes a new row.
 - Permanent history through application behavior and appropriate database access.
 - Last-active-manager protection.
+- Fixed item type/format after history exists, and credential-stamped session revocation after username/password changes, using the existing columns.
 
 The correction foreign key identifies an original transaction; it does not, by itself, enforce manager authorization or compare values between the two rows. The application permits one full reversal per history entry, including correction entries, forming a chain. It locks the selected entry and checks for an existing child within the same transaction. No uniqueness constraint alone enforces that one-child policy for direct SSMS writes. See the [correction guide](../docs/milestone-2.md#agreed-correction-policy).
 

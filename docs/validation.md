@@ -1,21 +1,29 @@
 # Validation record
 
-Updated November 17, 2026. Results below apply to the reviewed Milestone 2 application at commit `6b37024a16ba82a822d6b95ad738b28288401481`. Documentation-only changes do not add application behavior. For any later code changes, check that the latest commit has a successful CI run before merging.
+Updated November 17, 2026. PR #5 is the consolidated application/documentation/external-review-fix PR. It already contains PR #4 and can be merged directly after its latest checks pass. Results are tied to the commits below; for subsequent changes, check [PR #5’s current head and CI](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks).
 
 ## Verified results
 
-| Check | Result | Evidence and scope |
-| --- | --- | --- |
-| Local Release build | Passed; zero warnings/errors | Pinned .NET SDK 10.0.404; instructor-template ADO.NET application |
-| Local unit/routing suite | 25 passed; 26 SQL Server test groups skipped | SQL groups are intentionally skipped when `BLUEBOX_TEST_SQLSERVER` is unset |
-| GitHub unit/routing job | Passed | [Job 134247767347](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232/job/134247767347) |
-| GitHub real SQL Server job | Passed | [Job 134247766585](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232/job/134247766585); SQL Server 2022 in an isolated runner-local container |
-| Overall Milestone 2 workflow | Success | [Run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232), matching reviewed commit `6b37024` |
-| Movie-lookup browser component | Passed | Headless Chromium ran the actual JavaScript with controlled provider responses: safe text rendering, movie selection, metadata fill, fallback, keyboard handling, and stale-request cancellation |
-| Runtime SQL syntax | 41 batches parsed as T-SQL | [Runtime query catalog](sql-query-catalog.md); syntax parsing is separate from execution in SQL Server |
-| `.slnx` submission conversion | Passed | In a separate extracted source copy: migrated the solution, restored locked packages, built Release with zero warnings/errors, and passed 25 tests with 26 SQL groups skipped; the build/test did not rely on an active `.sln` file |
+The schema-compatible fixes at commit `936bec2` passed [run 44199421841](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44199421841):
 
-Milestone 1 also passed [run 44132304808](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44132304808) at commit `02e60c5`. The newer Milestone 2 result covers the expanded implementation. The SQL Server TRX report is available as the `sql-server-test-results` artifact on the run, subject to GitHub sign-in and artifact retention. Exact CI test counts should be read from that report; the local skip count is not a SQL pass count.
+| Check | Result | Scope |
+| --- | --- | --- |
+| Local Release compile/test | Passed with warnings treated as errors | SDK 10.0.404, locked restore, instructor-template ADO.NET application |
+| Local unit/routing/provider tests | 29 passed; 33 SQL Server groups intentionally skipped | No disposable SQL Server was configured locally |
+| GitHub unit/routing job | Passed | Same application and regression sources |
+| GitHub SQL-enabled suite | 81 passed, 0 failed, 81 total | Includes unit tests and all expanded real SQL Server cases, not 81 SQL-only tests |
+| Schema | Supplied five-table reference | Applied only in generated disposable SQL Server 2022 databases; no teacher-server changes |
+| New regression coverage | Passed in the SQL-enabled suite | Session revocation/rehash, edition identity, self-edit messages, route binding, retired corrections, and observed parent-lock ordering |
+
+The SQL job publishes a TRX artifact (`sql-server-test-results`) and a test-count notice. Counts above are evidence for `936bec2`, not permanent expected totals; use the newest run/report for later revisions. Newer documentation-only commits can have their own CI runs.
+
+## Historical baseline evidence
+
+- Milestone 1 commit `02e60c5` passed [run 44132304808](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44132304808).
+- The pre-review Milestone 2 baseline `6b37024` passed [run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232), with 25 local tests passed and 26 SQL groups skipped locally. Its SQL-enabled job passed separately in GitHub.
+- The earlier movie-lookup browser component check ran the actual JavaScript in headless Chromium with controlled responses: safe text rendering, selection, metadata fill, fallback, keyboard handling, and cancellation. This is not a live OMDb or full browser-to-SQL check.
+- The `.slnx` submission layout was verified in an extracted baseline source copy: migration, locked restore, Release build with zero warnings/errors, and 25 tests passed with 26 SQL groups skipped, without relying on an active `.sln` file. The solution/project paths are unchanged by these review fixes.
+- The [SQL query catalog](sql-query-catalog.md) is regenerated from current runtime literals. T-SQL syntax parsing and real SQL Server test execution are distinct checks.
 
 ## What the SQL Server suite covers
 
@@ -27,15 +35,14 @@ The tests create unique `BlueBoxTest_<guid>` databases, apply the sanitized supp
 - Check-in/out validation, first-balance creation, integer bounds, competing updates, and atomic balance/history rollback.
 - Zero-stock retirement and a concurrent retirement versus first-check-in race.
 - Linked correction chains, duplicate reversal rejection, insufficient stock, server-derived movement fields, concurrency, and rollback.
-- Activity pagination/filter preservation and consistent dashboard totals during stock changes.
+- Activity pagination/filter preservation and warehouse-derived dashboard totals during stock changes.
+- Password/username session revocation, valid login after a hash upgrade, edition-identity protection, self-account sign-out, route-ID tampering, and deterministic retirement lock ordering without deadlock retries.
 
 OMDb service tests use a fake HTTP provider. The browser component check is not a full browser session against SQL Server or proof of a working live OMDb key.
 
-## Why some workflow runs are canceled
+## Workflow run selection
 
-The workflow runs on feature-branch pushes and pull requests. Both events can describe the same commit. Its shared concurrency group and `cancel-in-progress: true` cancel older or duplicate runs when the replacement starts.
-
-A cancellation is not a test failure or a test pass. Check that the completed replacement run for the latest reviewed commit passed both `unit-and-routing-tests` and `sql-server-tests`. Earlier failures are retained in the run history; the reviewed fixes passed the final run linked above.
+CI runs on pull requests and main pushes. The concurrency key uses the PR number/ref, so only superseded runs in that PR/ref are canceled. Feature-branch pushes do not launch a second duplicate workflow alongside the PR event. Older canceled push/PR duplicates remain in historical run lists; a cancellation is neither a pass nor a failure. Use the successful completed run for the current head.
 
 ## Remaining manual verification
 

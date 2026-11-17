@@ -4,7 +4,7 @@ The checked-in solution is `BlueBox.sln`; the repository's build instructions an
 
 ## 1. Pull the code being submitted
 
-After the owner merges the implementation and documentation PRs, run from the repository folder:
+After the owner merges consolidated PR #5 (which already includes PR #4), run from the repository folder:
 
 ```sh
 git switch main

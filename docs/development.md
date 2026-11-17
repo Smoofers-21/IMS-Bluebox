@@ -85,7 +85,7 @@ dotnet run --project src/BlueBox.Web -- --create-manager
 
 This adds the first manager only; it refuses when an active manager already exists or the requested username is taken. It does not change existing passwords, stock, or history. Remove the Bootstrap values afterward. Existing employee password hashes must be compatible with ASP.NET Core `PasswordHasher<Employee>`; placeholder/plaintext values cannot sign in.
 
-After setup, active managers use Manage → Employees to create/edit accounts or set a new password. Existing passwords remain unchanged when the password field is blank. There is no public registration.
+After setup, active managers use Manage → Employees to create/edit accounts or set a new password. A blank edit password preserves the hash. Password/username changes revoke existing sessions on their next request. Self-edits warn and explicitly sign out the current user. There is no public registration.
 
 ## 4. Build and run
 
@@ -113,11 +113,11 @@ The loopback URLs above are local development addresses, not a public portfolio 
 7. In Activity, use Older/Newer to browse history in pages of 100; search and location/movement filters stay applied. Changing filters starts again at page 1.
 8. In a disposable test database, exercise competing check-outs and confirm no overselling or lost history.
 
-The overview reads all sections in one serializable transaction and one database round trip, so its stock totals remain consistent during concurrent movements.
+The overview uses one READ COMMITTED batch and derives its total units from the returned warehouse totals. Counts and recent movements can advance independently without a serializable dashboard read transaction.
 
 Stock updates use a serializable SQL Server transaction and a conditional balance update. Log insertion and balance update commit together; a failure rolls both back. SQL Server deadlock victims receive a bounded whole-operation retry. Client-side previews are informational; the server rechecks access, record status, and stock.
 
-Activity and overview display **Central time (CST/CDT)**, with UTC retained in the database and HTML machine-readable timestamps. Follow the [Milestone 2 review](milestone-2.md) for manager/correction/OMDb checks.
+Activity and overview display **Central time (CST/CDT)**, trying the IANA and Windows identifiers. If neither is available, values and captions explicitly show **UTC**. UTC remains in the database and HTML machine-readable timestamps. Follow the [Milestone 2 review](milestone-2.md) for manager/correction/OMDb checks.
 
 ## Optional OMDb setup
 
@@ -137,13 +137,13 @@ By default, tests run **unit and anonymous-routing checks** without database acc
 
 For SQL Server validation, set `BLUEBOX_TEST_SQLSERVER` privately to a connection string for a **disposable test instance with permission to create databases**, then run the same command. The test harness connects to `master`, creates uniquely named `BlueBoxTest_<guid>` databases, applies the sanitized supplied current-schema reference, and drops only those generated databases afterward. **Do not use the teacher's shared server for this mode.** The database named in the input connection string is not used as the test database.
 
-GitHub Actions runs both modes for feature-branch pushes, pull requests, and main; concurrent duplicate builds for the same branch are canceled. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
+GitHub Actions runs both modes on pull requests and pushes to main. Newer commits cancel older runs within the same PR/ref; feature pushes no longer start duplicate push/PR runs. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
 
 ## Remaining verification
 
-The reviewed local suite passed **25 tests**, with **26 SQL Server test groups intentionally skipped locally**. Milestone 2 commit `6b37024` passed both GitHub jobs in [run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232), including real SQL Server execution. See the [validation record](validation.md) for evidence and scope.
+See the [validation record](validation.md) and [PR #5’s latest checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks) for results of the current implementation. Baseline run/commit counts are preserved as historical evidence, not proof of later code changes. PR #5 includes the external-review fixes and already contains PR #4; merge #5 directly after its checks pass.
 
-The remaining tasks are the Windows/teacher-database walkthrough, a live OMDb lookup with a private key, and final fake-data screenshots. GitHub's disposable SQL Server result does not verify the teacher's network, account permissions, or certificate setup. No teacher database was accessed or modified from this workspace.
+The remaining tasks are the Windows/teacher-database walkthrough, a live OMDb lookup with a private key, and final fake-data screenshots. Disposable SQL Server CI does not verify the teacher’s network, permissions, or certificate setup. No teacher database was accessed or modified from this workspace.
 
 ## Class submission
 

@@ -68,10 +68,11 @@ Primary navigation: **Sign in → Overview → Catalog / Inventory / Move Stock 
 ### Add a catalog item
 
 1. A manager enters a name, item type, and media format.
-2. For a movie, the manager can search OMDb and select the correct title and release year.
-3. The system fills available poster and age-rating information for review. Games use manual entry.
-4. The manager saves the item. Creating an item adds no stock; balances begin at zero.
-5. Employees add physical stock through check-in.
+2. Type and format may be edited until the first stock movement. After that, create a new catalog entry for another edition; name and optional metadata remain editable.
+3. For a movie, the manager can search OMDb and select the correct title and release year.
+4. The system fills available poster and age-rating information for review. Games use manual entry.
+5. The manager saves the item. Creating an item adds no stock; balances begin at zero.
+6. Employees add physical stock through check-in.
 
 Posters and age ratings are optional. No match or an unavailable API must not prevent manual item creation. OMDb's `Rated` field is an age classification, not an IMDb review score. No usable rating or poster means the optional field remains empty.
 
@@ -94,7 +95,7 @@ A manager selects the mistaken transaction and records an opposite movement with
 - Archive items or deactivate warehouses only when their stock is zero. An item's stock must be zero across all warehouses.
 - Archived items and inactive warehouses cannot receive new movements. Historical references remain available.
 - Managers create employee accounts and assign roles. No employee self-registration is provided.
-- Inactive or terminated employees cannot access the application.
+- Inactive or terminated employees cannot access the application. Password resets and username changes revoke existing sessions on the next request. Saving your own employee account explicitly signs you out, with a warning and sign-in message.
 - The first manager is created during setup. The last active manager cannot be deactivated or demoted.
 - Passwords are stored using a supported salted password-hashing facility, never as plaintext. There is no forced first-login password change. Blank passwords on account edits preserve the existing hash; login-time hash upgrades cannot overwrite an intervening manager password reset.
 
@@ -117,9 +118,9 @@ Where source documents differ, use the agreed decisions here: quantity-based inv
 
 - The instructor’s explicit `Program.Main` / `MapRoutes` foundation and parameterized ADO.NET helpers are in place. Razor Pages render the screens; no Entity Framework or extra Identity tables are used.
 - The latest supplied five-table DDL already includes the required status, metadata, and correction fields. Milestone 2 requires no further migration on that aligned schema.
-- Stock writes and linked corrections are atomic. Dashboard totals and the latest five movements are read together in one serializable transaction and one database round trip.
+- Stock writes and linked corrections are atomic. Retirement takes an exclusive parent lock before checking stock. The dashboard uses one READ COMMITTED batch and derives total units from its warehouse rows; counts/recent movements can reflect later commits without a serializable read transaction.
 - Each history entry can be fully reversed once, including correction entries. Corrections require active records, adequate stock, and a manager explanation.
-- Build/unit/routing and disposable SQL Server checks passed for reviewed commit `6b37024`; see the validation record for exact evidence.
+- PR #5 consolidates the application, documentation, and external-review fixes for a single owner merge. Its latest checks are the authority for current results; historical run/commit evidence is retained in the validation record.
 - Complete the Windows/teacher-server walkthrough, live OMDb check, and final fake-data screenshots before class sign-off. Follow the submission guide if a `.slnx` file is required.
 
 See the [requirements](requirements.md), [database notes](architecture-and-database.md), [roadmap](roadmap.md), [validation record](validation.md), and [submission guide](submission.md).

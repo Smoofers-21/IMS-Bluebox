@@ -1,6 +1,6 @@
 # Demo and portfolio guide
 
-**Status:** walkthrough for the implemented Milestone 1 and 2 features. The reviewed code passed [SQL Server CI](validation.md#verified-results); run the presentation on verified fake data in the intended Windows setup. The teacher-server walkthrough, live OMDb smoke check, and final screenshots remain review tasks; this guide is not proof they have been completed.
+**Status:** walkthrough for the implemented Milestone 1 and 2 features. Check the [current validation record](validation.md#verified-results) and latest PR #5 checks, then run the presentation on verified fake data in the intended Windows setup. The teacher-server walkthrough, live OMDb smoke check, and final screenshots remain review tasks; this guide is not proof they have been completed.
 
 ## Fake data plan
 
@@ -51,3 +51,5 @@ Suggested screenshot set after validation:
 The [validation record](validation.md) contains verified test results. Add screenshots and a live demo link after the corresponding manual verification/deployment. This is a fictional class/portfolio project, not a deployed business system.
 
 For class hand-in, follow the [submission guide](submission.md) and include the requested `.slnx` with its project files. Public hosting follows grading and uses a separate fake-data database.
+
+When demonstrating editing, show that an item’s type/format become fixed after its first movement, that resetting a staff password ends its old session, and that saving the signed-in manager’s own account gives a clear sign-out notice.

@@ -14,7 +14,7 @@ Milestone 2 implements the remaining agreed warehouse features using the instruc
 | Corrections | Activity → Correct | Manager supplies an explanation; server derives all movement fields |
 | OMDb | Catalog administration → Search movies | Server-side key; review the selected movie's optional metadata before saving |
 
-Managers alone can open or submit the administration/correction pages, including lookup handlers. Transactional services recheck the actor's current manager status before writing. Account changes serialize the directory check/update so competing edits cannot remove the last active manager. Item/location retirement locks the target record and checks stock in the same transaction, coordinating with ordinary stock movements.
+Managers alone can open or submit the administration/correction pages, including lookup handlers. Transactional services recheck the actor's current manager status before writing. Account changes serialize the directory check/update so competing edits cannot remove the last active manager. Item/location edits take an exclusive parent lock before checking stock, coordinating with movements without the shared-to-exclusive parent lock-upgrade cycle. Type and format become fixed once any movement exists. Credential changes revoke old sessions on their next request; successful self-edits sign out with a clear message.
 
 ## Agreed correction policy
 
@@ -38,19 +38,21 @@ The existing foreign key preserves references. The one-reversal-per-entry rule i
 4. Remove all stock and retire the record. Verify ordinary movements and corrections against retired records fail, while existing history remains visible. Reactivate when needed.
 5. Record a movement, reverse it with an explanation, and reverse that correction. Check the two-way history labels. Try repeating a reversal and reversing a receipt after stock has been used.
 6. Configure OMDb privately. Select a title/year and review metadata before saving. Test missing/no-match metadata and manual game entry. Without a key, manual item entry must still work.
-7. Compare overview totals with inventory and recent activity. Times are labeled Central with CST/CDT; database timestamps remain UTC.
+7. Compare total units with the displayed warehouse sums. Counts/recent movements may advance independently under READ COMMITTED; stock writes remain atomic. Times use Central/CST/CDT when available, with a clearly labeled UTC fallback.
 
 ## Validation and remaining work
 
 Local Release build and non-SQL tests run without connecting to the teacher server. Real integration tests use generated disposable SQL Server databases in GitHub Actions. Added coverage includes staff HTTP denial, manager forms/antiforgery, account password preservation and duplicate names, competing manager changes, retirement, correction chains/concurrency/rollback, and dashboard totals. OMDb tests use a fake HTTP provider, not a real key.
 
-Reviewed commit `6b37024` passed both jobs in [run 44142192232](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44142192232); see the [validation record](validation.md). Final class readiness also requires a Windows walkthrough against the teacher's database, live OMDb smoke check, and screenshots using fake data. The passing Milestone 2 run covers the expanded implementation. Public deployment remains after grading, using a separate fake-data database.
+The external-review fixes at `936bec2` passed both jobs in [run 44199421841](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44199421841). See the [validation record](validation.md) for versioned counts and [PR #5 checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks) for later commits. PR #5 now includes the application, refreshed docs, and review fixes; it is the single PR to merge. Windows/teacher-server testing, live OMDb, and screenshots remain manual sign-off tasks. Public deployment is after grading with a separate fake-data database.
 
-Local verification: 25 tests passed; 26 SQL Server test groups were explicitly skipped locally. The movie-lookup JavaScript passed a headless Chromium component check with controlled responses, including safe text rendering, selection, fallback, keyboard handling, and stale-request cancellation. All 41 runtime SQL batches parsed as T-SQL; parsing is not SQL execution.
+The [external-review resolution](pr4-review-resolution.md) explains all adopted/deferred findings. The current [SQL catalog](sql-query-catalog.md) follows the runtime source; baseline test/query counts are historical evidence, not a claim about later code.
 
 ## Review fixes
 
 - Manager save redirects omit empty optional route values, avoiding a post-save error while preserving a supplied catalog search.
-- Overview totals, warehouse totals, and five recent entries are read in one serializable transaction and one database round trip. A stock update cannot leave conflicting totals on the same page, and the dashboard no longer loads a full 100-row activity page to show five entries.
+- Overview uses a READ COMMITTED batch; total units are calculated from the materialized warehouse totals, and only five recent movements are fetched. Independent counts/recent activity do not require serializable dashboard locks.
 - Login-time password-hash upgrades compare the previously verified hash before writing. A manager's intervening password reset cannot be overwritten by an older login attempt. The update reads `@@ROWCOUNT` explicitly.
 - Regression checks cover all three manager create forms, catalog editing, invalid-password messages without echoing the submitted password, concurrent dashboard/stock activity, stale hash upgrades, retirement races, and both sides of the Central-time daylight-saving transition.
+
+- External review also added credential-stamped sessions, immutable edition identity after history, exclusive parent locking before retirement checks, explicit self-edit sign-out, clearer OMDb/correction messages, time-zone fallback, route-only record IDs, and a single PR workflow run per commit. No DDL changes were made.
