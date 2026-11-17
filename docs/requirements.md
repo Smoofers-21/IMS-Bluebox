@@ -1,6 +1,6 @@
 # Requirements and acceptance criteria
 
-**Status:** Milestone 1 and Milestone 2 features are implemented for review. Milestone 1's disposable SQL Server CI passed; Milestone 2 CI and Windows/teacher-server verification remain separate completion gates. See the [roadmap](roadmap.md).
+**Status:** Milestone 1 and Milestone 2 features are implemented for review. Milestone 1's disposable SQL Server CI passed; [PR #4 checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/4/checks) track the new suite. Windows/teacher-server verification remains a separate completion gate. See the [roadmap](roadmap.md).
 
 ## Permissions
 

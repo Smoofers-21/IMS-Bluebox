@@ -2,7 +2,7 @@
 
 A browser-based internal inventory management project for a fictional movie and game rental business. BlueBox lets employees track warehouse quantities, record stock movements, and review who changed inventory and when.
 
-**Status: Milestone 2 implementation in review.** Manager administration, linked corrections (including corrections of corrections), zero-stock retirement, OMDb lookup, and the overview dashboard extend the working inventory system. Milestone 1 passed GitHub's disposable SQL Server checks. Milestone 2 SQL Server checks and the Windows/teacher-database walkthrough must be verified before final sign-off.
+**Status: Milestone 2 implementation in review.** Manager administration, linked corrections (including corrections of corrections), zero-stock retirement, OMDb lookup, and the overview dashboard extend the working inventory system. Milestone 1 passed GitHub's disposable SQL Server checks. Check [PR #4’s latest test results](https://github.com/Smoofers-21/IMS-Bluebox/pull/4/checks) for Milestone 2 SQL Server verification. The Windows/teacher-database walkthrough, live OMDb smoke check, and final screenshots remain final-sign-off tasks.
 
 ## Project at a glance
 

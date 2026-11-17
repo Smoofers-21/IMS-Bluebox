@@ -19,7 +19,7 @@ The project owner combined the original six stages into two milestones. Use smal
 
 ## Milestone 2 — Complete demo and portfolio project
 
-Implementation is on `feature/milestone-2`. Checked features describe code delivered for review; SQL Server CI and the teacher-server walkthrough still gate completion.
+Implementation is on `feature/milestone-2`. Checked features describe code delivered for review. [PR #4 checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/4/checks) track current SQL Server verification; the teacher-server walkthrough still gates final completion.
 
 - [x] Manager tools for items, employee accounts, and locations.
 - [x] Last-active-manager protection when managing accounts.
@@ -27,7 +27,8 @@ Implementation is on `feature/milestone-2`. Checked features describe code deliv
 - [x] Zero-stock item/location retirement rules.
 - [x] Server-side OMDb movie lookup, manual fallback, optional posters and age ratings.
 - [x] Overview dashboard and responsive layouts following the existing visual style.
-- [ ] Verify Milestone 2 SQL Server CI, finish Windows/class walkthrough, and capture final screenshots.
+- [x] Add real SQL Server tests for Milestone 2, including competing manager edits, retirement, and corrections; publish reports in GitHub Actions.
+- [ ] Finish Windows/class walkthrough, live OMDb smoke check, and final fake-data screenshots.
 - [x] Update setup, requirements, correction policy, and demo/review documentation.
 
 **Complete when:** agreed features work together and the system is ready for class review and GitHub presentation.
