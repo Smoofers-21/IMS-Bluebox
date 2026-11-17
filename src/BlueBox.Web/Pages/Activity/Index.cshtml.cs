@@ -3,11 +3,10 @@ using BlueBox.Web.Models;
 using BlueBox.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace BlueBox.Web.Pages.Activity;
 
-public sealed class IndexModel(BlueBoxDbContext db, InventoryQueries queries) : PageModel
+public sealed class IndexModel(InventoryQueries queries) : PageModel
 {
     [BindProperty(SupportsGet = true)] public string? Search { get; set; }
     [BindProperty(SupportsGet = true)] public string? Direction { get; set; }
@@ -16,7 +15,7 @@ public sealed class IndexModel(BlueBoxDbContext db, InventoryQueries queries) : 
     public List<ActivityRow> Rows { get; private set; } = [];
     public async Task OnGetAsync(CancellationToken ct)
     {
-        Locations = await db.Locations.AsNoTracking().OrderBy(l => l.LocationName).ToListAsync(ct);
-        Rows = await queries.Activity(Search?.Trim(), Direction, LocationId).OrderByDescending(t => t.Time).ThenByDescending(t => t.Id).Take(100).ToListAsync(ct);
+        Locations = await queries.LocationsAsync(ct: ct);
+        Rows = await queries.ActivityAsync(Search, Direction, LocationId, ct);
     }
 }

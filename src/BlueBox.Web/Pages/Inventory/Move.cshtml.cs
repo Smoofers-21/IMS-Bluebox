@@ -5,11 +5,10 @@ using BlueBox.Web.Models;
 using BlueBox.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace BlueBox.Web.Pages.Inventory;
 
-public sealed class MoveModel(BlueBoxDbContext db, StockService stock) : PageModel
+public sealed class MoveModel(InventoryQueries queries, StockService stock) : PageModel
 {
     public sealed class MovementInput
     {
@@ -22,7 +21,6 @@ public sealed class MoveModel(BlueBoxDbContext db, StockService stock) : PageMod
     [BindProperty] public MovementInput Input { get; set; } = new();
     public List<Item> Items { get; private set; } = [];
     public List<Location> Locations { get; private set; } = [];
-    public object[] Balances { get; private set; } = [];
 
     public async Task OnGetAsync(int? itemId, int? locationId, CancellationToken ct)
     {
@@ -50,8 +48,7 @@ public sealed class MoveModel(BlueBoxDbContext db, StockService stock) : PageMod
 
     private async Task LoadAsync(CancellationToken ct)
     {
-        Items = await db.Items.AsNoTracking().Where(i => i.ItemStatus == "ACTIVE").OrderBy(i => i.ItemName).ThenBy(i => i.MediaFormat).ToListAsync(ct);
-        Locations = await db.Locations.AsNoTracking().Where(l => l.LocationStatus == "ACTIVE").OrderBy(l => l.LocationName).ToListAsync(ct);
-        Balances = (await db.Inventory.AsNoTracking().Select(i => new { i.ItemId, i.LocationId, Quantity = i.QuantityOnHand }).ToListAsync(ct)).Cast<object>().ToArray();
+        Items = await queries.ActiveItemsAsync(ct);
+        Locations = await queries.LocationsAsync(true, ct);
     }
 }

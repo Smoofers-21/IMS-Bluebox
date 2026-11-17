@@ -6,11 +6,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace BlueBox.Web.Pages.Account;
 
-public sealed class LoginModel(BlueBoxDbContext db, IPasswordHasher<Employee> hasher) : PageModel
+public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Employee> hasher) : PageModel
 {
     [BindProperty, Required, StringLength(50)] public string Username { get; set; } = "";
     [BindProperty, Required, StringLength(256)] public string Password { get; set; } = "";
@@ -22,7 +21,7 @@ public sealed class LoginModel(BlueBoxDbContext db, IPasswordHasher<Employee> ha
     {
         if (!ModelState.IsValid) return Page();
         var username = Username.Trim();
-        var employee = await db.Employees.SingleOrDefaultAsync(e => e.Username == username, ct);
+        var employee = await employees.FindByUsernameAsync(username, ct);
         var result = PasswordVerificationResult.Failed;
         if (employee is not null)
         {
@@ -38,7 +37,7 @@ public sealed class LoginModel(BlueBoxDbContext db, IPasswordHasher<Employee> ha
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
             employee.PasswordHash = hasher.HashPassword(employee, Password);
-            await db.SaveChangesAsync(ct);
+            await employees.UpdateHashAsync(employee.EmployeeId, employee.PasswordHash, ct);
         }
         await HttpContext.SignInAsync(EmployeeCookieEvents.CreatePrincipal(employee));
         return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl!) : RedirectToPage("/Inventory/Index");

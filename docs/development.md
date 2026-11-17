@@ -13,7 +13,7 @@ Open `BlueBox.sln` in Visual Studio. Set **BlueBox.Web** as the startup project.
 
 ## 1. Prepare the database
 
-Follow [database instructions](../database/README.md). For existing baseline tables, apply `001_align_warehouse_schema.sql` once. For a new empty development database, apply `000` and then `001`. Edit each script's expected database name before running it in SSMS.
+The latest supplied DDL already has the planned columns and constraints, so **do not rerun the one-time migration on that database**. Follow [database instructions](../database/README.md) when preparing a different, empty database. For existing baseline tables, apply `001_align_warehouse_schema.sql` once. For a new empty development database, apply `000` and then `001`. Edit each script's expected database name before running it in SSMS.
 
 The table names are `dbo.EMPLOYEE`, `dbo.ITEM`, `dbo.LOCATION`, `dbo.CURRENT_INVENTORY`, and `dbo.TRANSACTION_LOG`.
 
@@ -29,9 +29,31 @@ In Visual Studio, right-click **BlueBox.Web → Manage User Secrets**. Use a loc
 }
 ```
 
-For Windows authentication, use `Integrated Security=True` instead of SQL username/password, if that is how your teacher configured access. If certificate validation fails, obtain the appropriate certificate/trust configuration from the teacher. The application does not disable certificate verification for the teacher's server.
+For Windows authentication, use `Integrated Security=True` instead of SQL username/password, if that is how your teacher configured access. If certificate validation fails, obtain the appropriate certificate/trust configuration from the teacher. Certificate validation is enabled by default; if the teacher explicitly requires a different setting, it belongs in private configuration.
 
 Alternatively, configure `ConnectionStrings__BlueBox` as an environment variable. User secrets are loaded in the Development environment. Do not put credentials in `appsettings.json`, `launchSettings.json`, SQL scripts, or GitHub.
+
+
+### Instructor-template configuration fields
+
+Instead of a connection string, you can set the starter template's four fields in user secrets:
+
+```json
+{
+  "Database": {
+    "Server": "YOUR_SERVER",
+    "Name": "YOUR_DATABASE",
+    "Username": "YOUR_SQL_USERNAME",
+    "Password": "YOUR_PASSWORD",
+    "RoutePrefix": "bluebox",
+    "TrustServerCertificate": false
+  }
+}
+```
+
+`RoutePrefix` is the starter's `/{username}` landing route; set it privately to the instructor-assigned route name if required. Application pages remain at `/Inventory`, `/Catalog`, and the other documented routes. Prefer the teacher's certificate trust configuration; the starter's certificate exception is not hardcoded into public source.
+
+For this workspace, the supplied values were saved outside the checkout in a permission-restricted private file. They are not pushed to GitHub or loaded by default. `BLUEBOX_PRIVATE_CONFIG` can point to such a file when deliberately running locally. On your Windows PC, use Manage User Secrets with your own private values. No teacher connection is required for build/unit checks.
 
 ## 3. Choose initial data
 
@@ -100,15 +122,15 @@ Milestone 1 shows activity times explicitly in **UTC**. Central-time display fro
 dotnet test BlueBox.sln --configuration Release
 ```
 
-By default, tests run the actual Razor Pages application and stock service against a temporary **SQLite relational test database**. This checks HTTP sign-in, antiforgery, inactive sessions, role policy, searches/pages, movement attribution, invalid input, rollback, and competing stock operations. SQLite is a test dependency only; it is not an application database option.
+By default, tests run **unit and anonymous-routing checks** without database access. Real SQL Server integration tests are explicitly skipped when `BLUEBOX_TEST_SQLSERVER` is unset. There is no SQLite backend or Entity Framework dependency. The earlier 27-test SQLite result does not validate this ADO.NET refactor.
 
-For SQL Server validation, set `BLUEBOX_TEST_SQLSERVER` privately to a connection string for a **disposable test instance with permission to create databases**, then run the same command. The test harness connects to `master`, creates uniquely named `BlueBoxTest_<guid>` databases, applies the supplied `000`/`001` scripts, and drops only those generated databases afterward. **Do not use the teacher's shared server for this mode.** The database named in the input connection string is not used as the test database.
+For SQL Server validation, set `BLUEBOX_TEST_SQLSERVER` privately to a connection string for a **disposable test instance with permission to create databases**, then run the same command. The test harness connects to `master`, creates uniquely named `BlueBoxTest_<guid>` databases, applies the sanitized supplied current-schema reference, and drops only those generated databases afterward. **Do not use the teacher's shared server for this mode.** The database named in the input connection string is not used as the test database.
 
 GitHub Actions runs both modes. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
 
 ## Remaining verification
 
-Local relational test results do not prove the teacher's server is reachable or SQL Server locking behaves identically. Record the SQL Server CI result and complete the Windows/teacher-database walkthrough before merging the implementation PR. No remote database was modified by preparing this application.
+Local unit/routing test results do not prove the teacher's server is reachable or SQL Server locking behaves identically. Record the SQL Server CI result and complete the Windows/teacher-database walkthrough before merging the implementation PR. No remote database was modified by preparing this application.
 
 ## Troubleshooting
 

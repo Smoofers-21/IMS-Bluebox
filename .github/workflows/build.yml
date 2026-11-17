@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  relational-tests:
+  unit-and-routing-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,7 +45,10 @@ jobs:
             sleep 2
           done
           exit 1
-      - run: dotnet test BlueBox.sln --no-restore --configuration Release
+      - name: Run real SQL Server integration suite
+        run: |
+          test -n "$BLUEBOX_TEST_SQLSERVER"
+          dotnet test BlueBox.sln --no-restore --configuration Release
       - name: Remove disposable SQL Server
         if: always()
         run: docker rm -f bluebox-sql

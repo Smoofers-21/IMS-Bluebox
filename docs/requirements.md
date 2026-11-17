@@ -1,6 +1,6 @@
 # Requirements and acceptance criteria
 
-**Status:** requirements baseline. Milestone 1 implements sign-in, browsing, ordinary movements, and history; manager administration, corrections, OMDb, and dashboard behavior remain Milestone 2 work. Automated relational checks do not replace the pending SQL Server and Windows review. See the [roadmap](roadmap.md).
+**Status:** requirements baseline. Milestone 1 implements sign-in, browsing, ordinary movements, and history; manager administration, corrections, OMDb, and dashboard behavior remain Milestone 2 work. Local unit/routing checks do not replace the pending SQL Server integration and Windows review. See the [roadmap](roadmap.md).
 
 ## Permissions
 
@@ -61,6 +61,6 @@ The final policy for repeated corrections and corrections that cannot be fully r
 
 ## Validation approach
 
-Focused integration tests now exercise sign-in, permissions, stock updates, rollback, competing check-outs, and the HTTP workflow. Correction links and OMDb fallback will be validated in Milestone 2. See the [development guide](development.md#automated-checks) for the distinction between SQLite test runs and SQL Server validation.
+Focused integration tests now exercise sign-in, permissions, stock updates, rollback, competing check-outs, and the HTTP workflow. Correction links and OMDb fallback will be validated in Milestone 2. See the [development guide](development.md#automated-checks) for the distinction between local checks and SQL Server integration validation.
 
 See the [demo guide](demo-guide.md) for the presentation sequence.

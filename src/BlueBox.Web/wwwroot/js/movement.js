@@ -2,25 +2,18 @@
 (() => {
   const form = document.getElementById("movement-form");
   if (!form) return;
-  const balances = JSON.parse(
-    document.getElementById("stock-balances").textContent,
-  );
   const item = document.getElementById("Input_ItemId");
   const location = document.getElementById("Input_LocationId");
   const quantity = document.getElementById("Input_Quantity");
   const confirm = document.getElementById("confirm-movement");
   const next = document.getElementById("next-balance");
   const message = document.getElementById("preview-message");
-  const update = () => {
-    const selected = item.value && location.value;
+  let current = null;
+  let loadedKey = "";
+  let pending = null;
+  let lookupFailed = false;
+  const render = () => {
     const amount = Number(quantity.value);
-    const current = selected
-      ? (balances.find(
-          (b) =>
-            b.ItemId === Number(item.value) &&
-            b.LocationId === Number(location.value),
-        )?.Quantity ?? 0)
-      : null;
     const direction = form.querySelector(
       'input[name="Input.Direction"]:checked',
     )?.value;
@@ -31,33 +24,66 @@
       amount > 0 &&
       amount <= 2147483647;
     const result = current === null || !validQuantity ? null : current + delta;
-    document.getElementById("preview-item").textContent = selected
-      ? item.options[item.selectedIndex].text +
-        " · " +
-        location.options[location.selectedIndex].text
-      : "Select an item and warehouse";
+    document.getElementById("preview-item").textContent =
+      item.value && location.value
+        ? item.options[item.selectedIndex].text +
+          " · " +
+          location.options[location.selectedIndex].text
+        : "Select an item and warehouse";
     document.getElementById("current-balance").textContent = current ?? "—";
     document.getElementById("quantity-change").textContent =
-      validQuantity && selected ? (delta > 0 ? "+" : "") + delta : "—";
+      validQuantity && current !== null ? (delta > 0 ? "+" : "") + delta : "—";
     next.textContent =
       result === null ? "—" : result.toLocaleString() + " units";
     const invalid = result !== null && (result < 0 || result > 2147483647);
     next.closest(".result-card").classList.toggle("invalid", invalid);
-    message.textContent =
-      result === null
+    message.textContent = lookupFailed
+      ? "Preview unavailable. Reload the page to try again."
+      : result === null
         ? "Choose an item, warehouse, and positive quantity."
         : result < 0
           ? "Not enough stock for this check-out."
           : result > 2147483647
             ? "Quantity exceeds the supported maximum."
             : "Ready to confirm.";
-    confirm.disabled = !selected || !validQuantity || invalid;
+    confirm.disabled = current === null || !validQuantity || invalid;
   };
-  form.addEventListener("input", update);
-  form.addEventListener("change", update);
+  const loadBalance = async () => {
+    const key = item.value + ":" + location.value;
+    if (key === loadedKey) return;
+    loadedKey = key;
+    pending?.abort();
+    current = null;
+    lookupFailed = false;
+    render();
+    if (!item.value || !location.value) return;
+    pending = new AbortController();
+    try {
+      const response = await fetch(
+        `/api/inventory/balance?itemId=${encodeURIComponent(item.value)}&locationId=${encodeURIComponent(location.value)}`,
+        { signal: pending.signal,
+          cache: "no-store", headers: { Accept: "application/json" } },
+      );
+      if (!response.ok || response.redirected)
+        throw new Error("Balance unavailable");
+      const data = await response.json();
+      if (!Number.isInteger(data.quantity) || data.quantity < 0)
+        throw new Error("Invalid balance");
+      if (key !== loadedKey) return;
+      current = data.quantity;
+    } catch (error) {
+      if (error.name === "AbortError" || key !== loadedKey) return;
+      lookupFailed = true;
+    }
+    render();
+  };
+  item.addEventListener("change", loadBalance);
+  location.addEventListener("change", loadBalance);
+  form.addEventListener("input", render);
+  form.addEventListener("change", render);
   form.addEventListener("submit", () => {
     confirm.disabled = true;
     confirm.textContent = "Recording…";
   });
-  update();
+  loadBalance();
 })();

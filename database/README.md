@@ -2,6 +2,8 @@
 
 These scripts target the five-table SQL Server design supplied during planning. They are separate from the future C# application. No script has been run against the teacher's server by this project workspace.
 
+The latest supplied DDL already contains the planned columns and constraints, with `poster_url NVARCHAR(2048)`. **Do not rerun 001 against that updated database.** A sanitized [current schema reference](reference/current-schema.sql) is retained for empty test databases; it is not an upgrade script.
+
 ## Which file to use
 
 | Situation | Script |
@@ -27,7 +29,7 @@ The migration is intentionally one-time. Rerunning it stops with a message rathe
 
 | Table | Change |
 | --- | --- |
-| ITEM | Nullable `poster_url VARCHAR(2048)` |
+| ITEM | Nullable `poster_url NVARCHAR(2048)` |
 | ITEM | Nullable `age_rating VARCHAR(20)` |
 | ITEM | `item_status VARCHAR(10) NOT NULL`, default ACTIVE, allowed ACTIVE/ARCHIVED |
 | ITEM | Reject blank/ASCII-whitespace-only media formats |

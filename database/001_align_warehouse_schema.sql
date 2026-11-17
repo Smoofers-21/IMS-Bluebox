@@ -62,7 +62,7 @@ BEGIN TRY
         BEGIN TRANSACTION;
 
         ALTER TABLE dbo.ITEM ADD
-            poster_url VARCHAR(2048) NULL,
+            poster_url NVARCHAR(2048) NULL,
             age_rating VARCHAR(20) NULL,
             item_status VARCHAR(10) NOT NULL
                 CONSTRAINT DF_ITEM_status DEFAULT (''ACTIVE'');

@@ -5,88 +5,87 @@ using BlueBox.Web.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace BlueBox.Web.Tests;
 
-public sealed class FailureSwitch : SaveChangesInterceptor
+public sealed class SqlServerFactAttribute : FactAttribute
 {
-    public bool FailHistory { get; set; }
-    public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData data, InterceptionResult<int> result, CancellationToken ct = default)
+    public SqlServerFactAttribute()
     {
-        if (FailHistory && data.Context!.ChangeTracker.Entries<StockTransaction>().Any(e => e.State == EntityState.Added))
-            throw new InvalidOperationException("Injected history-write failure for rollback test.");
-        return ValueTask.FromResult(result);
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BLUEBOX_TEST_SQLSERVER")))
+            Skip = "Set BLUEBOX_TEST_SQLSERVER to a disposable test instance to run real SQL Server integration checks.";
+    }
+}
+public sealed class SqlServerTheoryAttribute : TheoryAttribute
+{
+    public SqlServerTheoryAttribute()
+    {
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BLUEBOX_TEST_SQLSERVER")))
+            Skip = "Set BLUEBOX_TEST_SQLSERVER to a disposable test instance to run real SQL Server integration checks.";
     }
 }
 
 public sealed partial class TestApp : WebApplicationFactory<Program>
 {
     public const string Password = "Local-test-password-42!";
-    private readonly string path = Path.Combine(Path.GetTempPath(), $"bluebox-test-{Guid.NewGuid():N}.db");
     private readonly string? sqlServer = Environment.GetEnvironmentVariable("BLUEBOX_TEST_SQLSERVER");
     private readonly string databaseName = $"BlueBoxTest_{Guid.NewGuid():N}";
     private bool databaseCreated;
-    public FailureSwitch Failures { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
         builder.ConfigureServices(services =>
         {
-            services.RemoveAll<DbContextOptions<BlueBoxDbContext>>();
-            services.RemoveAll<IDbContextOptionsConfiguration<BlueBoxDbContext>>();
-            services.AddDbContext<BlueBoxDbContext>(options =>
+            services.RemoveAll<SqlDatabase>();
+            services.AddScoped(sp => new SqlDatabase(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             {
-                if (sqlServer is null) options.UseSqlite($"Data Source={path};Default Timeout=5");
-                else options.UseSqlServer(SqlConnectionString(databaseName));
-                options.AddInterceptors(Failures);
-            });
+                ["ConnectionStrings:BlueBox"] = sqlServer is null ? "Server=localhost;Database=Unused;Integrated Security=True" : ConnectionString(databaseName)
+            }).Build(), sp.GetRequiredService<ILogger<SqlDatabase>>()));
         });
     }
 
     public async Task InitializeAsync()
     {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<BlueBoxDbContext>();
-        if (sqlServer is null) await db.Database.EnsureCreatedAsync(); // Test database only.
-        else
+        if (sqlServer is null) throw new InvalidOperationException("SQL Server tests require a disposable instance; no fake SQL backend is used.");
+        await using var master = new SqlConnection(ConnectionString("master"));
+        await master.OpenAsync();
+        await using var create = new SqlCommand($"CREATE DATABASE [{databaseName}]", master);
+        await create.ExecuteNonQueryAsync(); databaseCreated = true;
+        await using var target = new SqlConnection(ConnectionString(databaseName)); await target.OpenAsync();
+        using var reader = new StreamReader(typeof(TestApp).Assembly.GetManifestResourceStream("BlueBox.CurrentSchema.sql")!);
+        foreach (var batch in Regex.Split(await reader.ReadToEndAsync(), @"^\s*GO\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase))
         {
-            // Never connect to or delete the database named in the input string.
-            // Tests create and later delete only their own generated database.
-            await using var master = new SqlConnection(SqlConnectionString("master"));
-            await master.OpenAsync();
-            await using var create = new SqlCommand($"CREATE DATABASE [{databaseName}]", master);
-            await create.ExecuteNonQueryAsync();
-            databaseCreated = true;
-            await using var target = new SqlConnection(SqlConnectionString(databaseName));
-            await target.OpenAsync();
-            foreach (var resource in new[] { "BlueBox.Baseline.sql", "BlueBox.Update.sql" })
-            {
-                using var reader = new StreamReader(typeof(TestApp).Assembly.GetManifestResourceStream(resource)!);
-                var script = (await reader.ReadToEndAsync()).Replace("YourBlueBoxDatabaseName", databaseName, StringComparison.Ordinal);
-                await using var command = new SqlCommand(script, target) { CommandTimeout = 60 };
-                await command.ExecuteNonQueryAsync();
-            }
+            if (string.IsNullOrWhiteSpace(batch)) continue;
+            await using var command = new SqlCommand(batch, target) { CommandTimeout = 60 };
+            await command.ExecuteNonQueryAsync();
         }
-        await DemoSeeder.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IPasswordHasher<Employee>>(), Password);
+        await using var scope = Services.CreateAsyncScope();
+        await DemoSeeder.SeedAsync(scope.ServiceProvider.GetRequiredService<SqlDatabase>(), scope.ServiceProvider.GetRequiredService<IPasswordHasher<Employee>>(), Password);
     }
 
+    public async Task<object?> ScalarAsync(string sql)
+    {
+        await using var connection = new SqlConnection(ConnectionString(databaseName)); await connection.OpenAsync();
+        await using var command = new SqlCommand(sql, connection); return await command.ExecuteScalarAsync();
+    }
+    public async Task ExecuteAsync(string sql)
+    {
+        await using var connection = new SqlConnection(ConnectionString(databaseName)); await connection.OpenAsync();
+        await using var command = new SqlCommand(sql, connection); await command.ExecuteNonQueryAsync();
+    }
     public HttpClient Browser() => CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, BaseAddress = new Uri("https://localhost") });
-
     public static async Task<string> TokenAsync(HttpClient client, string page)
     {
-        var response = await client.GetAsync(page);
-        response.EnsureSuccessStatusCode();
-        var html = await response.Content.ReadAsStringAsync();
-        return TokenPattern().Match(html).Groups[1].Value;
+        var response = await client.GetAsync(page); response.EnsureSuccessStatusCode();
+        return TokenPattern().Match(await response.Content.ReadAsStringAsync()).Groups[1].Value;
     }
-
     public static async Task<HttpResponseMessage> LoginAsync(HttpClient client, string username = "avery.chen", string? password = null, string? returnUrl = null)
     {
         var token = await TokenAsync(client, "/Account/Login");
@@ -98,26 +97,15 @@ public sealed partial class TestApp : WebApplicationFactory<Program>
             ["__RequestVerificationToken"] = token
         }));
     }
-
     [GeneratedRegex("name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"")]
     private static partial Regex TokenPattern();
-
-    private string SqlConnectionString(string database) => new SqlConnectionStringBuilder(sqlServer!)
-    {
-        InitialCatalog = database,
-        Pooling = false
-    }.ConnectionString;
-
+    private string ConnectionString(string database) => new SqlConnectionStringBuilder(sqlServer!) { InitialCatalog = database, Pooling = false }.ConnectionString;
     public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
-        if (databaseCreated)
-        {
-            await using var master = new SqlConnection(SqlConnectionString("master"));
-            await master.OpenAsync();
-            await using var drop = new SqlCommand($"ALTER DATABASE [{databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{databaseName}]", master);
-            await drop.ExecuteNonQueryAsync();
-        }
-        foreach (var suffix in new[] { "", "-wal", "-shm" }) if (File.Exists(path + suffix)) File.Delete(path + suffix);
+        if (!databaseCreated) return;
+        await using var master = new SqlConnection(ConnectionString("master")); await master.OpenAsync();
+        await using var drop = new SqlCommand($"ALTER DATABASE [{databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{databaseName}]", master);
+        await drop.ExecuteNonQueryAsync();
     }
 }

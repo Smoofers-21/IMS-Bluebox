@@ -11,11 +11,11 @@ The project owner combined the original six stages into two milestones. Use smal
 - [x] Searchable read-only catalog, item details, and warehouse inventory.
 - [x] Check-in/check-out with balance previews and server-side validation.
 - [x] Atomic stock/history writes and permanent activity browsing.
-- [x] Automated relational tests and a SQL Server test path.
+- [x] Instructor-template ADO.NET data access, unit/routing checks, and a real SQL Server integration path.
 - [ ] Verify the GitHub Actions SQL Server run.
 - [ ] Owner applies/reviews DDL and tests on Windows against the teacher's database.
 
-**Complete when:** an employee can sign in, find warehouse stock, record movements, and review accurate history on the intended SQL Server setup. Invalid movements leave inventory unchanged. Local SQLite results alone do not close this milestone.
+**Complete when:** an employee can sign in, find warehouse stock, record movements, and review accurate history on the intended SQL Server setup. Invalid movements leave inventory unchanged. Unit/routing results alone do not close this milestone.
 
 ## Milestone 2 — Complete demo and portfolio project
 

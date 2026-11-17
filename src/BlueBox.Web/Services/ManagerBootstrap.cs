@@ -2,26 +2,32 @@ using System.Data;
 using BlueBox.Web.Data;
 using BlueBox.Web.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace BlueBox.Web.Services;
 
 public static class ManagerBootstrap
 {
-    public static async Task CreateAsync(BlueBoxDbContext db, IPasswordHasher<Employee> hasher, string username, string password)
+    public static async Task CreateAsync(SqlDatabase database, IPasswordHasher<Employee> hasher, string username, string password)
     {
         username = username.Trim();
         if (username.Length is < 1 or > 50 || password.Length < 12)
             throw new InvalidOperationException("Choose a username of 1–50 characters and a password of at least 12 characters.");
-        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-        if (await db.Employees.AnyAsync(e => e.AccessRole == "MANAGER" && e.EmploymentStatus == "ACTIVE"))
-            throw new InvalidOperationException("An active manager already exists. Initial-manager setup cannot be used to add another.");
-        if (await db.Employees.AnyAsync(e => e.Username == username))
-            throw new InvalidOperationException("That username already exists. No account was changed.");
-        var employee = new Employee { FirstName = "BlueBox", LastName = "Manager", Username = username, AccessRole = "MANAGER" };
-        employee.PasswordHash = hasher.HashPassword(employee, password);
-        db.Employees.Add(employee);
-        await db.SaveChangesAsync();
-        await transaction.CommitAsync();
+        await database.InTransactionAsync(async (connection, transaction, ct) =>
+        {
+            using var check = SqlDatabase.Command("""
+                SELECT COUNT_BIG(*) FROM dbo.EMPLOYEE WITH (UPDLOCK, HOLDLOCK)
+                WHERE (access_role = 'MANAGER' AND employment_status = 'ACTIVE') OR username = @username;
+                """, connection, transaction, SqlDatabase.Parameter("@username", SqlDbType.VarChar, username, 50));
+            if (Convert.ToInt64(await check.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture) != 0)
+                throw new InvalidOperationException("An active manager or that username already exists. No account was changed.");
+            var employee = new Employee { FirstName = "BlueBox", LastName = "Manager", Username = username, AccessRole = "MANAGER" };
+            using var insert = SqlDatabase.Command("""
+                INSERT INTO dbo.EMPLOYEE (first_name, last_name, username, password_hash, access_role, employment_status)
+                VALUES ('BlueBox', 'Manager', @username, @hash, 'MANAGER', 'ACTIVE');
+                """, connection, transaction, SqlDatabase.Parameter("@username", SqlDbType.VarChar, username, 50),
+                SqlDatabase.Parameter("@hash", SqlDbType.VarChar, hasher.HashPassword(employee, password), 255));
+            await insert.ExecuteNonQueryAsync(ct);
+            return true;
+        });
     }
 }

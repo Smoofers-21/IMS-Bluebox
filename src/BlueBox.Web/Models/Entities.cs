@@ -30,24 +30,3 @@ public sealed class Location
     public string Address { get; set; } = "";
     public string LocationStatus { get; set; } = "ACTIVE";
 }
-
-public sealed class InventoryBalance
-{
-    public int ItemId { get; set; }
-    public int LocationId { get; set; }
-    public int QuantityOnHand { get; set; }
-    public DateTime LastUpdatedAt { get; set; }
-}
-
-public sealed class StockTransaction
-{
-    public long TransactionId { get; set; }
-    public int EmployeeId { get; set; }
-    public int ItemId { get; set; }
-    public int LocationId { get; set; }
-    public string TransactionType { get; set; } = "";
-    public int QuantityMoved { get; set; }
-    public DateTime TransactionDatetime { get; set; }
-    public string? Notes { get; set; }
-    public long? CorrectsTransactionId { get; set; }
-}

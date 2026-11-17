@@ -2,17 +2,19 @@ using System.Security.Claims;
 using BlueBox.Web.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.EntityFrameworkCore;
 
 namespace BlueBox.Web.Services;
 
-public sealed class EmployeeCookieEvents(BlueBoxDbContext db) : CookieAuthenticationEvents
+public sealed class EmployeeCookieEvents(EmployeeRepository employees) : CookieAuthenticationEvents
 {
     public override async Task ValidatePrincipal(CookieValidatePrincipalContext context)
     {
+        // The error route has no account data/actions and must still render
+        // when the database failure occurred during cookie validation itself.
+        if (context.Request.Path.Equals("/Error", StringComparison.OrdinalIgnoreCase)) return;
         var id = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
         var employee = int.TryParse(id, out var employeeId)
-            ? await db.Employees.AsNoTracking().SingleOrDefaultAsync(e => e.EmployeeId == employeeId, context.HttpContext.RequestAborted)
+            ? await employees.FindByIdAsync(employeeId, context.HttpContext.RequestAborted)
             : null;
         if (employee is null || employee.EmploymentStatus != "ACTIVE" || employee.AccessRole is not ("STAFF" or "MANAGER"))
         {
