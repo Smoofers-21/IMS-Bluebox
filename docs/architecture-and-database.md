@@ -61,6 +61,8 @@ The script requires a real expected database name and refuses to create tables w
 
 Field names below are proposals; changes have not been applied.
 
+A [reviewable SQL migration](../database/README.md) now implements these schema additions for the supplied baseline. Its presence does not mean it has been applied to the teacher's database.
+
 | Table | Proposed change | Reason |
 | --- | --- | --- |
 | ITEM | Nullable `poster_url` | OMDb movie poster or manually entered game poster |

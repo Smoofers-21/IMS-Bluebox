@@ -55,6 +55,7 @@ Check-in means adding units to a warehouse; check-out means removing units from 
 | [Architecture and database](docs/architecture-and-database.md) | Proposed application structure, entities, relationships, and schema adjustments |
 | [Roadmap](docs/roadmap.md) | Build sequence and completion criteria |
 | [Demo guide](docs/demo-guide.md) | Planned fake data and a portfolio presentation walkthrough |
+| [SQL Server scripts](database/README.md) | Existing-table schema update and SSMS instructions |
 
 Download the [Word version of the project plan](docs/BlueBox-Project-Plan.docx) for sharing or class submission. The Markdown plan is the maintained source; regenerate the Word copy when the baseline changes.
 
