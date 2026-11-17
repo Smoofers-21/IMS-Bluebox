@@ -83,6 +83,8 @@ public sealed class MilestoneTwoTests
             ["Input.Status"] = "ACTIVE",
             ["__RequestVerificationToken"] = await TestApp.TokenAsync(client, "/Admin/Items")
         }));
+        if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+            Assert.Fail("Unexpected server failure: " + string.Join("\n", app.ServerErrors.Select(error => error.ToString())));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Equal(1, await app.ScalarAsync("SELECT COUNT(*) FROM dbo.ITEM WHERE item_name='HTTP test movie'"));
         Assert.Equal(0, await app.ScalarAsync("SELECT COUNT(*) FROM dbo.CURRENT_INVENTORY AS b JOIN dbo.ITEM AS i ON i.item_id=b.item_id WHERE i.item_name='HTTP test movie'"));
@@ -192,6 +194,29 @@ public sealed class MilestoneTwoTests
         Assert.Single(results, r => r.Success);
         Assert.Equal(1, await app.ScalarAsync("SELECT COUNT(*) FROM dbo.TRANSACTION_LOG WHERE corrects_transaction_id=1"));
         Assert.Equal(0, await app.ScalarAsync("SELECT quantity_on_hand FROM dbo.CURRENT_INVENTORY WHERE item_id=1 AND location_id=1"));
+    }
+
+    [SqlServerFact]
+    public async Task RetirementAndFirstCheckInCannotBothSucceed()
+    {
+        await using var app = new TestApp(); await app.InitializeAsync();
+        await using (var setup = app.Services.CreateAsyncScope())
+            Assert.True((await setup.ServiceProvider.GetRequiredService<AdministrationService>().SaveItemAsync(1, null, Item())).Success);
+        var id = Convert.ToInt32(await app.ScalarAsync("SELECT MAX(item_id) FROM dbo.ITEM"), System.Globalization.CultureInfo.InvariantCulture);
+        async Task<bool> Archive()
+        {
+            await using var scope = app.Services.CreateAsyncScope();
+            return (await scope.ServiceProvider.GetRequiredService<AdministrationService>().SaveItemAsync(1, id, Item("ARCHIVED"))).Success;
+        }
+        async Task<bool> Receive()
+        {
+            await using var scope = app.Services.CreateAsyncScope();
+            return (await scope.ServiceProvider.GetRequiredService<StockService>().RecordAsync(new(2, id, 1, "CHECK IN", 1, "Concurrent receipt"))).Success;
+        }
+        var results = await Task.WhenAll(Archive(), Receive());
+        Assert.Single(results, success => success);
+        var archived = Equals("ARCHIVED", await app.ScalarAsync($"SELECT item_status FROM dbo.ITEM WHERE item_id={id}"));
+        Assert.Equal(archived ? 0 : 1, await app.ScalarAsync($"SELECT COALESCE(SUM(quantity_on_hand),0) FROM dbo.CURRENT_INVENTORY WHERE item_id={id}"));
     }
 
     [SqlServerFact]
