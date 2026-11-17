@@ -1,6 +1,6 @@
 # Architecture and database design
 
-**Status:** proposed implementation design. The supplied SQL script was reviewed as text; actual database connectivity, deployed tables, and application behavior have not been verified.
+**Status:** Milestone 1 uses this structure for sign-in, catalog, inventory, movements, and activity. The teacher's database connectivity/deployed schema remain unverified. Current implementation and test instructions are in the [development guide](development.md).
 
 ## Application structure
 
@@ -17,7 +17,7 @@ flowchart LR
 
 The browser never needs the SQL Server connection string or OMDb key. The database must remain usable when OMDb is unavailable because movie metadata is optional.
 
-The exact .NET version, data access library, authentication configuration, and deployment target will be selected during implementation. If the chosen authentication framework needs additional tables or a larger password-hash field, reconcile that explicitly with the five core business entities rather than assuming compatibility.
+The implementation uses .NET 10, ADO.NET through `Microsoft.Data.SqlClient`, cookie authentication, and ASP.NET Core `PasswordHasher<Employee>`. It maps to the five existing business tables without introducing Identity tables. The SDK is pinned in `global.json`. Deployment remains a later decision.
 
 ## Core entities
 
@@ -61,6 +61,8 @@ The script requires a real expected database name and refuses to create tables w
 
 Field names below are proposals; changes have not been applied.
 
+A [reviewable SQL migration](../database/README.md) now implements these schema additions for the supplied baseline. Its presence does not mean it has been applied to the teacher's database.
+
 | Table | Proposed change | Reason |
 | --- | --- | --- |
 | ITEM | Nullable `poster_url` | OMDb movie poster or manually entered game poster |
@@ -84,7 +86,7 @@ Every movement must perform these steps as one database transaction:
 4. Insert the matching movement entry with server-derived employee/time and correction details if applicable.
 5. Refresh `last_updated_at` and commit, or roll back all changes.
 
-Use SQL Server concurrency controls or a conditional update pattern appropriate to the selected data access library. An earlier browser preview is not sufficient protection against competing check-outs. Handle simultaneous first check-ins to the same item/location without duplicate balances.
+Use serializable SQL Server transactions, `UPDLOCK`/`HOLDLOCK` on the inventory key, and a conditional balance update. An earlier browser preview is not sufficient protection against competing check-outs. Handle simultaneous first check-ins to the same item/location without duplicate balances.
 
 The nonnegative quantity constraint is a useful final guard, but does not by itself ensure balance/history consistency. Timestamp defaults initialize rows; they do not automatically update `last_updated_at` after later movements.
 

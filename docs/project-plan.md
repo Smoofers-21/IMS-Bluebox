@@ -1,6 +1,6 @@
 # BlueBox project plan
 
-**Planning baseline:** agreed with the project owner. Implementation has not started in this repository. This document records intended behavior; it is not an implementation or test report.
+**Planning baseline:** agreed with the project owner. This document records the original intended behavior; it is not an implementation or test report. Current progress is tracked in the [two-milestone roadmap](roadmap.md).
 
 ## Purpose
 

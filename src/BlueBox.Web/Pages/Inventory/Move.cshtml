@@ -1,0 +1,23 @@
+@page
+@model BlueBox.Web.Pages.Inventory.MoveModel
+@{
+    ViewData["Title"] = "Move stock";
+    ViewData["Section"] = "Move";
+}
+<div class="page-heading"><div><p class="eyebrow">STOCK MOVEMENT</p><h1>Move stock</h1><p class="muted">Receive or remove units at a warehouse location.</p></div></div>
+<form method="post" id="movement-form" class="movement-grid">
+    <section class="panel movement-fields">
+        <h2>Movement details</h2>
+        <div asp-validation-summary="All" class="validation" role="alert"></div>
+        <fieldset class="segmented"><legend class="sr-only">Movement type</legend><label><input type="radio" asp-for="Input.Direction" value="CHECK OUT" /><span>→ Check out</span></label><label><input type="radio" asp-for="Input.Direction" value="CHECK IN" /><span>← Check in</span></label></fieldset>
+        <label asp-for="Input.ItemId">Item</label><select asp-for="Input.ItemId" required><option value="">Select an item</option>@foreach (var item in Model.Items) { <option value="@item.ItemId">@item.ItemName · @item.MediaFormat · #@item.ItemId</option> }</select>
+        <div class="form-row"><div><label asp-for="Input.LocationId">Warehouse</label><select asp-for="Input.LocationId" required><option value="">Select a warehouse</option>@foreach (var location in Model.Locations) { <option value="@location.LocationId">@location.LocationName</option> }</select></div><div><label asp-for="Input.Quantity">Quantity</label><input asp-for="Input.Quantity" type="number" min="1" max="2147483647" step="1" required /></div></div>
+        <label asp-for="Input.Notes">Notes <span class="muted">· Optional</span></label><textarea asp-for="Input.Notes" maxlength="255" rows="3" placeholder="Add a note about this movement"></textarea>
+        <div class="form-actions"><a class="button" asp-page="Index">Cancel</a><button class="button primary" type="submit" id="confirm-movement" disabled="@(Model.Items.Count == 0 || Model.Locations.Count == 0)">Confirm movement</button></div>
+        @if(Model.Items.Count == 0 || Model.Locations.Count == 0) { <p class="help">An active item and warehouse are needed before recording stock.</p> }
+    </section>
+    <aside class="panel preview" aria-label="Stock preview"><p class="eyebrow">BEFORE YOU CONFIRM</p><h2>Stock preview</h2><p id="preview-item" class="preview-item">Select an item and warehouse</p><dl class="preview-values"><div><dt>Current on hand</dt><dd id="current-balance">—</dd></div><div><dt>Quantity change</dt><dd id="quantity-change">—</dd></div></dl><div class="result-card" aria-live="polite"><span>On hand after movement</span><strong id="next-balance">—</strong><small id="preview-message">Choose an item, warehouse, and quantity.</small></div><p class="help">The confirmed movement will appear in Activity. Availability is checked again when you save.</p><noscript><p>The preview needs JavaScript. You can still submit; the server validates stock before saving.</p></noscript></aside>
+</form>
+@section Scripts {
+    <script src="~/js/movement.js" asp-append-version="true"></script>
+}

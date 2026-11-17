@@ -1,6 +1,6 @@
 # Requirements and acceptance criteria
 
-**Status:** planned requirements, not implemented or tested functionality. These criteria define how the first version will be checked.
+**Status:** requirements baseline. Milestone 1 implements sign-in, browsing, ordinary movements, and history; manager administration, corrections, OMDb, and dashboard behavior remain Milestone 2 work. Local unit/routing checks do not replace the pending SQL Server integration and Windows review. See the [roadmap](roadmap.md).
 
 ## Permissions
 
@@ -32,7 +32,7 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | INV-01 | Maintain location balances | Each item/location pair has at most one balance. New balances start at zero; creating an item adds no units. |
 | INV-02 | Check stock in | With 5 on hand, checking in 10 results in 15 and one new movement entry. |
 | INV-03 | Check stock out | With 15 on hand, checking out 4 results in 11 and one new movement entry. |
-| INV-04 | Validate movement quantities | Zero, negative, fractional, missing, and out-of-range quantities are rejected without changing inventory or history. |
+| INV-04 | Validate movement quantities | Zero, negative, fractional, missing, and out-of-range quantities are rejected without changing inventory or history. Missing movement direction is rejected too. |
 | INV-05 | Prevent negative balances | Checking out more than available is rejected. Removing exactly the available quantity results in zero. |
 | INV-06 | Save reliably | Balance update and history insert both commit, or neither persists. |
 | INV-07 | Handle competing updates | If two check-outs together exceed available stock, they cannot both succeed and create a negative or inconsistent balance. |
@@ -45,7 +45,7 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | RET-01 | Retire items safely | An item with stock at any warehouse cannot be archived. Archived items remain identifiable in history. |
 | RET-02 | Retire locations safely | A warehouse with stock cannot be deactivated. Its historical movements remain visible. |
 | VIEW-01 | Find stock | Inventory can be searched by item name/ID and filtered by location and item type, following the mockups. |
-| VIEW-02 | Review activity | Users can inspect employee-attributed movements and filter by item, movement type, and location. |
+| VIEW-02 | Review activity | Users can inspect employee-attributed movements and filter by item, movement type, and location; older results remain accessible through 100-row pages. |
 | VIEW-03 | Summarize inventory | Dashboard totals agree with the underlying inventory data and show recent movements. |
 
 The final policy for repeated corrections and corrections that cannot be fully reversed because stock has already moved remains an implementation-planning detail. Do not claim those cases are resolved by the current schema.
@@ -61,6 +61,6 @@ The final policy for repeated corrections and corrections that cannot be fully r
 
 ## Validation approach
 
-Use focused integration checks for stock updates, rollback, competing check-outs, permissions, and correction links. Use browser walkthroughs for the agreed screen flow and OMDb fallback. Record executed checks and their results when implementation exists; no tests have been run or passed at the documentation stage.
+Focused integration tests now exercise sign-in, permissions, stock updates, rollback, competing check-outs, and the HTTP workflow. Correction links and OMDb fallback will be validated in Milestone 2. See the [development guide](development.md#automated-checks) for the distinction between local checks and SQL Server integration validation.
 
 See the [demo guide](demo-guide.md) for the presentation sequence.

@@ -1,0 +1,22 @@
+@page
+@model BlueBox.Web.Pages.Inventory.IndexModel
+@{
+    ViewData["Title"] = "Inventory by location";
+    ViewData["Section"] = "Inventory";
+}
+<div class="page-heading"><div><p class="eyebrow">STOCK</p><h1>Inventory by location</h1><p class="muted">Check quantities on hand before you move stock.</p></div><a class="button primary" asp-page="Move">↔ Move stock</a></div>
+@if (TempData["Success"] is string message) { <div class="notice success" role="status">@message <a asp-page="/Activity/Index">View activity →</a></div> }
+<form method="get" class="filter-bar" role="search">
+    <label class="search-field"><span class="sr-only">Search by item name or ID</span><input asp-for="Search" placeholder="Search by item name or ID" maxlength="150" /></label>
+    <label><span class="sr-only">Warehouse</span><select asp-for="LocationId"><option value="">All locations</option>@foreach(var location in Model.Locations) { <option value="@location.LocationId">@location.LocationName</option> }</select></label>
+    <label><span class="sr-only">Item type</span><select asp-for="Type"><option value="">All item types</option><option value="MOVIE">Movies</option><option value="GAME">Games</option></select></label>
+    <button class="button" type="submit">Filter</button><a class="text-button" asp-page="Index">Reset</a>
+</form>
+<section class="panel table-panel" aria-label="Warehouse stock"><div class="table-scroll"><table><thead><tr><th>Title</th><th>Format</th><th>Warehouse</th><th>On hand</th><th>Action</th></tr></thead><tbody>
+@foreach (var item in Model.Rows)
+{
+    <tr><td><a class="item-name" asp-page="/Catalog/Details" asp-route-id="@item.ItemId"><span class="mini-cover @(item.Type == "GAME" ? "game" : "")" aria-hidden="true">@(item.Type == "GAME" ? "◇" : "◒")</span>@item.Name</a>@if(item.ItemStatus != "ACTIVE") { <span class="badge">Archived</span> }</td><td>@item.Format</td><td>@item.Location @if(item.LocationStatus != "ACTIVE") { <span class="badge">Inactive</span> }</td><td><strong class="@(item.OnHand == 0 ? "muted" : "")">@item.OnHand</strong></td><td>@if(item.ItemStatus == "ACTIVE" && item.LocationStatus == "ACTIVE") { <a class="button small" asp-page="Move" asp-route-itemId="@item.ItemId" asp-route-locationId="@item.LocationId">Move <span aria-hidden="true">→</span></a> }</td></tr>
+}
+</tbody></table></div>
+@if(Model.Rows.Count == 0) { <div class="empty-state"><h2>No matching inventory</h2><p>Try another search or clear your filters.</p></div> }
+<p class="table-caption">Showing up to 100 item/location balances, including zero stock.</p></section>

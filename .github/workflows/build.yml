@@ -1,0 +1,54 @@
+name: Build and test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  unit-and-routing-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet restore BlueBox.sln --locked-mode
+      - run: dotnet test BlueBox.sln --no-restore --configuration Release
+
+  sql-server-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet restore BlueBox.sln --locked-mode
+      - name: Start disposable SQL Server
+        shell: bash
+        run: |
+          password="$(openssl rand -hex 24)Aa1!"
+          echo "::add-mask::$password"
+          printf 'SQL_TEST_PASSWORD=%s\n' "$password" >> "$GITHUB_ENV"
+          printf 'BLUEBOX_TEST_SQLSERVER=Server=localhost,1433;User ID=sa;Password=%s;Encrypt=True;TrustServerCertificate=True\n' "$password" >> "$GITHUB_ENV"
+          docker run -d --name bluebox-sql -p 127.0.0.1:1433:1433 -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$password" mcr.microsoft.com/mssql/server:2022-latest
+      - name: Wait for disposable SQL Server
+        shell: bash
+        run: |
+          for attempt in {1..30}; do
+            if docker exec -e SQLCMDPASSWORD="$SQL_TEST_PASSWORD" bluebox-sql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -Q 'SELECT 1' >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+      - name: Run real SQL Server integration suite
+        run: |
+          test -n "$BLUEBOX_TEST_SQLSERVER"
+          dotnet test BlueBox.sln --no-restore --configuration Release
+      - name: Remove disposable SQL Server
+        if: always()
+        run: docker rm -f bluebox-sql

@@ -1,0 +1,9 @@
+@page
+@{
+    ViewData["Title"] = "Access denied";
+    Response.StatusCode = 403;
+}
+<p class="eyebrow">EMPLOYEE ACCESS</p>
+<h1>Access denied</h1>
+<p>Your account does not have permission for this action.</p>
+<a class="button" asp-page="/Inventory/Index">Return to inventory</a>

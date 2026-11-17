@@ -1,8 +1,8 @@
 # BlueBox Warehouse Inventory Manager
 
-A planned internal inventory management website for a fictional movie and game rental business. BlueBox will let employees track warehouse quantities, record stock movements, and review who changed inventory and when.
+A browser-based internal inventory management project for a fictional movie and game rental business. BlueBox lets employees track warehouse quantities, record stock movements, and review who changed inventory and when.
 
-**Status: planning complete for the initial scope; application implementation has not started.** This repository currently contains project documentation. Features, architecture, and demo scenarios below describe the intended system, not working functionality.
+**Status: Milestone 1 implemented; SQL Server and Windows/teacher-database review pending.** Sign-in, read-only catalog, inventory, stock movements, and activity history are implemented. Local unit/routing checks run without a database; real SQL Server integration checks require a disposable test instance. Manager administration, corrections, OMDb integration, and the dashboard are Milestone 2 work.
 
 ## Project at a glance
 
@@ -10,13 +10,14 @@ A planned internal inventory management website for a fictional movie and game r
 | --- | --- |
 | Purpose | Class project and portfolio demonstration |
 | Interface | Browser-based internal employee website |
-| Application | C# with ASP.NET Core Razor Pages |
+| Application | C# / .NET 10 with ASP.NET Core Razor Pages |
 | Database | Microsoft SQL Server, managed through SQL Server Management Studio (SSMS) |
-| External integration | OMDb for movie posters and age classifications |
+| Data access | ADO.NET (`SqlConnection`, `SqlCommand`, `DataTable`), based on the instructor’s template |
+| External integration | OMDb for movie posters and age classifications (Milestone 2) |
 | Inventory model | Quantities per catalog item and warehouse location |
 | Users | Staff and managers |
 
-## Planned capabilities
+## Milestone 1 capabilities
 
 - Employee sign-in with staff and manager permissions.
 - A searchable movie and game catalog, with separate entries for different formats.
@@ -24,17 +25,17 @@ A planned internal inventory management website for a fictional movie and game r
 - Check-in and check-out with a preview of the resulting balance.
 - Protection against negative inventory and conflicting stock updates.
 - Permanent movement history identifying the item, warehouse, employee, quantity, and time.
-- Manager-only corrections linked to the original movement.
-- Manager administration for items, employee accounts, and warehouse locations.
-- An overview dashboard with stock totals and recent activity.
+- Private demo-data seeding and first-manager setup commands.
+
+Milestone 2 adds manager corrections and administration, OMDb movie lookup, and the overview dashboard. The [roadmap](docs/roadmap.md) tracks both milestones and verification still needed.
 
 **Scope:** warehouse stock only. Customer rentals, payments, late fees, streaming, and kiosk inventory are outside the initial project.
 
-## Planned employee workflow
+## Employee workflow
 
 ```mermaid
 flowchart LR
-    A[Employee signs in] --> B[Overview]
+    A[Employee signs in] --> B[Warehouse inventory]
     B --> C[Find item and warehouse]
     C --> D[Choose check-in or check-out]
     D --> E[Enter quantity and preview balance]
@@ -50,11 +51,15 @@ Check-in means adding units to a warehouse; check-out means removing units from 
 
 | Document | Contents |
 | --- | --- |
+| [Development and Windows setup](docs/development.md) | SDK, private connection configuration, demo data, running, and tests |
 | [Project plan](docs/project-plan.md) | Agreed scope, screens, workflows, and decisions |
 | [Requirements](docs/requirements.md) | Permissions, business rules, and acceptance criteria |
 | [Architecture and database](docs/architecture-and-database.md) | Proposed application structure, entities, relationships, and schema adjustments |
 | [Roadmap](docs/roadmap.md) | Build sequence and completion criteria |
 | [Demo guide](docs/demo-guide.md) | Planned fake data and a portfolio presentation walkthrough |
+| [SQL Server scripts](database/README.md) | Existing-table schema update and SSMS instructions |
+| [Instructor template adaptation](docs/instructor-template.md) | Required structure, corrections, and review findings |
+| [Runtime SQL query catalog](docs/sql-query-catalog.md) | Application SELECT/INSERT/UPDATE statements |
 
 Download the [Word version of the project plan](docs/BlueBox-Project-Plan.docx) for sharing or class submission. The Markdown plan is the maintained source; regenerate the Word copy when the baseline changes.
 
@@ -62,12 +67,28 @@ The supplied warehouse conceptual model, database design, data dictionary, and s
 
 ## Running the project
 
-There is no runnable application, project file, dependency installation, or test suite in this repository yet. Setup commands will be documented when implementation establishes the .NET version and SQL Server connection requirements.
+Install the SDK pinned in `global.json`, prepare the SQL Server tables, and configure `ConnectionStrings:BlueBox` privately. Follow the [development guide](docs/development.md) for Visual Studio setup and initial accounts, then run:
 
-Existing SQL table definitions were supplied and reviewed during planning; database connectivity and deployed schema have not been verified from this repository. Planned schema adjustments have not been applied here.
+```sh
+dotnet restore BlueBox.sln --locked-mode
+dotnet build BlueBox.sln --no-restore
+dotnet run --project src/BlueBox.Web
+```
 
-When implemented, the SQL Server connection string and OMDb API key will be configured outside source control. Never commit credentials, real employee data, or API keys. Fake records will be used for the demo.
+Open `BlueBox.sln` in a Visual Studio release supporting .NET 10 on Windows, or use VS Code/the CLI on Mac. No database is created, altered, or seeded automatically when the website starts. The teacher's database has not been accessed or changed from this workspace.
+
+The connection string belongs in user secrets or an environment variable. Never commit credentials, real employee data, or API keys. OMDb is not called in Milestone 1.
+
+## Validation
+
+```sh
+dotnet test BlueBox.sln --configuration Release
+```
+
+The default suite runs unit/routing checks and explicitly skips database integration checks when no test instance is configured. SQL Server mode applies the supplied current schema to generated disposable databases and runs the real HTTP/stock workflow. GitHub Actions is configured for both paths. See [test setup and limits](docs/development.md#automated-checks).
+
+The Windows walkthrough against the teacher's SQL Server remains required before calling the milestone complete. Do not use the shared teacher server for automated tests that create/drop test databases.
 
 ## Portfolio focus
 
-The intended project demonstrates relational database design, role-based access, reliable inventory transactions, audit history, and external API integration in C#. Screenshots, verified setup instructions, and test results will be added as those capabilities are built and validated.
+The project demonstrates relational database design, employee authentication, role policy, transactional stock updates, and audit history in C#. External API integration is scheduled for Milestone 2. Verified SQL Server results, screenshots, and a public demo link will be added as those capabilities are validated and deployed.
