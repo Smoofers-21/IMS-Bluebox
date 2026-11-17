@@ -23,7 +23,7 @@
             <input asp-for="Username" autocomplete="username" autofocus maxlength="50" required />
             <span asp-validation-for="Username" class="validation"></span>
             <label asp-for="Password">Password</label>
-            <input asp-for="Password" type="password" autocomplete="current-password" required maxlength="256" />
+            <input asp-for="Password" type="password" autocomplete="current-password" required maxlength="@BlueBox.Web.Models.PasswordPolicy.MaximumLength" />
             <span asp-validation-for="Password" class="validation"></span>
             <button type="submit" class="button primary full">Sign in <span aria-hidden="true">→</span></button>
         </form>

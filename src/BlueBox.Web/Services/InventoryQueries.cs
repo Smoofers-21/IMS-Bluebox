@@ -40,8 +40,11 @@ public sealed record ActivityRow
     public string? Notes { get; init; }
 }
 
+public sealed record ActivityPage(List<ActivityRow> Rows, bool HasNextPage);
+
 public sealed class InventoryQueries(SqlDatabase database)
 {
+    public const int ActivityPageSize = 100;
     public async Task<List<CatalogRow>> CatalogAsync(string? search, string? type, CancellationToken ct = default)
     {
         using var command = SearchCommand("""
@@ -94,10 +97,11 @@ public sealed class InventoryQueries(SqlDatabase database)
         }).ToList();
     }
 
-    public async Task<List<ActivityRow>> ActivityAsync(string? search, string? direction, int? location, CancellationToken ct = default)
+    public async Task<ActivityPage> ActivityAsync(string? search, string? direction, int? location, int pageNumber = 1, CancellationToken ct = default)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(pageNumber, 1);
         using var command = SearchCommand("""
-            SELECT TOP (100) t.transaction_id, i.item_name, i.media_format, l.location_name,
+            SELECT t.transaction_id, i.item_name, i.media_format, l.location_name,
                 t.transaction_type, t.quantity_moved, e.first_name + ' ' + e.last_name AS employee_name,
                 t.transaction_datetime, t.notes
             FROM dbo.TRANSACTION_LOG AS t
@@ -106,11 +110,15 @@ public sealed class InventoryQueries(SqlDatabase database)
             INNER JOIN dbo.EMPLOYEE AS e ON e.employee_id = t.employee_id
             WHERE (@search = '' OR CHARINDEX(@search, i.item_name) > 0 OR TRY_CONVERT(int, @search) = i.item_id)
                 AND (@direction = '' OR t.transaction_type = @direction) AND (@location IS NULL OR l.location_id = @location)
-            ORDER BY t.transaction_datetime DESC, t.transaction_id DESC;
+            ORDER BY t.transaction_datetime DESC, t.transaction_id DESC
+            OFFSET @offset ROWS FETCH NEXT @take ROWS ONLY;
             """, search, null);
         command.Parameters.Add(SqlDatabase.Parameter("@direction", SqlDbType.VarChar, direction ?? "", 10));
         command.Parameters.Add(SqlDatabase.Parameter("@location", SqlDbType.Int, location));
-        return (await database.FillDataTableViaCommandAsync(command, ct)).AsEnumerable().Select(r => new ActivityRow
+        command.Parameters.Add(SqlDatabase.Parameter("@offset", SqlDbType.BigInt, ((long)pageNumber - 1) * ActivityPageSize));
+        command.Parameters.Add(SqlDatabase.Parameter("@take", SqlDbType.Int, ActivityPageSize + 1));
+        var table = await database.FillDataTableViaCommandAsync(command, ct);
+        var rows = table.AsEnumerable().Take(ActivityPageSize).Select(r => new ActivityRow
         {
             Id = r.Field<long>("transaction_id"),
             Name = r.Field<string>("item_name")!,
@@ -122,6 +130,7 @@ public sealed class InventoryQueries(SqlDatabase database)
             Time = DateTime.SpecifyKind(r.Field<DateTime>("transaction_datetime"), DateTimeKind.Utc),
             Notes = r.Field<string?>("notes")
         }).ToList();
+        return new ActivityPage(rows, table.Rows.Count > ActivityPageSize);
     }
 
     public async Task<List<Location>> LocationsAsync(bool activeOnly = false, CancellationToken ct = default)

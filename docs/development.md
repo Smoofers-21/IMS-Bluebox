@@ -59,7 +59,7 @@ For this workspace, the supplied values were saved outside the checkout in a per
 
 ### Empty demo tables
 
-Add `Demo:Password` to user secrets with a password of at least 12 characters, then run from the repository root:
+Add `Demo:Password` to user secrets with a password of 12–256 characters, then run from the repository root:
 
 ```sh
 dotnet run --project src/BlueBox.Web -- --seed-demo
@@ -77,7 +77,7 @@ Opening quantities are supported by matching check-in history. The seeder requir
 
 ### Tables already contain data, but no active manager
 
-Configure `Bootstrap:Username` and `Bootstrap:Password` privately (password at least 12 characters), then run:
+Configure `Bootstrap:Username` and `Bootstrap:Password` privately (password 12–256 characters), then run:
 
 ```sh
 dotnet run --project src/BlueBox.Web -- --create-manager
@@ -110,7 +110,8 @@ The loopback URLs above are local development addresses, not a public portfolio 
 4. Attempt to check out too much; verify stock/history remain unchanged.
 5. Try zero, negative, fractional, and excessive quantities; verify rejection.
 6. Try signing in as the inactive employee.
-7. In a disposable test database, exercise competing check-outs and confirm no overselling or lost history.
+7. In Activity, use Older/Newer to browse history in pages of 100; search and location/movement filters stay applied. Changing filters starts again at page 1.
+8. In a disposable test database, exercise competing check-outs and confirm no overselling or lost history.
 
 Stock updates use a serializable SQL Server transaction and a conditional balance update. Log insertion and balance update commit together; a failure rolls both back. SQL Server deadlock victims receive a bounded whole-operation retry. Client-side previews are informational; the server rechecks access, record status, and stock.
 

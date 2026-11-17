@@ -18,12 +18,17 @@
       'input[name="Input.Direction"]:checked',
     )?.value;
     const delta = direction === "CHECK IN" ? amount : -amount;
+    const validDirection =
+      direction === "CHECK IN" || direction === "CHECK OUT";
     const validQuantity =
       quantity.value !== "" &&
       Number.isInteger(amount) &&
       amount > 0 &&
       amount <= 2147483647;
-    const result = current === null || !validQuantity ? null : current + delta;
+    const result =
+      current === null || !validQuantity || !validDirection
+        ? null
+        : current + delta;
     document.getElementById("preview-item").textContent =
       item.value && location.value
         ? item.options[item.selectedIndex].text +
@@ -32,7 +37,9 @@
         : "Select an item and warehouse";
     document.getElementById("current-balance").textContent = current ?? "—";
     document.getElementById("quantity-change").textContent =
-      validQuantity && current !== null ? (delta > 0 ? "+" : "") + delta : "—";
+      validQuantity && validDirection && current !== null
+        ? (delta > 0 ? "+" : "") + delta
+        : "—";
     next.textContent =
       result === null ? "—" : result.toLocaleString() + " units";
     const invalid = result !== null && (result < 0 || result > 2147483647);
@@ -40,13 +47,14 @@
     message.textContent = lookupFailed
       ? "Preview unavailable. Reload the page to try again."
       : result === null
-        ? "Choose an item, warehouse, and positive quantity."
+        ? "Choose a movement, item, warehouse, and positive quantity."
         : result < 0
           ? "Not enough stock for this check-out."
           : result > 2147483647
             ? "Quantity exceeds the supported maximum."
             : "Ready to confirm.";
-    confirm.disabled = current === null || !validQuantity || invalid;
+    confirm.disabled =
+      current === null || !validQuantity || !validDirection || invalid;
   };
   const loadBalance = async () => {
     const key = item.value + ":" + location.value;
@@ -61,8 +69,11 @@
     try {
       const response = await fetch(
         `/api/inventory/balance?itemId=${encodeURIComponent(item.value)}&locationId=${encodeURIComponent(location.value)}`,
-        { signal: pending.signal,
-          cache: "no-store", headers: { Accept: "application/json" } },
+        {
+          signal: pending.signal,
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        },
       );
       if (!response.ok || response.redirected)
         throw new Error("Balance unavailable");

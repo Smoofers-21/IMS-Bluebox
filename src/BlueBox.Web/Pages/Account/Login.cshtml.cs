@@ -12,7 +12,7 @@ namespace BlueBox.Web.Pages.Account;
 public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Employee> hasher) : PageModel
 {
     [BindProperty, Required, StringLength(50)] public string Username { get; set; } = "";
-    [BindProperty, Required, StringLength(256)] public string Password { get; set; } = "";
+    [BindProperty, Required, StringLength(PasswordPolicy.MaximumLength)] public string Password { get; set; } = "";
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
 
     public IActionResult OnGet() => User.Identity?.IsAuthenticated == true ? RedirectToPage("/Inventory/Index") : Page();

@@ -10,8 +10,8 @@ public static class ManagerBootstrap
     public static async Task CreateAsync(SqlDatabase database, IPasswordHasher<Employee> hasher, string username, string password)
     {
         username = username.Trim();
-        if (username.Length is < 1 or > 50 || password.Length < 12)
-            throw new InvalidOperationException("Choose a username of 1–50 characters and a password of at least 12 characters.");
+        if (username.Length is < 1 or > 50 || !PasswordPolicy.IsValidForSetup(password))
+            throw new InvalidOperationException($"Choose a username of 1–50 characters and a password of {PasswordPolicy.MinimumSetupLength}–{PasswordPolicy.MaximumLength} characters.");
         await database.InTransactionAsync(async (connection, transaction, ct) =>
         {
             using var check = SqlDatabase.Command("""

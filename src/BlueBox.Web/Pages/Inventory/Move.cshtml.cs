@@ -14,8 +14,8 @@ public sealed class MoveModel(InventoryQueries queries, StockService stock) : Pa
     {
         [Required, Range(1, int.MaxValue)] public int? ItemId { get; set; }
         [Required, Range(1, int.MaxValue)] public int? LocationId { get; set; }
-        [Required, RegularExpression("^(CHECK IN|CHECK OUT)$")] public string Direction { get; set; } = "CHECK OUT";
-        [Required, Range(1, int.MaxValue)] public int? Quantity { get; set; } = 1;
+        [Required, RegularExpression("^(CHECK IN|CHECK OUT)$")] public string? Direction { get; set; }
+        [Required, Range(1, int.MaxValue)] public int? Quantity { get; set; }
         [StringLength(255)] public string? Notes { get; set; }
     }
     [BindProperty] public MovementInput Input { get; set; } = new();
@@ -26,6 +26,8 @@ public sealed class MoveModel(InventoryQueries queries, StockService stock) : Pa
     {
         Input.ItemId = itemId;
         Input.LocationId = locationId;
+        Input.Direction = "CHECK OUT";
+        Input.Quantity = 1;
         await LoadAsync(ct);
     }
 
@@ -34,7 +36,7 @@ public sealed class MoveModel(InventoryQueries queries, StockService stock) : Pa
         if (ModelState.IsValid)
         {
             var employeeId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!, System.Globalization.CultureInfo.InvariantCulture);
-            var result = await stock.RecordAsync(new MovementRequest(employeeId, Input.ItemId!.Value, Input.LocationId!.Value, Input.Direction, Input.Quantity!.Value, Input.Notes), ct);
+            var result = await stock.RecordAsync(new MovementRequest(employeeId, Input.ItemId!.Value, Input.LocationId!.Value, Input.Direction!, Input.Quantity!.Value, Input.Notes), ct);
             if (result.Success)
             {
                 TempData["Success"] = $"Stock movement recorded. New warehouse balance: {result.Balance}.";

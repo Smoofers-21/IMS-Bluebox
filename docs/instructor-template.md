@@ -46,3 +46,10 @@ A sanitized [schema reference](../database/reference/current-schema.sql) preserv
 The earlier 27-check SQLite result applies to the former EF implementation, not this refactor. Current local tests cover configuration, basic validation, anonymous routing, antiforgery, role policy, and headers. SQL Server integration scenarios are explicitly skipped locally without a disposable instance.
 
 The SQL Server CI job applies the supplied current schema to generated test databases and exercises the real ADO.NET stock/HTTP workflows, including rollback and competing updates. Live verification was left to Windows/GitHub at the project owner's request. No teacher database schema, records, or stock were changed from this workspace.
+
+## PR #2 review fixes
+
+- Movement inputs have no POST-time defaults. Missing fields fail required validation; initial quantity/direction defaults are assigned on GET only.
+- Setup accepts 12–256 character passwords, sharing the login maximum through `PasswordPolicy`.
+- Activity uses bounded 100-row pages with a one-row lookahead, deterministic ordering, and filter-preserving Older/Newer links. No full-history download or separate total-count query is needed.
+- Local regression tests exercise actual model binding and password boundaries. SQL Server regressions verify unchanged stock/history for incomplete posts, maximum-length-password sign-in, and navigation across more than 100 filtered movements. Live SQL checks remain pending Windows/GitHub execution.

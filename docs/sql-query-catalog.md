@@ -30,7 +30,7 @@ UPDATE dbo.EMPLOYEE SET password_hash = @hash WHERE employee_id = @id;
 
 ## 4. DemoSeeder
 
-Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L15)
+Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L16)
 
 ```sql
 SELECT (SELECT COUNT_BIG(*) FROM dbo.EMPLOYEE WITH (UPDLOCK,HOLDLOCK))
@@ -42,7 +42,7 @@ SELECT (SELECT COUNT_BIG(*) FROM dbo.EMPLOYEE WITH (UPDLOCK,HOLDLOCK))
 
 ## 5. DemoSeeder
 
-Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L32)
+Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L33)
 
 ```sql
 INSERT INTO dbo.EMPLOYEE (first_name,last_name,username,password_hash,access_role,employment_status)
@@ -51,7 +51,7 @@ OUTPUT INSERTED.employee_id VALUES (@first,@last,@username,@hash,@role,@status);
 
 ## 6. DemoSeeder
 
-Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L44)
+Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L45)
 
 ```sql
 INSERT INTO dbo.LOCATION (location_name,address,location_status)
@@ -60,7 +60,7 @@ OUTPUT INSERTED.location_id VALUES (@name,@address,'ACTIVE');
 
 ## 7. DemoSeeder
 
-Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L60)
+Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L61)
 
 ```sql
 INSERT INTO dbo.ITEM (item_name,item_type,media_format,age_rating,item_status)
@@ -69,7 +69,7 @@ OUTPUT INSERTED.item_id VALUES (@name,@type,@format,@rating,'ACTIVE');
 
 ## 8. DemoSeeder
 
-Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L70)
+Source: [src/BlueBox.Web/Services/DemoSeeder.cs](../src/BlueBox.Web/Services/DemoSeeder.cs#L71)
 
 ```sql
 INSERT INTO dbo.CURRENT_INVENTORY (item_id,location_id,quantity_on_hand,last_updated_at)
@@ -81,7 +81,7 @@ IF @quantity > 0
 
 ## 9. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L47)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L50)
 
 ```sql
 SELECT TOP (100) i.item_id, i.item_name, i.item_type, i.media_format,
@@ -96,7 +96,7 @@ ORDER BY i.item_name, i.media_format, i.item_id;
 
 ## 10. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L71)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L74)
 
 ```sql
 SELECT TOP (100) i.item_id, i.item_name, i.item_type, i.media_format, i.item_status,
@@ -111,10 +111,10 @@ ORDER BY i.item_name, l.location_name, i.media_format, i.item_id, l.location_id;
 
 ## 11. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L99)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L103)
 
 ```sql
-SELECT TOP (100) t.transaction_id, i.item_name, i.media_format, l.location_name,
+SELECT t.transaction_id, i.item_name, i.media_format, l.location_name,
     t.transaction_type, t.quantity_moved, e.first_name + ' ' + e.last_name AS employee_name,
     t.transaction_datetime, t.notes
 FROM dbo.TRANSACTION_LOG AS t
@@ -123,12 +123,13 @@ INNER JOIN dbo.LOCATION AS l ON l.location_id = t.location_id
 INNER JOIN dbo.EMPLOYEE AS e ON e.employee_id = t.employee_id
 WHERE (@search = '' OR CHARINDEX(@search, i.item_name) > 0 OR TRY_CONVERT(int, @search) = i.item_id)
     AND (@direction = '' OR t.transaction_type = @direction) AND (@location IS NULL OR l.location_id = @location)
-ORDER BY t.transaction_datetime DESC, t.transaction_id DESC;
+ORDER BY t.transaction_datetime DESC, t.transaction_id DESC
+OFFSET @offset ROWS FETCH NEXT @take ROWS ONLY;
 ```
 
 ## 12. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L129)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L138)
 
 ```sql
 SELECT location_id, location_name, address, location_status FROM dbo.LOCATION WHERE @active = 0 OR location_status = 'ACTIVE' ORDER BY location_name, location_id;
@@ -136,7 +137,7 @@ SELECT location_id, location_name, address, location_status FROM dbo.LOCATION WH
 
 ## 13. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L142)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L151)
 
 ```sql
 SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item_status FROM dbo.ITEM WHERE item_status = 'ACTIVE' ORDER BY item_name, media_format, item_id;
@@ -144,7 +145,7 @@ SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item
 
 ## 14. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L148)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L157)
 
 ```sql
 SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item_status FROM dbo.ITEM WHERE item_id = @id;
@@ -152,7 +153,7 @@ SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item
 
 ## 15. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L156)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L165)
 
 ```sql
 SELECT quantity_on_hand FROM dbo.CURRENT_INVENTORY WHERE item_id = @item AND location_id = @location;

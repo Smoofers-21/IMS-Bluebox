@@ -9,7 +9,8 @@ public static class DemoSeeder
 {
     public static async Task SeedAsync(SqlDatabase database, IPasswordHasher<Employee> hasher, string password)
     {
-        if (password.Length < 12) throw new InvalidOperationException("Choose a demo password of at least 12 characters.");
+        if (!PasswordPolicy.IsValidForSetup(password))
+            throw new InvalidOperationException($"Choose a demo password of {PasswordPolicy.MinimumSetupLength}–{PasswordPolicy.MaximumLength} characters.");
         await database.InTransactionAsync(async (connection, transaction, ct) =>
         {
             using var check = SqlDatabase.Command("""

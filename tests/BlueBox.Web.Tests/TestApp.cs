@@ -51,7 +51,7 @@ public sealed partial class TestApp : WebApplicationFactory<Program>
         });
     }
 
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(string? password = null)
     {
         if (sqlServer is null) throw new InvalidOperationException("SQL Server tests require a disposable instance; no fake SQL backend is used.");
         await using var master = new SqlConnection(ConnectionString("master"));
@@ -67,7 +67,7 @@ public sealed partial class TestApp : WebApplicationFactory<Program>
             await command.ExecuteNonQueryAsync();
         }
         await using var scope = Services.CreateAsyncScope();
-        await DemoSeeder.SeedAsync(scope.ServiceProvider.GetRequiredService<SqlDatabase>(), scope.ServiceProvider.GetRequiredService<IPasswordHasher<Employee>>(), Password);
+        await DemoSeeder.SeedAsync(scope.ServiceProvider.GetRequiredService<SqlDatabase>(), scope.ServiceProvider.GetRequiredService<IPasswordHasher<Employee>>(), password ?? Password);
     }
 
     public async Task<object?> ScalarAsync(string sql)

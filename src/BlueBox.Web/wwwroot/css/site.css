@@ -942,3 +942,15 @@ tbody tr:last-child td {
     gap: 20px;
   }
 }
+
+.activity-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.activity-pager nav {
+  display: flex;
+  gap: 8px;
+}
