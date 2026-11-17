@@ -80,6 +80,8 @@ jobs:
                       stack = test.findtext('t:Output/t:ErrorInfo/t:StackTrace', '', ns)
                       details = (name + '\n' + message + '\n' + stack)[:6000].replace('```', "'''")
                       summary.write('```text\n' + details + '\n```\n\n')
+                      annotation = details.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                      print('::error::' + annotation)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
