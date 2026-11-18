@@ -4,7 +4,7 @@ Updated November 18, 2026. PR #5 was merged into main at `13b4f43`. The [main-re
 
 ## Main-review follow-up verification
 
-- Locked restore and Release compilation/test succeeded locally: **32 passed, 35 SQL Server groups skipped, 0 failures**. No disposable SQL Server is configured here. These local results do not verify the new SQL queries/workflows.
+- Source commit `9248e83`: locked restore and Release compilation/test succeeded locally: **32 passed, 35 SQL Server groups skipped, 0 failures**. No disposable SQL Server is configured here. These local results do not verify the new SQL queries/workflows.
 - New local coverage: POST-only login rate limiting and retry response, untrusted forwarded-address header behavior, versioned/unversioned/mismatched asset caching, security headers, and generic 500/503 error classification.
 - New disposable SQL regression coverage is checked in for unknown-user hash verification, secure login cookies, catalog/inventory/admin paging, all item/location pairs, filters, invalid manager posts/save redirects, and exact final-page boundaries. Current-head GitHub SQL results are pending until a PR run completes.
 - The pinned SQL Server CU28 manifest/digest was verified against Microsoft’s registry. Actual container startup and the full suite remain a CI check.
