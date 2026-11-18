@@ -108,7 +108,7 @@ The loopback URLs above are local development addresses, not a public portfolio 
 }
 ```
 
-For example, put this alongside the connection settings in User Secrets or `BLUEBOX_PRIVATE_CONFIG`, or set `AllowedHosts` as an environment variable. This host allowlist does not bind a listener, open a firewall, establish HTTPS certificate trust, or publish the app. Configure those on the hosting machine when needed. If deploying behind a reverse proxy later, configure trusted forwarding and HTTPS termination explicitly; arbitrary `X-Forwarded-For` headers are not trusted by this app.
+For example, put this alongside the connection settings in User Secrets or `BLUEBOX_PRIVATE_CONFIG`, or set `AllowedHosts` as an environment variable. This host allowlist does not bind a listener, open a firewall, establish HTTPS certificate trust, or publish the app. Configure those on the hosting machine when needed. If deploying behind a reverse proxy later, configure forwarded headers with the proxy explicitly listed under `KnownProxies` (or a narrow trusted network) and HTTPS termination; arbitrary `X-Forwarded-For` headers are not trusted by this app.
 
 Login permits 10 POSTs per minute per client address on each app instance; excess attempts return 429 with `Retry-After`. GETs do not consume permits. Addresses are shared when requests reach the app through the same unconfigured proxy; this simple in-memory limit resets on restart and is suitable for the single-instance demo. Unknown usernames still run a password-hash check; this reduces the obvious fast path without promising constant-time responses.
 
@@ -149,7 +149,7 @@ By default, tests run **unit and anonymous-routing checks** without database acc
 
 For SQL Server validation, set `BLUEBOX_TEST_SQLSERVER` privately to a connection string for a **disposable test instance with permission to create databases**, then run the same command. The test harness connects to `master`, creates uniquely named `BlueBoxTest_<guid>` databases, applies the sanitized supplied current-schema reference, and drops only those generated databases afterward. **Do not use the teacher's shared server for this mode.** The database named in the input connection string is not used as the test database.
 
-GitHub Actions runs both modes on pull requests and pushes to main. The disposable SQL Server 2022 CU28 image is pinned by tag and digest in the workflow; update it deliberately and re-run the SQL suite when upgrading. Newer commits cancel older runs within the same PR/ref; feature pushes no longer start duplicate push/PR runs. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
+GitHub Actions runs both modes on pull requests and pushes to main. The disposable SQL Server 2022 CU28 image is pinned to a specific cumulative-update tag in the workflow; update it deliberately and re-run the SQL suite when upgrading. Newer commits cancel older runs within the same PR/ref; feature pushes no longer start duplicate push/PR runs. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
 
 ## Remaining verification
 

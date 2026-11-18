@@ -6,7 +6,7 @@
 @if(TempData["Success"] is string message) { <div class="notice" role="status">@message</div> }
 <div class="admin-grid">
 <section class="panel"><h2>@(Model.Id.HasValue ? $"Edit item #{Model.Id}" : "New item")</h2>
-<form method="post" id="item-form" asp-route-Search="@Model.Search" asp-route-PageNumber="@Model.PageNumber">
+<form method="post" id="item-form" asp-page="/Admin/Items" asp-route-id="@Model.Id" asp-route-Search="@Model.Search" asp-route-PageNumber="@Model.PageNumber">
 
 <div asp-validation-summary="All" class="validation" role="alert"></div>
 <label asp-for="Input.Name">Title</label><input asp-for="Input.Name" maxlength="150" required />

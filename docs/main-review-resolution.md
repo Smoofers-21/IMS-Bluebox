@@ -13,7 +13,7 @@ The owner supplied `bluebox-suggestions.md`, reviewing main at `13b4f43`, and re
 | C1 — capped lists | Catalog, Inventory, and Manage Catalog use 100-row pages with one-row lookahead. Previous/Next preserve search/type/warehouse filters as applicable. New filter submissions start at page 1. Manager edit links and save redirects preserve the list page/search; invalid posts reload the same page. Stable tie-breakers and bigint offsets avoid duplicates from tied sort keys and arithmetic overflow. |
 | C2 — error handler | Error pages link to `/` (the overview landing flow). SQL exceptions/timeouts return 503; unexpected errors and direct `/Error` requests return 500. Both messages are generic; details stay in server logs, and error rendering does not require database cookie validation. |
 | D1 — AllowedHosts | Development documentation explains private hostname/IP overrides for class demos and later hosting, distinct from listener/firewall/certificate setup. |
-| D2 — reproducible SQL CI | SQL Server 2022 CU28 on Ubuntu 22.04 is pinned by tag and registry digest. The manifest was verified with the Microsoft registry. Future upgrades require a deliberate workflow change and the full disposable SQL suite. No teacher credentials are used. |
+| D2 — reproducible SQL CI | SQL Server 2022 CU28 on Ubuntu 22.04 uses the specific `2022-CU28-ubuntu-22.04` tag. The original digest pin failed Docker resolution and was removed after PR #6 review; an HTTP registry response alone did not verify that Docker could pull it. Future upgrades require a deliberate workflow change and the full disposable SQL suite. No teacher credentials are used. |
 | E — documentation | Removed obsolete future-merge instructions for PR #5 from active guides. The project plan and Word copy, requirements, setup, architecture, SQL catalog, and validation record reflect the follow-up. Historical counts stay tied to their actual commits/runs. |
 
 ## Suggestions deferred or retained
@@ -34,3 +34,11 @@ The owner supplied `bluebox-suggestions.md`, reviewing main at `13b4f43`, and re
 See the [validation record](validation.md) for revision-specific local and CI results. New regression coverage exercises the rate limit without consuming GET permits, ignored forwarded-IP spoofing, static hash caching, generic error classification, unknown-user hash verification, secure session cookies, paging across more than 100 items and item/location pairs, filter preservation, invalid manager posts, save redirects, and exact final-page boundaries.
 
 Database scripts/reference definitions are unchanged from `13b4f43`. Windows/teacher-server connectivity, a live private-key OMDb lookup, and final screenshots remain manual checks; disposable CI cannot establish those.
+
+## PR #6 review follow-up
+
+The owner supplied `pr6-review.md`. Adopted the CI blocker fix, corrected registry-verification claims, explicitly bound the item form to `/Admin/Items` and its route ID, and set the rate-limit response content type to `text/plain; charset=utf-8`. The SQL-backed regression now reads the rendered new/edit form actions, checks their route/query values, posts to those actions, and verifies that editing updates the original row without increasing the item count.
+
+The original PR #6 [run 44416004511](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44416004511) failed before SQL tests ran. Consult the [validation record](validation.md) for replacement-run evidence; historical local tests did not validate the Docker image. No DDL changes are required for these fixes, so no SQL upgrade file is needed against the last supplied schema.
+
+Kept the existing per-instance login limit and the deployment note requiring an explicitly trusted proxy configuration after grading. A shared pager partial is cosmetic and deferred; no forwarding trust is enabled for an unknown future host.

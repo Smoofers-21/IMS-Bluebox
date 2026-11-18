@@ -56,6 +56,7 @@ public partial class Program
                 : RateLimitPartition.GetNoLimiter("login-read"));
             options.OnRejected = async (rejected, ct) =>
             {
+                rejected.HttpContext.Response.ContentType = "text/plain; charset=utf-8";
                 if (rejected.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
                     rejected.HttpContext.Response.Headers.RetryAfter = Math.Ceiling(retryAfter.TotalSeconds)
                         .ToString(System.Globalization.CultureInfo.InvariantCulture);

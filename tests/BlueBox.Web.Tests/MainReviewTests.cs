@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using BlueBox.Web.Models;
 using BlueBox.Web.Services;
 using Microsoft.AspNetCore.Diagnostics;
@@ -28,6 +29,8 @@ public sealed class MainReviewTests
         client.DefaultRequestHeaders.Add("X-Forwarded-For", "192.0.2.123"); // An untrusted header cannot bypass the limit.
         var rejected = await client.PostAsync("/Account/Login", new FormUrlEncodedContent([]));
         Assert.Equal(HttpStatusCode.TooManyRequests, rejected.StatusCode);
+        Assert.Equal("text/plain", rejected.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("utf-8", rejected.Content.Headers.ContentType?.CharSet);
         Assert.True(rejected.Headers.RetryAfter?.Delta > TimeSpan.Zero);
         Assert.Contains("Wait a minute", await rejected.Content.ReadAsStringAsync());
         Assert.True(rejected.Headers.CacheControl!.NoStore);
@@ -173,23 +176,46 @@ public sealed class MainReviewTests
             Assert.Contains("Page 1", await client.GetStringAsync(path + "&PageNumber=-1"));
             Assert.Contains("Page 1", await client.GetStringAsync(path)); // Applying filters starts at page one.
         }
-        var token = await TestApp.TokenAsync(client, "/Admin/Items?Search=Paging%20fixture&PageNumber=2");
-        var invalid = await client.PostAsync("/Admin/Items?Search=Paging%20fixture&PageNumber=2", new FormUrlEncodedContent(new Dictionary<string, string> { ["__RequestVerificationToken"] = token }));
+        var newItemHtml = await client.GetStringAsync("/Admin/Items?Search=Paging%20fixture&PageNumber=2");
+        var newAction = ItemFormAction(newItemHtml);
+        Assert.Equal("/Admin/Items", new Uri(client.BaseAddress!, newAction).AbsolutePath);
+        Assert.Contains("Search=Paging%20fixture", newAction);
+        Assert.Contains("PageNumber=2", newAction);
+        var token = await TestApp.TokenAsync(client, newAction);
+        var invalid = await client.PostAsync(newAction, new FormUrlEncodedContent(new Dictionary<string, string> { ["__RequestVerificationToken"] = token }));
         Assert.Equal(HttpStatusCode.OK, invalid.StatusCode);
         Assert.Contains("Page 2", await invalid.Content.ReadAsStringAsync());
         var editUrl = $"/Admin/Items/{catalog[100].ItemId}?Search=Paging%20fixture&PageNumber=2";
-        token = await TestApp.TokenAsync(client, editUrl);
-        var saved = await client.PostAsync(editUrl, new FormUrlEncodedContent(new Dictionary<string, string>
+        var editHtml = await client.GetStringAsync(editUrl);
+        var editAction = ItemFormAction(editHtml);
+        Assert.Equal($"/Admin/Items/{catalog[100].ItemId}", new Uri(client.BaseAddress!, editAction).AbsolutePath);
+        Assert.Contains("Search=Paging%20fixture", editAction);
+        Assert.Contains("PageNumber=2", editAction);
+        var countBeforeEdit = await app.ScalarAsync("SELECT COUNT(*) FROM dbo.ITEM");
+        token = await TestApp.TokenAsync(client, editAction);
+        var saved = await client.PostAsync(editAction, new FormUrlEncodedContent(new Dictionary<string, string>
         {
             ["__RequestVerificationToken"] = token,
-            ["Input.Name"] = catalog[100].Name, ["Input.Type"] = "MOVIE", ["Input.Format"] = "DVD", ["Input.Status"] = "ACTIVE"
+            ["Input.Name"] = catalog[100].Name, ["Input.Type"] = "MOVIE", ["Input.Format"] = "DVD", ["Input.Status"] = "ACTIVE", ["Input.AgeRating"] = "PG"
         }));
         Assert.Equal(HttpStatusCode.Redirect, saved.StatusCode);
         Assert.Contains("PageNumber=2", saved.Headers.Location!.OriginalString);
         Assert.Contains("Search=Paging%20fixture", saved.Headers.Location.OriginalString);
+        Assert.Equal(countBeforeEdit, await app.ScalarAsync("SELECT COUNT(*) FROM dbo.ITEM"));
+        Assert.Equal("PG", (await queries.ItemAsync(catalog[100].ItemId))!.AgeRating);
         // An exact final page of 100 rows must not advertise a phantom next page.
         await app.ExecuteAsync("DELETE FROM dbo.ITEM WHERE item_name='Paging fixture 201'");
         Assert.False((await queries.CatalogAsync("Paging fixture", "MOVIE", 2)).HasNextPage);
         Assert.False((await queries.InventoryAsync("Paging fixture", "MOVIE", 1, pageNumber: 2)).HasNextPage);
+    }
+
+    private static string ItemFormAction(string html)
+    {
+        var form = Regex.Match(html, "<form\\b(?=[^>]*\\bid=\"item-form\")[^>]*>",
+            RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+        Assert.True(form.Success, "The rendered item form must be present.");
+        var action = Regex.Match(form.Value, "\\baction=\"([^\"]+)\"", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+        Assert.True(action.Success, "The item form must have an explicit action URL.");
+        return WebUtility.HtmlDecode(action.Groups[1].Value);
     }
 }
