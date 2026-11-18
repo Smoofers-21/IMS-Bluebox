@@ -11,6 +11,10 @@ namespace BlueBox.Web.Pages.Account;
 
 public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Employee> hasher) : PageModel
 {
+    // One process-wide dummy credential avoids skipping the expensive hash check for unknown usernames.
+    private static readonly Employee UnknownEmployee = new();
+    private static readonly string DummyHash = new PasswordHasher<Employee>().HashPassword(UnknownEmployee,
+        Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)));
     [BindProperty, Required, StringLength(50)] public string Username { get; set; } = "";
     [BindProperty, Required, StringLength(PasswordPolicy.MaximumLength)] public string Password { get; set; } = "";
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
@@ -23,11 +27,8 @@ public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Emp
         var username = Username.Trim();
         var employee = await employees.FindByUsernameAsync(username, ct);
         var result = PasswordVerificationResult.Failed;
-        if (employee is not null)
-        {
-            try { result = hasher.VerifyHashedPassword(employee, employee.PasswordHash, Password); }
-            catch (FormatException) { /* Legacy or invalid hashes cannot authenticate. */ }
-        }
+        try { result = hasher.VerifyHashedPassword(employee ?? UnknownEmployee, employee?.PasswordHash ?? DummyHash, Password); }
+        catch (FormatException) { /* Legacy or invalid hashes cannot authenticate. */ }
         if (employee is null || result == PasswordVerificationResult.Failed || employee.EmploymentStatus != "ACTIVE"
             || employee.AccessRole is not ("STAFF" or "MANAGER"))
         {

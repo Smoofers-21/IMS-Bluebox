@@ -43,7 +43,7 @@ A sanitized [schema reference](../database/reference/current-schema.sql) preserv
 
 ## Verified validation and limits
 
-The external-review fixes at `936bec2` passed [run 44199421841](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44199421841), including the SQL-enabled suite. Versioned local/CI counts are recorded in the validation record; current results are on PR #5 checks. The SQL job applies the supplied current schema to generated disposable databases and exercises real stock/HTTP workflows, rollback, and competing updates. See the [validation record](validation.md).
+The external-review fixes at `936bec2` passed [run 44199421841](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44199421841), including the SQL-enabled suite. Versioned local/CI counts are recorded in the validation record; current results are on the current revision’s CI run. The SQL job applies the supplied current schema to generated disposable databases and exercises real stock/HTTP workflows, rollback, and competing updates. See the [validation record](validation.md).
 
 Windows access to the teacher's actual server and a live OMDb smoke check remain pending. No teacher schema, records, or stock were changed from this workspace.
 
@@ -62,3 +62,5 @@ Windows access to the teacher's actual server and a live OMDb smoke check remain
 - Exercise manager/retirement/correction concurrency, atomic rollback, safe metadata handling, and Central-time daylight-saving transitions. See the [Milestone 2 review guide](milestone-2.md).
 
 For the consolidated PR #5 external-review fixes, see [the resolution](pr4-review-resolution.md). Parent X locks coordinate retirement, credential stamps revoke stale sessions, and format/type cannot change after history exists. These changes use the supplied schema.
+
+The [main-review follow-up](main-review-resolution.md) adds paged catalog/inventory lists, login protection, asset caching, clearer HTTP error classification, and a pinned disposable CI image. It retains the instructor architecture and supplied DDL.

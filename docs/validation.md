@@ -1,6 +1,16 @@
 # Validation record
 
-Updated November 17, 2026. PR #5 is the consolidated application/documentation/external-review-fix PR. It already contains PR #4 and can be merged directly after its latest checks pass. Results are tied to the commits below; for subsequent changes, check [PR #5’s current head and CI](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks).
+Updated November 18, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+
+## Main-review follow-up verification
+
+- Locked restore and Release compilation/test succeeded locally: **32 passed, 35 SQL Server groups skipped, 0 failures**. No disposable SQL Server is configured here. These local results do not verify the new SQL queries/workflows.
+- New local coverage: POST-only login rate limiting and retry response, untrusted forwarded-address header behavior, versioned/unversioned/mismatched asset caching, security headers, and generic 500/503 error classification.
+- New disposable SQL regression coverage is checked in for unknown-user hash verification, secure login cookies, catalog/inventory/admin paging, all item/location pairs, filters, invalid manager posts/save redirects, and exact final-page boundaries. Current-head GitHub SQL results are pending until a PR run completes.
+- The pinned SQL Server CU28 manifest/digest was verified against Microsoft’s registry. Actual container startup and the full suite remain a CI check.
+- Database scripts and sanitized reference are unchanged from `13b4f43`; no teacher connection or DDL operation was performed.
+
+The versioned results below are historical baseline evidence and are not proof of this follow-up.
 
 ## Verified results
 
@@ -36,6 +46,7 @@ The tests create unique `BlueBoxTest_<guid>` databases, apply the sanitized supp
 - Zero-stock retirement and a concurrent retirement versus first-check-in race.
 - Linked correction chains, duplicate reversal rejection, insufficient stock, server-derived movement fields, concurrency, and rollback.
 - Activity pagination/filter preservation and warehouse-derived dashboard totals during stock changes.
+- Follow-up catalog/inventory/admin pagination, unknown-user hash verification, and secure session cookies (new cases; see current-head CI results above).
 - Password/username session revocation, valid login after a hash upgrade, edition-identity protection, self-account sign-out, route-ID tampering, and deterministic retirement lock ordering without deadlock retries.
 
 OMDb service tests use a fake HTTP provider. The browser component check is not a full browser session against SQL Server or proof of a working live OMDb key.

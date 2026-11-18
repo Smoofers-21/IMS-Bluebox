@@ -1,9 +1,14 @@
 using System.Text.RegularExpressions;
+using System.Threading.RateLimiting;
 using BlueBox.Web.Data;
 using BlueBox.Web.Models;
 using BlueBox.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Data.SqlClient;
 
 namespace BlueBox.Web;
 
@@ -34,16 +39,37 @@ public partial class Program
             options.Cookie.Name = "BlueBox.Session";
             options.Cookie.HttpOnly = true;
             options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             options.ExpireTimeSpan = TimeSpan.FromHours(4);
             options.EventsType = typeof(EmployeeCookieEvents);
         });
         builder.Services.AddAuthorization(options => options.AddPolicy("Manager", policy => policy.RequireRole("MANAGER")));
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddPolicy("login", context => HttpMethods.IsPost(context.Request.Method)
+                ? RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true
+                    })
+                : RateLimitPartition.GetNoLimiter("login-read"));
+            options.OnRejected = async (rejected, ct) =>
+            {
+                if (rejected.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                    rejected.HttpContext.Response.Headers.RetryAfter = Math.Ceiling(retryAfter.TotalSeconds)
+                        .ToString(System.Globalization.CultureInfo.InvariantCulture);
+                await rejected.HttpContext.Response.WriteAsync("Too many sign-in attempts. Wait a minute and try again.", ct);
+            };
+        });
         builder.Services.AddRazorPages(options =>
         {
             options.Conventions.AuthorizeFolder("/");
             options.Conventions.AuthorizeFolder("/Admin", "Manager");
             options.Conventions.AuthorizePage("/Activity/Correct", "Manager");
             options.Conventions.AllowAnonymousToPage("/Account/Login");
+            options.Conventions.AddPageApplicationModelConvention("/Account/Login",
+                model => model.EndpointMetadata.Add(new EnableRateLimitingAttribute("login")));
         });
         var app = builder.Build();
 
@@ -70,7 +96,9 @@ public partial class Program
         app.Use(async (context, next) =>
         {
             context.Response.Headers.XContentTypeOptions = "nosniff";
-            context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+            context.Response.Headers["X-XSS-Protection"] = "0";
+            context.Response.Headers["Referrer-Policy"] = "same-origin";
+            context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
             context.Response.Headers.XFrameOptions = "DENY";
             context.Response.Headers.ContentSecurityPolicy = "default-src 'self';script-src 'self';style-src 'self';img-src 'self' https: data:;font-src 'self';connect-src 'self';frame-ancestors 'none';base-uri 'self';form-action 'self';";
             context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
@@ -80,8 +108,22 @@ public partial class Program
         app.UseExceptionHandler("/Error");
         if (!app.Environment.IsDevelopment()) app.UseHsts();
         app.UseHttpsRedirection();
-        app.UseStaticFiles();
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            OnPrepareResponse = context =>
+            {
+                var request = context.Context.Request;
+                var versions = context.Context.RequestServices.GetRequiredService<IFileVersionProvider>();
+                var versioned = request.Query.TryGetValue("v", out var version) && version.Count == 1
+                    && !string.IsNullOrEmpty(version[0])
+                    && versions.AddFileVersionToPath(request.PathBase, request.Path.Value!)
+                        == QueryHelpers.AddQueryString(request.Path.Value!, "v", version[0]!);
+                context.Context.Response.Headers.CacheControl = versioned
+                    ? "public, max-age=31536000, immutable" : "public, max-age=3600";
+            }
+        });
         app.UseRouting();
+        app.UseRateLimiter();
         app.UseAuthentication();
         app.UseAuthorization();
         MapRoutes(app);
@@ -110,15 +152,22 @@ public partial class Program
     private static IResult HandleRoot(HttpContext context) => Results.Redirect(
         context.User.Identity?.IsAuthenticated == true ? "/Overview" : "/Account/Login");
 
-    private static IResult HandleError(HttpContext context, ILogger<Program> logger)
+    internal static IResult HandleError(HttpContext context, ILogger<Program> logger)
     {
         var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
         if (exception is not null) logger.LogError(exception, "Unable to complete a BlueBox request");
-        return Results.Content("""
+        var unavailable = exception is SqlException or TimeoutException;
+        return Results.Content(unavailable ? """
             <!doctype html><html lang="en"><meta charset="utf-8"><title>BlueBox unavailable</title>
             <h1>BlueBox is temporarily unavailable</h1>
             <p>Your request could not be completed. Check the connection or try again shortly.</p>
-            <a href="/Inventory">Return to inventory</a></html>
-            """, "text/html; charset=utf-8", statusCode: StatusCodes.Status503ServiceUnavailable);
+            <a href="/">Return to overview</a></html>
+            """ : """
+            <!doctype html><html lang="en"><meta charset="utf-8"><title>BlueBox request failed</title>
+            <h1>Your request could not be completed</h1>
+            <p>Try again shortly. If the problem continues, contact your manager.</p>
+            <a href="/">Return to overview</a></html>
+            """, "text/html; charset=utf-8", statusCode: unavailable
+                ? StatusCodes.Status503ServiceUnavailable : StatusCodes.Status500InternalServerError);
     }
 }

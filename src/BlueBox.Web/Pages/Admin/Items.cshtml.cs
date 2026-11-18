@@ -11,6 +11,8 @@ public sealed class ItemsModel(AdministrationService admin, InventoryQueries que
 {
     [BindProperty(SupportsGet = true), FromRoute] public int? Id { get; set; }
     [BindProperty(SupportsGet = true)] public string? Search { get; set; }
+    [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
+    public bool HasNextPage { get; private set; }
     [BindProperty] public ItemInput Input { get; set; } = new();
     public bool HasHistory { get; private set; }
     public List<CatalogRow> Items { get; private set; } = [];
@@ -25,7 +27,7 @@ public sealed class ItemsModel(AdministrationService admin, InventoryQueries que
             Input = new() { Name = item.ItemName, Type = item.ItemType, Format = item.MediaFormat, PosterUrl = item.PosterUrl, AgeRating = item.AgeRating, Status = item.ItemStatus };
         }
         HasHistory = Id.HasValue && await queries.ItemHasHistoryAsync(Id.Value, ct);
-        Items = await queries.CatalogAsync(Search, null, ct);
+        await LoadItemsAsync(ct);
         return Page();
     }
 
@@ -40,13 +42,22 @@ public sealed class ItemsModel(AdministrationService admin, InventoryQueries que
                 var values = new RouteValueDictionary();
                 if (Id.HasValue) values["id"] = Id.Value;
                 if (!string.IsNullOrWhiteSpace(Search)) values["Search"] = Search;
+                if (PageNumber > 1) values["PageNumber"] = PageNumber;
                 return RedirectToPage("/Admin/Items", values);
             }
             ModelState.AddModelError("", result.Message);
         }
         HasHistory = Id.HasValue && await queries.ItemHasHistoryAsync(Id.Value, ct);
-        Items = await queries.CatalogAsync(Search, null, ct);
+        await LoadItemsAsync(ct);
         return Page();
+    }
+
+    private async Task LoadItemsAsync(CancellationToken ct)
+    {
+        PageNumber = Math.Max(1, PageNumber);
+        var page = await queries.CatalogAsync(Search, null, PageNumber, ct);
+        Items = page.Rows;
+        HasNextPage = page.HasNextPage;
     }
 
     public async Task<JsonResult> OnGetLookupAsync(string? title, CancellationToken ct) => new(await movies.SearchAsync(title, ct));

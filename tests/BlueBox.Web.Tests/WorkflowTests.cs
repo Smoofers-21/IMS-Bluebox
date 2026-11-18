@@ -28,8 +28,8 @@ public sealed class WorkflowTests
         { EmployeeId = 123, FirstName = "Test", LastName = "Employee" }), new AuthenticationProperties(), CookieAuthenticationDefaults.AuthenticationScheme);
         client.DefaultRequestHeaders.Add("Cookie", $"BlueBox.Session={options.TicketDataFormat.Protect(ticket)}");
         var response = await client.GetAsync("/Error");
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Contains("temporarily unavailable", await response.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Contains("Your request could not be completed", await response.Content.ReadAsStringAsync());
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class WorkflowTests
         Assert.Contains("DENY", login.Headers.GetValues("X-Frame-Options"));
         Assert.DoesNotContain("unsafe-inline", string.Join("", login.Headers.GetValues("Content-Security-Policy")));
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsync("/Account/Login", new FormUrlEncodedContent(new Dictionary<string, string> { ["Username"] = "avery.chen", ["Password"] = TestApp.Password }))).StatusCode);
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await client.GetAsync("/Error")).StatusCode);
+        Assert.Equal(HttpStatusCode.InternalServerError, (await client.GetAsync("/Error")).StatusCode);
     }
 
     [Theory]

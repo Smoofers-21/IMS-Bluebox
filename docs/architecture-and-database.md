@@ -112,3 +112,11 @@ The overview explicitly uses READ COMMITTED in one batch. Total units are derive
 Manual HTTPS poster URLs remain supported for movies and games. Only managers can save them; the browser loads images with no referrer. CSP allows HTTPS image sources, and the server never fetches arbitrary poster URLs. Restricting all posters to the movie CDN would exclude the agreed manual game posters.
 
 VARCHAR fields retain the supplied database/column code page. Unlike NVARCHAR poster URLs, they do not guarantee arbitrary Unicode storage on a non-Unicode code page. Full Unicode support is a separate schema/encoding decision with the teacher; an assumed Windows-1252 or ASCII-only policy is not imposed here.
+
+## Main-review follow-up
+
+Catalog, Inventory, and Manage Catalog fetch 101 rows at a time and render at most 100, using deterministic sort keys, a bigint offset, and filter-preserving Previous/Next navigation. No separate count query is required. Activity and Overview retain timestamp-descending ordering with an ID tie-breaker; identity allocation is not guaranteed to equal timestamp order under concurrency.
+
+Login POSTs use ASP.NET Core's fixed-window limiter (10/minute/client address/instance, no queue); GETs use no limiter. Unknown usernames verify against a process-wide dummy hash and still fail. Session cookies are HTTPS-only. Security headers include the existing CSP plus `X-XSS-Protection: 0`, same-origin referrers, and disabled camera/microphone/geolocation permissions. Correct content-hash asset URLs get long-lived immutable caching; other static URLs use one hour, while application responses remain `no-store`.
+
+The generic error handler returns 503 for SQL exceptions/timeouts and 500 for other failures, with a link to `/`. Detailed exceptions stay in server logs. See the [main-review resolution](main-review-resolution.md) for adopted/deferred suggestions. No indexes, constraints, columns, or database settings are changed.

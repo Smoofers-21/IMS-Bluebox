@@ -42,24 +42,30 @@ public sealed record ActivityRow
     public string? Notes { get; init; }
 }
 
+public sealed record QueryPage<T>(List<T> Rows, bool HasNextPage);
+
 public sealed record ActivityPage(List<ActivityRow> Rows, bool HasNextPage);
 
 public sealed class InventoryQueries(SqlDatabase database)
 {
-    public const int ActivityPageSize = 100;
-    public async Task<List<CatalogRow>> CatalogAsync(string? search, string? type, CancellationToken ct = default)
+    public const int PageSize = 100;
+    public const int ActivityPageSize = PageSize;
+    public async Task<QueryPage<CatalogRow>> CatalogAsync(string? search, string? type, int pageNumber = 1, CancellationToken ct = default)
     {
         using var command = SearchCommand("""
-            SELECT TOP (100) i.item_id, i.item_name, i.item_type, i.media_format,
+            SELECT i.item_id, i.item_name, i.item_type, i.media_format,
                 i.age_rating, i.item_status, COALESCE(SUM(CAST(b.quantity_on_hand AS bigint)), 0) AS on_hand
             FROM dbo.ITEM AS i
             LEFT JOIN dbo.CURRENT_INVENTORY AS b ON b.item_id = i.item_id
             WHERE (@search = '' OR CHARINDEX(@search, i.item_name) > 0 OR TRY_CONVERT(int, @search) = i.item_id)
                 AND (@type = '' OR i.item_type = @type)
             GROUP BY i.item_id, i.item_name, i.item_type, i.media_format, i.age_rating, i.item_status
-            ORDER BY i.item_name, i.media_format, i.item_id;
+            ORDER BY i.item_name, i.media_format, i.item_id
+            OFFSET @offset ROWS FETCH NEXT @take ROWS ONLY;
             """, search, type);
-        return (await database.FillDataTableViaCommandAsync(command, ct)).AsEnumerable().Select(r => new CatalogRow
+        AddPaging(command, pageNumber);
+        var table = await database.FillDataTableViaCommandAsync(command, ct);
+        var rows = table.AsEnumerable().Take(PageSize).Select(r => new CatalogRow
         {
             ItemId = r.Field<int>("item_id"),
             Name = r.Field<string>("item_name")!,
@@ -69,23 +75,27 @@ public sealed class InventoryQueries(SqlDatabase database)
             Status = r.Field<string>("item_status")!,
             OnHand = r.Field<long>("on_hand")
         }).ToList();
+        return new QueryPage<CatalogRow>(rows, table.Rows.Count > PageSize);
     }
 
-    public async Task<List<InventoryRow>> InventoryAsync(string? search, string? type, int? location, int? itemId = null, CancellationToken ct = default)
+    public async Task<QueryPage<InventoryRow>> InventoryAsync(string? search, string? type, int? location, int? itemId = null, int pageNumber = 1, CancellationToken ct = default)
     {
         using var command = SearchCommand("""
-            SELECT TOP (100) i.item_id, i.item_name, i.item_type, i.media_format, i.item_status,
+            SELECT i.item_id, i.item_name, i.item_type, i.media_format, i.item_status,
                 l.location_id, l.location_name, l.location_status, COALESCE(b.quantity_on_hand, 0) AS on_hand
             FROM dbo.ITEM AS i CROSS JOIN dbo.LOCATION AS l
             LEFT JOIN dbo.CURRENT_INVENTORY AS b ON b.item_id = i.item_id AND b.location_id = l.location_id
             WHERE (@search = '' OR CHARINDEX(@search, i.item_name) > 0 OR TRY_CONVERT(int, @search) = i.item_id)
                 AND (@type = '' OR i.item_type = @type) AND (@location IS NULL OR l.location_id = @location)
                 AND (@item IS NULL OR i.item_id = @item)
-            ORDER BY i.item_name, l.location_name, i.media_format, i.item_id, l.location_id;
+            ORDER BY i.item_name, l.location_name, i.media_format, i.item_id, l.location_id
+            OFFSET @offset ROWS FETCH NEXT @take ROWS ONLY;
             """, search, type);
         command.Parameters.Add(SqlDatabase.Parameter("@location", SqlDbType.Int, location));
         command.Parameters.Add(SqlDatabase.Parameter("@item", SqlDbType.Int, itemId));
-        return (await database.FillDataTableViaCommandAsync(command, ct)).AsEnumerable().Select(r => new InventoryRow
+        AddPaging(command, pageNumber);
+        var table = await database.FillDataTableViaCommandAsync(command, ct);
+        var rows = table.AsEnumerable().Take(PageSize).Select(r => new InventoryRow
         {
             ItemId = r.Field<int>("item_id"),
             Name = r.Field<string>("item_name")!,
@@ -97,6 +107,7 @@ public sealed class InventoryQueries(SqlDatabase database)
             LocationStatus = r.Field<string>("location_status")!,
             OnHand = r.Field<int>("on_hand")
         }).ToList();
+        return new QueryPage<InventoryRow>(rows, table.Rows.Count > PageSize);
     }
 
     public async Task<ActivityPage> ActivityAsync(string? search, string? direction, int? location, int pageNumber = 1, CancellationToken ct = default)
@@ -212,6 +223,13 @@ public sealed class InventoryQueries(SqlDatabase database)
         command.Parameters.Add(SqlDatabase.Parameter("@location", SqlDbType.Int, locationId));
         var table = await database.FillDataTableViaCommandAsync(command, ct);
         return table.Rows.Count == 0 ? 0 : table.Rows[0].Field<int>("quantity_on_hand");
+    }
+
+    private static void AddPaging(SqlCommand command, int pageNumber)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(pageNumber, 1);
+        command.Parameters.Add(SqlDatabase.Parameter("@offset", SqlDbType.BigInt, ((long)pageNumber - 1) * PageSize));
+        command.Parameters.Add(SqlDatabase.Parameter("@take", SqlDbType.Int, PageSize + 1));
     }
 
     private static SqlCommand SearchCommand(string sql, string? search, string? type)
