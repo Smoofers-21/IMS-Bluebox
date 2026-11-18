@@ -37,8 +37,10 @@ Database scripts/reference definitions are unchanged from `13b4f43`. Windows/tea
 
 ## PR #6 review follow-up
 
-The owner supplied `pr6-review.md`. Adopted the CI blocker fix, corrected registry-verification claims, explicitly bound the item form to `/Admin/Items` and its route ID, and set the rate-limit response content type to `text/plain; charset=utf-8`. The SQL-backed regression now reads the rendered new/edit form actions, checks their route/query values, posts to those actions, and verifies that editing updates the original row without increasing the item count.
+The owner supplied `pr6-review.md`. Adopted the CI blocker fix, corrected registry-verification claims, explicitly bound the item form to `/Admin/Items` and its route ID, and set the rate-limit response content type to `text/plain; charset=utf-8`. The SQL-backed regression now reads the rendered new/edit form actions, checks their route/query values, posts to those actions, and verifies that editing updates the original row without increasing the item count. It also follows the actual Next link to the final page and checks that New item exits an edit.
 
 The original PR #6 [run 44416004511](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44416004511) failed before SQL tests ran. Consult the [validation record](validation.md) for replacement-run evidence; historical local tests did not validate the Docker image. No DDL changes are required for these fixes, so no SQL upgrade file is needed against the last supplied schema.
+
+Real SQL CI exposed an additional manager-page routing bug: a null item ID became an empty string in tag-helper attributes, preventing URL generation for the optional numeric route. Manager forms and pagers now generate one route dictionary with real IDs only, preserving page/search values without relying on attribute assignment order. The New item link and search form explicitly clear an edit ID. Local tag-helper regressions cover both absent and existing IDs; Catalog/Inventory pager destinations are explicit too.
 
 Kept the existing per-instance login limit and the deployment note requiring an explicitly trusted proxy configuration after grading. A shared pager partial is cosmetic and deferred; no forwarding trust is enabled for an unknown future host.
