@@ -19,4 +19,16 @@
 }
 </tbody></table></div>
 @if(Model.Rows.Count == 0) { <div class="empty-state"><h2>No matching inventory</h2><p>Try another search or clear your filters.</p></div> }
-<p class="table-caption">Showing up to 100 item/location balances, including zero stock.</p></section>
+<div class="table-caption activity-pager">
+    <span>Page @Model.PageNumber · @Model.Rows.Count item/location balances, including zero stock.</span>
+    <nav aria-label="Inventory pages">
+        @if (Model.PageNumber > 1)
+        {
+            <a class="button small" asp-page="/Inventory/Index" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" asp-route-LocationId="@Model.LocationId" rel="prev">← Previous</a>
+        }
+        @if (Model.HasNextPage && Model.PageNumber < int.MaxValue)
+        {
+            <a class="button small" asp-page="/Inventory/Index" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" asp-route-LocationId="@Model.LocationId" rel="next">Next →</a>
+        }
+    </nav>
+</div></section>

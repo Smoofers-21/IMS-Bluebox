@@ -1,6 +1,6 @@
 # Demo and portfolio guide
 
-**Status:** walkthrough for the implemented Milestone 1 and 2 features. Check the [current validation record](validation.md#verified-results) and latest PR #5 checks, then run the presentation on verified fake data in the intended Windows setup. The teacher-server walkthrough, live OMDb smoke check, and final screenshots remain review tasks; this guide is not proof they have been completed.
+**Status:** walkthrough for the implemented Milestone 1 and 2 features. Check the [current validation record](validation.md#verified-results) and the current revision’s CI checks, then run the presentation on verified fake data in the intended Windows setup. The teacher-server walkthrough, live OMDb smoke check, and final screenshots remain review tasks; this guide is not proof they have been completed.
 
 ## Fake data plan
 

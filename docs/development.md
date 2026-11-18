@@ -7,7 +7,7 @@ Milestones 1 and 2 implement sign-in, catalog/warehouse browsing, ordinary stock
 - .NET SDK **10.0.404**, pinned in `global.json` (newer patches in that feature band are allowed).
 - On Windows: an up-to-date Visual Studio release supporting this .NET 10 SDK, with **ASP.NET and web development** installed. Older Visual Studio 2022 installations do not support .NET 10; use current Visual Studio or the CLI/VS Code.
 - On Mac: VS Code with C# tooling, or the .NET CLI. The same solution runs on both operating systems.
-- SQL Server access from the computer running the application. SSMS alone does not establish access from a cloud workspace.
+- SQL Server access from the computer running the application. Verify the teacher’s server version in SSMS with `SELECT @@VERSION;` during the Windows walkthrough; SQL Server 2014 or newer is the assumed minimum for pooled connection isolation reset. CI verifies SQL Server 2022. An older target needs a compatibility review before use. SSMS alone does not establish access from a cloud workspace.
 
 Open `BlueBox.sln` in Visual Studio. Set **BlueBox.Web** as the startup project. The application targets the existing five-table schema; it never creates or migrates the teacher's database automatically.
 
@@ -100,11 +100,23 @@ dotnet run --project src/BlueBox.Web
 
 The development profile uses `https://localhost:7140` and `http://localhost:5140`, with HTTP redirecting to HTTPS. Visual Studio's startup button uses the same launch profile. Sign in with an active employee account.
 
-The loopback URLs above are local development addresses, not a public portfolio deployment. Set `AllowedHosts` appropriately before hosting publicly; it currently allows localhost only.
+The loopback URLs above are local development addresses, not a public portfolio deployment. Session cookies always require HTTPS. For a class demo accessed by a machine name, LAN address, or eventual public hostname, override `AllowedHosts` privately with the actual hostnames/IPs (no scheme or port):
+
+```json
+{
+  "AllowedHosts": "localhost;127.0.0.1;YOUR_PC_NAME;YOUR_LAN_IP"
+}
+```
+
+For example, put this alongside the connection settings in User Secrets or `BLUEBOX_PRIVATE_CONFIG`, or set `AllowedHosts` as an environment variable. This host allowlist does not bind a listener, open a firewall, establish HTTPS certificate trust, or publish the app. Configure those on the hosting machine when needed. If deploying behind a reverse proxy later, configure forwarded headers with the proxy explicitly listed under `KnownProxies` (or a narrow trusted network) and HTTPS termination; arbitrary `X-Forwarded-For` headers are not trusted by this app.
+
+Login permits 10 POSTs per minute per client address on each app instance; excess attempts return 429 with `Retry-After`. GETs do not consume permits. Addresses are shared when requests reach the app through the same unconfigured proxy; this simple in-memory limit resets on restart and is suitable for the single-instance demo. Unknown usernames still run a password-hash check; this reduces the obvious fast path without promising constant-time responses.
+
+Static files with a correct `asp-append-version` hash can be cached for a year; unversioned/mismatched URLs use a one-hour cache. Application pages, errors, and authenticated responses remain `no-store`.
 
 ## 5. Review the workflow
 
-1. Sign in as staff; review Overview totals, then browse Catalog and Inventory.
+1. Sign in as staff; review Overview totals, then browse Catalog and Inventory. Use Previous/Next to reach all matches in pages of 100, preserving filters. Manage → Catalog items uses the same paging; submitting new filters starts at page 1.
 2. Select a warehouse/item, check in a positive quantity, and compare the preview with the saved balance.
 3. Check out available stock and find the attributed entry in Activity.
 4. Attempt to check out too much; verify stock/history remain unchanged.
@@ -137,11 +149,11 @@ By default, tests run **unit and anonymous-routing checks** without database acc
 
 For SQL Server validation, set `BLUEBOX_TEST_SQLSERVER` privately to a connection string for a **disposable test instance with permission to create databases**, then run the same command. The test harness connects to `master`, creates uniquely named `BlueBoxTest_<guid>` databases, applies the sanitized supplied current-schema reference, and drops only those generated databases afterward. **Do not use the teacher's shared server for this mode.** The database named in the input connection string is not used as the test database.
 
-GitHub Actions runs both modes on pull requests and pushes to main. Newer commits cancel older runs within the same PR/ref; feature pushes no longer start duplicate push/PR runs. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
+GitHub Actions runs both modes on pull requests and pushes to main. The disposable SQL Server 2022 CU28 image is pinned to a specific cumulative-update tag in the workflow; update it deliberately and re-run the SQL suite when upgrading. Newer commits cancel older runs within the same PR/ref; feature pushes no longer start duplicate push/PR runs. The SQL Server job creates a runner-local disposable instance and a generated password; it needs no teacher credentials. Its localhost-only certificate exception applies only to that disposable CI instance.
 
 ## Remaining verification
 
-See the [validation record](validation.md) and [PR #5’s latest checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks) for results of the current implementation. Baseline run/commit counts are preserved as historical evidence, not proof of later code changes. PR #5 includes the external-review fixes and already contains PR #4; merge #5 directly after its checks pass.
+PR #5 was merged into main at `13b4f43`. See the [validation record](validation.md), [main-review decisions](main-review-resolution.md), and the current revision’s [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml). Earlier run/commit counts are historical evidence, not proof of subsequent code changes.
 
 The remaining tasks are the Windows/teacher-database walkthrough, a live OMDb lookup with a private key, and final fake-data screenshots. Disposable SQL Server CI does not verify the teacher’s network, permissions, or certificate setup. No teacher database was accessed or modified from this workspace.
 
@@ -151,7 +163,10 @@ If the instructor requires `.slnx`, pull the merged `main` and follow the [submi
 
 ## Troubleshooting
 
-- **503 / temporarily unavailable:** inspect server-side logs for connection/schema errors. The browser intentionally does not receive raw database exceptions.
+- **503 / temporarily unavailable:** a SQL Server exception or timeout occurred; inspect private server logs for details.
+- **500 / request could not be completed:** an unexpected application/configuration failure occurred. Inspect server logs; the browser does not receive raw exception details.
+- **429 / too many sign-in attempts:** wait for the `Retry-After` interval before posting again; refreshing the sign-in form remains available.
+- **400 from a machine-name/LAN URL:** verify the private `AllowedHosts` override as well as the host’s HTTPS/listener setup.
 - **Invalid column name:** compare the connected database with the supplied current-schema reference. The latest teacher DDL is already aligned; use `001` only for an older baseline after reviewing its missing columns/constraints.
 - **Unable to sign in:** check active status and a compatible password hash; a SQL row with a placeholder hash is not a usable login.
 - **Unsupported SDK:** install the version pinned in `global.json` and update the editor if necessary.

@@ -15,7 +15,7 @@ public sealed class DetailsModel(InventoryQueries queries) : PageModel
         var item = await queries.ItemAsync(id, ct);
         if (item is null) return NotFound();
         Item = item;
-        Balances = await queries.InventoryAsync(null, null, null, id, ct);
+        Balances = (await queries.InventoryAsync(null, null, null, id, ct: ct)).Rows;
         return Page();
     }
 }

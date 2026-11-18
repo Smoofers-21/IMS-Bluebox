@@ -2,7 +2,7 @@
 
 A browser-based internal inventory management project for a fictional movie and game rental business. BlueBox lets employees track warehouse quantities, record stock movements, and review who changed inventory and when.
 
-**Status: both milestones’ planned application features are implemented; owner review and target-setup verification remain.** [PR #5](https://github.com/Smoofers-21/IMS-Bluebox/pull/5) consolidates Milestone 2, the documentation refresh, and the schema-compatible external-review fixes. It can be merged directly after its latest checks pass; PR #4 is already included. See the [review resolution](docs/pr4-review-resolution.md) and [validation record](docs/validation.md). Windows testing against the teacher’s database, a live OMDb check, and final screenshots remain before class/demo sign-off.
+**Status: both milestones’ planned application features are implemented.** PR #5 was merged into `main` at `13b4f43`. The follow-up [main-review fixes](docs/main-review-resolution.md) add login protection, paging, caching, and clearer error handling without DDL changes. See the [validation record](docs/validation.md) for evidence tied to each revision. Windows testing against the teacher’s database, a live OMDb check, and final screenshots remain before class/demo sign-off.
 
 ## Project at a glance
 
@@ -19,9 +19,9 @@ A browser-based internal inventory management project for a fictional movie and 
 
 ## Milestone 1 capabilities
 
-- Employee sign-in with staff and manager permissions.
+- Employee sign-in with staff and manager permissions, secure cookies, and a bounded login-attempt limit.
 - A searchable movie and game catalog, with separate entries for different formats. Type/format are fixed after the first movement to preserve edition history.
-- Inventory quantities across warehouse locations.
+- Inventory quantities across warehouse locations; Catalog, Inventory, and Manage Catalog support 100-row pages with preserved filters.
 - Check-in and check-out with a preview of the resulting balance.
 - Protection against negative inventory and conflicting stock updates.
 - Permanent movement history identifying the item, warehouse, employee, quantity, and time.
@@ -71,7 +71,8 @@ Check-in means adding units to a warehouse; check-out means removing units from 
 | [Instructor template adaptation](docs/instructor-template.md) | Required structure, corrections, and review findings |
 | [Runtime SQL query catalog](docs/sql-query-catalog.md) | Runtime SQL batches, with source links |
 | [Milestone 2 review](docs/milestone-2.md) | Manager administration, correction chains, retirement, and review fixes |
-| [External review resolution](docs/pr4-review-resolution.md) | Adopted fixes, schema-compatible decisions, and consolidated PR #5 merge path |
+| [PR #4 review resolution](docs/pr4-review-resolution.md) | Historical fixes delivered in merged PR #5 |
+| [Main review resolution](docs/main-review-resolution.md) | Adopted and deferred suggestions, with no DDL changes |
 | [Validation record](docs/validation.md) | Verified build/test results, CI links, and checks still pending |
 | [Class submission and `.slnx`](docs/submission.md) | Pulling the merged code, converting the solution, and packaging source files |
 
@@ -101,7 +102,7 @@ dotnet test BlueBox.sln --configuration Release
 
 The default suite runs local unit/routing/provider checks and skips SQL Server groups when no disposable test instance is configured. SQL Server CI applies the supplied schema to generated disposable databases and runs real HTTP/stock/concurrency tests. The [validation record](docs/validation.md) distinguishes current results from historical baseline counts.
 
-GitHub Actions runs on pull requests and pushes to `main`. A newer commit cancels an older run of the same PR; feature pushes no longer start duplicate push/PR jobs. Check [PR #5’s latest run](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks) before merging. The Windows walkthrough against the teacher’s SQL Server remains required before final class sign-off; automated create/drop tests belong only on disposable instances.
+GitHub Actions runs on pull requests and pushes to `main`. A newer commit cancels an older run of the same PR; feature pushes no longer start duplicate push/PR jobs. Check the completed run for the current revision in [GitHub Actions](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) before merging a follow-up PR. The Windows walkthrough against the teacher’s SQL Server remains required before final class sign-off; automated create/drop tests belong only on disposable instances.
 
 ## Class submission
 

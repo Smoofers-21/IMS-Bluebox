@@ -18,5 +18,17 @@
     }
     </tbody></table></div>
     @if (Model.Rows.Count == 0) { <div class="empty-state"><h2>No matching items</h2><p>Try another title or clear your filters.</p></div> }
-    <p class="table-caption">Showing up to 100 catalog entries. Quantities include all warehouse locations.</p>
+    <div class="table-caption activity-pager">
+    <span>Page @Model.PageNumber · @Model.Rows.Count catalog entries. Quantities include all warehouse locations.</span>
+    <nav aria-label="Catalog pages">
+        @if (Model.PageNumber > 1)
+        {
+            <a class="button small" asp-page="/Catalog/Index" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" rel="prev">← Previous</a>
+        }
+        @if (Model.HasNextPage && Model.PageNumber < int.MaxValue)
+        {
+            <a class="button small" asp-page="/Catalog/Index" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" rel="next">Next →</a>
+        }
+    </nav>
+</div>
 </section>

@@ -1,6 +1,6 @@
 # Requirements and acceptance criteria
 
-**Status:** both milestones’ application features and schema-compatible external-review fixes are in consolidated PR #5, pending owner review/merge. Check [the latest PR checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks) for current validation; Windows/teacher-server and live OMDb checks remain separate. See the [validation record](validation.md) and [review resolution](pr4-review-resolution.md).
+**Status:** both milestones’ application features and PR #5 review fixes are merged into main at `13b4f43`. The [main-review resolution](main-review-resolution.md) documents this follow-up without DDL changes. Use the [validation record](validation.md) and current revision’s CI; Windows/teacher-server and live OMDb checks remain separate.
 
 ## Permissions
 
@@ -25,6 +25,7 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | AUTH-04 | Keep account setup simple | Managers create accounts; there is no public registration or forced initial password change. |
 | AUTH-05 | Preserve manager access | Deactivating or demoting the last active manager is rejected, including competing account edits. |
 | AUTH-06 | Preserve password resets | A blank edit password retains the existing hash; a stale login-time hash upgrade cannot overwrite a manager’s password reset. Password/username changes invalidate existing sessions on their next request, while login rehashing issues a valid new session. |
+| AUTH-07 | Bound sign-in attempts | Each client address can send 10 login POSTs per minute per application instance; subsequent POSTs return 429 with retry guidance. GETs and other routes remain available. Unknown usernames still undergo hash verification; session cookies require HTTPS. |
 | CAT-01 | Maintain a movie/game catalog | Managers can create and edit required name, type, and format fields; blank required fields and invalid types are rejected. |
 | CAT-02 | Distinguish formats | The same title in DVD and Blu-ray editions has separate entries/balances. After the first movement, the item’s type and format cannot change, even when its stock returns to zero; other editions require a new entry. |
 | CAT-03 | Keep metadata optional | Items can be saved without a poster or age rating. |
@@ -45,7 +46,7 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | COR-02 | Preserve the original | A correction adds an opposite movement for the original item/location; the original remains unchanged. Corrections cannot bypass stock validation. |
 | RET-01 | Retire items safely | An item with stock at any warehouse cannot be archived. Archived items remain identifiable in history. |
 | RET-02 | Retire locations safely | A warehouse with stock cannot be deactivated. Its historical movements remain visible. |
-| VIEW-01 | Find stock | Inventory can be searched by item name/ID and filtered by location and item type, following the mockups. |
+| VIEW-01 | Find stock | Inventory can be searched by item name/ID and filtered by location and item type, following the mockups. Catalog, Inventory, and Manage Catalog expose matches through 100-row pages; Previous/Next preserve filters and a new filter submission starts at page 1. |
 | VIEW-02 | Review activity | Users can inspect employee-attributed movements and filter by item, movement type, and location; older results remain accessible through 100-row pages. |
 | VIEW-03 | Summarize inventory | Total units equal the sum of the returned warehouse totals. The READ COMMITTED batch also returns counts and five recent movements; those sections may reflect slightly later commits and do not hold serializable dashboard range locks. |
 

@@ -44,7 +44,7 @@ The existing foreign key preserves references. The one-reversal-per-entry rule i
 
 Local Release build and non-SQL tests run without connecting to the teacher server. Real integration tests use generated disposable SQL Server databases in GitHub Actions. Added coverage includes staff HTTP denial, manager forms/antiforgery, account password preservation and duplicate names, competing manager changes, retirement, correction chains/concurrency/rollback, and dashboard totals. OMDb tests use a fake HTTP provider, not a real key.
 
-The external-review fixes at `936bec2` passed both jobs in [run 44199421841](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44199421841). See the [validation record](validation.md) for versioned counts and [PR #5 checks](https://github.com/Smoofers-21/IMS-Bluebox/pull/5/checks) for later commits. PR #5 now includes the application, refreshed docs, and review fixes; it is the single PR to merge. Windows/teacher-server testing, live OMDb, and screenshots remain manual sign-off tasks. Public deployment is after grading with a separate fake-data database.
+The external-review fixes at `936bec2` passed both jobs in [run 44199421841](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44199421841). See the [validation record](validation.md) for versioned counts and [the current revision’s CI](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for later commits. PR #5 was merged into main at `13b4f43`; subsequent changes are reviewed in separate PRs. Windows/teacher-server testing, live OMDb, and screenshots remain manual sign-off tasks. Public deployment is after grading with a separate fake-data database.
 
 The [external-review resolution](pr4-review-resolution.md) explains all adopted/deferred findings. The current [SQL catalog](sql-query-catalog.md) follows the runtime source; baseline test/query counts are historical evidence, not a claim about later code.
 
@@ -56,3 +56,5 @@ The [external-review resolution](pr4-review-resolution.md) explains all adopted/
 - Regression checks cover all three manager create forms, catalog editing, invalid-password messages without echoing the submitted password, concurrent dashboard/stock activity, stale hash upgrades, retirement races, and both sides of the Central-time daylight-saving transition.
 
 - External review also added credential-stamped sessions, immutable edition identity after history, exclusive parent locking before retirement checks, explicit self-edit sign-out, clearer OMDb/correction messages, time-zone fallback, route-only record IDs, and a single PR workflow run per commit. No DDL changes were made.
+
+The [main-review follow-up](main-review-resolution.md) documents login protection, paging, caching, and error handling without DDL changes.

@@ -1,6 +1,6 @@
 # BlueBox project plan
 
-**Project baseline, updated November 17, 2026:** this document records the agreed scope and current design decisions. Both milestones’ application features are implemented. See the [roadmap](roadmap.md) for remaining sign-off tasks and the [validation record](validation.md) for test evidence.
+**Project baseline, updated November 18, 2026:** this document records the agreed scope and current design decisions. Both milestones’ application features are implemented. See the [roadmap](roadmap.md) for remaining sign-off tasks and the [validation record](validation.md) for test evidence.
 
 ## Purpose
 
@@ -52,10 +52,10 @@ The implemented screens follow the supplied mockups’ navigation and visual dir
 | --- | --- | --- |
 | Sign in | Authenticate an employee | Unauthenticated users |
 | Overview | Stock totals, quantities by warehouse, recent movements | Staff and managers |
-| Item catalog | Search and filter movies and games | Staff and managers |
+| Item catalog | Search, filter, and page through movies and games | Staff and managers |
 | Item details | View catalog information and stock by warehouse | Staff and managers |
 | Add/edit item | Maintain items and select an OMDb movie match | Managers |
-| Inventory | View quantities by item and warehouse | Staff and managers |
+| Inventory | Search, filter, and page through item/warehouse quantities | Staff and managers |
 | Check-in/check-out | Preview and record stock movements | Staff and managers |
 | Activity log | Review movement details and initiate corrections | Staff and managers; corrections are manager-only |
 | Employee management | Create accounts, assign roles, deactivate access | Managers |
@@ -97,6 +97,7 @@ A manager selects the mistaken transaction and records an opposite movement with
 - Managers create employee accounts and assign roles. No employee self-registration is provided.
 - Inactive or terminated employees cannot access the application. Password resets and username changes revoke existing sessions on the next request. Saving your own employee account explicitly signs you out, with a warning and sign-in message.
 - The first manager is created during setup. The last active manager cannot be deactivated or demoted.
+- Login POSTs are limited to 10 per minute per client address on each application instance; GETs remain available. Unknown usernames still receive a password-hash verification. Session cookies require HTTPS.
 - Passwords are stored using a supported salted password-hashing facility, never as plaintext. There is no forced first-login password change. Blank passwords on account edits preserve the existing hash; login-time hash upgrades cannot overwrite an intervening manager password reset.
 
 ## Planning sources
@@ -120,7 +121,7 @@ Where source documents differ, use the agreed decisions here: quantity-based inv
 - The latest supplied five-table DDL already includes the required status, metadata, and correction fields. Milestone 2 requires no further migration on that aligned schema.
 - Stock writes and linked corrections are atomic. Retirement takes an exclusive parent lock before checking stock. The dashboard uses one READ COMMITTED batch and derives total units from its warehouse rows; counts/recent movements can reflect later commits without a serializable read transaction.
 - Each history entry can be fully reversed once, including correction entries. Corrections require active records, adequate stock, and a manager explanation.
-- PR #5 consolidates the application, documentation, and external-review fixes for a single owner merge. Its latest checks are the authority for current results; historical run/commit evidence is retained in the validation record.
+- PR #5 was merged into main at `13b4f43`. Follow-up review fixes use the existing DDL and go through a separate owner-reviewed PR. Catalog, Inventory, and Manage Catalog use 100-row pages with filter-preserving navigation. Check the validation record and the current revision’s CI for test evidence.
 - Complete the Windows/teacher-server walkthrough, live OMDb check, and final fake-data screenshots before class sign-off. Follow the submission guide if a `.slnx` file is required.
 
 See the [requirements](requirements.md), [database notes](architecture-and-database.md), [roadmap](roadmap.md), [validation record](validation.md), and [submission guide](submission.md).

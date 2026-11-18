@@ -1,5 +1,7 @@
 # External review resolution — consolidated PR #5
 
+**Historical record:** PR #5 was merged into main at `13b4f43`. The merge instructions below describe that completed consolidation. Later suggestions are tracked in the [main-review resolution](main-review-resolution.md).
+
 The owner supplied `pr4-review-findings.md` as review input and requested that useful, schema-compatible fixes go into PR #5. PR #5 already contains all PR #4 commits and the documentation refresh. It is now the consolidated application/documentation/fix PR: **merge PR #5 directly after its latest checks pass; PR #4 does not need to be merged first.**
 
 The review suggestions were checked against the implementation and supplied five-table DDL. No tables, columns, indexes, collation, or database isolation settings were changed. The instructor's Program/Main/MapRoutes and ADO.NET foundation is retained.
