@@ -14,9 +14,16 @@ public sealed class ItemsModel(AdministrationService admin, InventoryQueries que
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
     public bool HasNextPage { get; private set; }
     // Tag-helper string attributes turn a null numeric ID into an invalid empty route value.
-    public IDictionary<string, string> ItemRouteValues => Id.HasValue
-        ? new Dictionary<string, string> { ["id"] = Id.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) }
-        : new Dictionary<string, string>();
+    public IDictionary<string, string> ItemRouteValues(int? pageNumber = null)
+    {
+        var values = new Dictionary<string, string>
+        {
+            ["PageNumber"] = (pageNumber ?? PageNumber).ToString(System.Globalization.CultureInfo.InvariantCulture)
+        };
+        if (Id.HasValue) values["id"] = Id.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (!string.IsNullOrWhiteSpace(Search)) values["Search"] = Search;
+        return values;
+    }
     [BindProperty] public ItemInput Input { get; set; } = new();
     public bool HasHistory { get; private set; }
     public List<CatalogRow> Items { get; private set; } = [];

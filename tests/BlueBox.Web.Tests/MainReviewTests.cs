@@ -50,15 +50,15 @@ public sealed class MainReviewTests
         if (id.HasValue) route.Values["id"] = id.Value;
         var view = new ViewContext { HttpContext = context, RouteData = route, ActionDescriptor = new PageActionDescriptor { ViewEnginePath = "/Admin/Items" } };
         var helper = new AnchorTagHelper(app.Services.GetRequiredService<IHtmlGenerator>()) { ViewContext = view, Page = "/Admin/Items" };
-        var model = new BlueBox.Web.Pages.Admin.ItemsModel(null!, null!, null!) { Id = id };
-        foreach (var value in model.ItemRouteValues) helper.RouteValues[value.Key] = value.Value;
-        helper.RouteValues["PageNumber"] = "3"; helper.RouteValues["Search"] = "Paging fixture";
+        var model = new BlueBox.Web.Pages.Admin.ItemsModel(null!, null!, null!) { Id = id, Search = "Paging fixture", PageNumber = 2 };
+        helper.RouteValues = model.ItemRouteValues(3);
         var output = new TagHelperOutput("a", [], (_, _) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
         helper.Process(new TagHelperContext([], new Dictionary<object, object>(), "pager"), output);
         Assert.False(string.IsNullOrEmpty(output.Attributes["href"]?.Value?.ToString()));
         var uri = new Uri(client.BaseAddress!, output.Attributes["href"].Value.ToString()!);
         Assert.Equal(id.HasValue ? $"/Admin/Items/{id}" : "/Admin/Items", uri.AbsolutePath);
         Assert.Equal("3", QueryHelpers.ParseQuery(uri.Query)["PageNumber"].ToString());
+        Assert.Equal("Paging fixture", QueryHelpers.ParseQuery(uri.Query)["Search"].ToString());
     }
 
     [Fact]

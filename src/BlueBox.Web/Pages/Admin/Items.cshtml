@@ -6,7 +6,7 @@
 @if(TempData["Success"] is string message) { <div class="notice" role="status">@message</div> }
 <div class="admin-grid">
 <section class="panel"><h2>@(Model.Id.HasValue ? $"Edit item #{Model.Id}" : "New item")</h2>
-<form method="post" id="item-form" asp-page="/Admin/Items" asp-all-route-data="Model.ItemRouteValues" asp-route-Search="@Model.Search" asp-route-PageNumber="@Model.PageNumber">
+<form method="post" id="item-form" asp-page="/Admin/Items" asp-all-route-data="Model.ItemRouteValues()">
 
 <div asp-validation-summary="All" class="validation" role="alert"></div>
 <label asp-for="Input.Name">Title</label><input asp-for="Input.Name" maxlength="150" required />
@@ -32,11 +32,11 @@
     <nav aria-label="Manage catalog pages">
         @if (Model.PageNumber > 1)
         {
-            <a class="button small" asp-page="/Admin/Items" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-all-route-data="Model.ItemRouteValues" rel="prev">← Previous</a>
+            <a class="button small" asp-page="/Admin/Items" asp-all-route-data="Model.ItemRouteValues(Model.PageNumber - 1)" rel="prev">← Previous</a>
         }
         @if (Model.HasNextPage && Model.PageNumber < int.MaxValue)
         {
-            <a class="button small" asp-page="/Admin/Items" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-all-route-data="Model.ItemRouteValues" rel="next">Next →</a>
+            <a class="button small" asp-page="/Admin/Items" asp-all-route-data="Model.ItemRouteValues(Model.PageNumber + 1)" rel="next">Next →</a>
         }
     </nav>
 </div></div></section>
