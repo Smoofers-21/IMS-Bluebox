@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -167,11 +168,15 @@ public sealed class MainReviewTests
         {
             var html = await client.GetStringAsync(path + "&PageNumber=2");
             Assert.Contains("Page 2", html); Assert.Contains("rel=\"prev\"", html); Assert.Contains("rel=\"next\"", html);
-            Assert.Contains("Search=Paging%20fixture", html); Assert.Contains("PageNumber=3", html);
+            var next = ElementUrl(html, "a", "rel", "next", "href");
+            var nextUri = new Uri(client.BaseAddress!, next);
+            var nextQuery = QueryHelpers.ParseQuery(nextUri.Query);
+            Assert.True(nextQuery["PageNumber"] == "3", $"Wrong next-page URL on {path}: {next}");
+            Assert.Equal("Paging fixture", nextQuery["Search"].ToString());
             Assert.Contains("Paging fixture 200", html); Assert.DoesNotContain("Paging fixture 201", html);
             if (path.StartsWith("/Inventory", StringComparison.Ordinal)) { Assert.Contains("LocationId=1", html); Assert.Contains("Type=MOVIE", html); }
             if (path.StartsWith("/Catalog", StringComparison.Ordinal)) Assert.Contains("Type=MOVIE", html);
-            var last = await client.GetStringAsync(path + "&PageNumber=3");
+            var last = await client.GetStringAsync(next);
             Assert.Contains("Paging fixture 201", last); Assert.DoesNotContain("rel=\"next\"", last);
             Assert.Contains("Page 1", await client.GetStringAsync(path + "&PageNumber=-1"));
             Assert.Contains("Page 1", await client.GetStringAsync(path)); // Applying filters starts at page one.
@@ -179,8 +184,8 @@ public sealed class MainReviewTests
         var newItemHtml = await client.GetStringAsync("/Admin/Items?Search=Paging%20fixture&PageNumber=2");
         var newAction = ItemFormAction(newItemHtml);
         Assert.Equal("/Admin/Items", new Uri(client.BaseAddress!, newAction).AbsolutePath);
-        Assert.Contains("Search=Paging%20fixture", newAction);
-        Assert.Contains("PageNumber=2", newAction);
+        Assert.Equal("Paging fixture", QueryHelpers.ParseQuery(new Uri(client.BaseAddress!, newAction).Query)["Search"].ToString());
+        Assert.Equal("2", QueryHelpers.ParseQuery(new Uri(client.BaseAddress!, newAction).Query)["PageNumber"].ToString());
         var token = await TestApp.TokenAsync(client, newAction);
         var invalid = await client.PostAsync(newAction, new FormUrlEncodedContent(new Dictionary<string, string> { ["__RequestVerificationToken"] = token }));
         Assert.Equal(HttpStatusCode.OK, invalid.StatusCode);
@@ -189,8 +194,8 @@ public sealed class MainReviewTests
         var editHtml = await client.GetStringAsync(editUrl);
         var editAction = ItemFormAction(editHtml);
         Assert.Equal($"/Admin/Items/{catalog[100].ItemId}", new Uri(client.BaseAddress!, editAction).AbsolutePath);
-        Assert.Contains("Search=Paging%20fixture", editAction);
-        Assert.Contains("PageNumber=2", editAction);
+        Assert.Equal("Paging fixture", QueryHelpers.ParseQuery(new Uri(client.BaseAddress!, editAction).Query)["Search"].ToString());
+        Assert.Equal("2", QueryHelpers.ParseQuery(new Uri(client.BaseAddress!, editAction).Query)["PageNumber"].ToString());
         var countBeforeEdit = await app.ScalarAsync("SELECT COUNT(*) FROM dbo.ITEM");
         token = await TestApp.TokenAsync(client, editAction);
         var saved = await client.PostAsync(editAction, new FormUrlEncodedContent(new Dictionary<string, string>
@@ -209,13 +214,15 @@ public sealed class MainReviewTests
         Assert.False((await queries.InventoryAsync("Paging fixture", "MOVIE", 1, pageNumber: 2)).HasNextPage);
     }
 
-    private static string ItemFormAction(string html)
+    private static string ItemFormAction(string html) => ElementUrl(html, "form", "id", "item-form", "action");
+
+    private static string ElementUrl(string html, string element, string attribute, string value, string urlAttribute)
     {
-        var form = Regex.Match(html, "<form\\b(?=[^>]*\\bid=\"item-form\")[^>]*>",
+        var tag = Regex.Match(html, $"<{element}\\b(?=[^>]*\\b{attribute}=\"{value}\")[^>]*>",
             RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
-        Assert.True(form.Success, "The rendered item form must be present.");
-        var action = Regex.Match(form.Value, "\\baction=\"([^\"]+)\"", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
-        Assert.True(action.Success, "The item form must have an explicit action URL.");
-        return WebUtility.HtmlDecode(action.Groups[1].Value);
+        Assert.True(tag.Success, $"The rendered {element} with {attribute}={value} must be present.");
+        var url = Regex.Match(tag.Value, $"\\b{urlAttribute}=\"([^\"]+)\"", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+        Assert.True(url.Success, $"The {element} must have an explicit {urlAttribute} URL.");
+        return WebUtility.HtmlDecode(url.Groups[1].Value);
     }
 }
