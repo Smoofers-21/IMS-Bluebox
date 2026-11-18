@@ -24,11 +24,11 @@
     <nav aria-label="Inventory pages">
         @if (Model.PageNumber > 1)
         {
-            <a class="button small" asp-page="Index" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" asp-route-LocationId="@Model.LocationId" rel="prev">← Previous</a>
+            <a class="button small" asp-page="/Inventory/Index" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" asp-route-LocationId="@Model.LocationId" rel="prev">← Previous</a>
         }
         @if (Model.HasNextPage && Model.PageNumber < int.MaxValue)
         {
-            <a class="button small" asp-page="Index" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" asp-route-LocationId="@Model.LocationId" rel="next">Next →</a>
+            <a class="button small" asp-page="/Inventory/Index" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" asp-route-LocationId="@Model.LocationId" rel="next">Next →</a>
         }
     </nav>
 </div></section>

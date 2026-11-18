@@ -23,11 +23,11 @@
     <nav aria-label="Catalog pages">
         @if (Model.PageNumber > 1)
         {
-            <a class="button small" asp-page="Index" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" rel="prev">← Previous</a>
+            <a class="button small" asp-page="/Catalog/Index" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" rel="prev">← Previous</a>
         }
         @if (Model.HasNextPage && Model.PageNumber < int.MaxValue)
         {
-            <a class="button small" asp-page="Index" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" rel="next">Next →</a>
+            <a class="button small" asp-page="/Catalog/Index" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-route-Type="@Model.Type" rel="next">Next →</a>
         }
     </nav>
 </div>

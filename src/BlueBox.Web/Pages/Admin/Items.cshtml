@@ -32,11 +32,11 @@
     <nav aria-label="Manage catalog pages">
         @if (Model.PageNumber > 1)
         {
-            <a class="button small" asp-page="Items" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-route-id="@Model.Id" rel="prev">← Previous</a>
+            <a class="button small" asp-page="/Admin/Items" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-route-id="@Model.Id" rel="prev">← Previous</a>
         }
         @if (Model.HasNextPage && Model.PageNumber < int.MaxValue)
         {
-            <a class="button small" asp-page="Items" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-route-id="@Model.Id" rel="next">Next →</a>
+            <a class="button small" asp-page="/Admin/Items" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-route-id="@Model.Id" rel="next">Next →</a>
         }
     </nav>
 </div></div></section>

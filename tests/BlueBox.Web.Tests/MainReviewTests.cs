@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,6 +18,19 @@ namespace BlueBox.Web.Tests;
 
 public sealed class MainReviewTests
 {
+    [Fact]
+    public async Task PagedListTargetsResolveWithTheirFilterValues()
+    {
+        await using var app = new TestApp(); using var client = app.Browser();
+        var links = app.Services.GetRequiredService<LinkGenerator>();
+        foreach (var page in new[] { "/Catalog/Index", "/Inventory/Index", "/Admin/Items" })
+        {
+            var url = links.GetPathByPage(page, values: new { PageNumber = 3, Search = "Paging fixture", Type = "MOVIE", LocationId = 1 });
+            Assert.False(string.IsNullOrEmpty(url), $"Cannot generate paging URL for {page}.");
+            Assert.Equal("3", QueryHelpers.ParseQuery(new Uri(client.BaseAddress!, url!).Query)["PageNumber"].ToString());
+        }
+    }
+
     [Fact]
     public async Task LoginPostsAreLimitedWhileReadsAndOtherRoutesRemainAvailable()
     {
@@ -222,7 +236,7 @@ public sealed class MainReviewTests
             RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
         Assert.True(tag.Success, $"The rendered {element} with {attribute}={value} must be present.");
         var url = Regex.Match(tag.Value, $"\\b{urlAttribute}=\"([^\"]+)\"", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
-        Assert.True(url.Success, $"The {element} must have an explicit {urlAttribute} URL.");
+        Assert.True(url.Success, $"The {element} must have an explicit {urlAttribute} URL: {tag.Value}");
         return WebUtility.HtmlDecode(url.Groups[1].Value);
     }
 }
