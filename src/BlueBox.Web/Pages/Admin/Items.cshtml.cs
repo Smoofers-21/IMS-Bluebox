@@ -13,6 +13,10 @@ public sealed class ItemsModel(AdministrationService admin, InventoryQueries que
     [BindProperty(SupportsGet = true)] public string? Search { get; set; }
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
     public bool HasNextPage { get; private set; }
+    // Tag-helper string attributes turn a null numeric ID into an invalid empty route value.
+    public IDictionary<string, string> ItemRouteValues => Id.HasValue
+        ? new Dictionary<string, string> { ["id"] = Id.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) }
+        : new Dictionary<string, string>();
     [BindProperty] public ItemInput Input { get; set; } = new();
     public bool HasHistory { get; private set; }
     public List<CatalogRow> Items { get; private set; } = [];

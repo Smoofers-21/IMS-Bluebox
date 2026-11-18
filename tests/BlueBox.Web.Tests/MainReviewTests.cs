@@ -5,10 +5,15 @@ using BlueBox.Web.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -29,6 +34,31 @@ public sealed class MainReviewTests
             Assert.False(string.IsNullOrEmpty(url), $"Cannot generate paging URL for {page}.");
             Assert.Equal("3", QueryHelpers.ParseQuery(new Uri(client.BaseAddress!, url!).Query)["PageNumber"].ToString());
         }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(7)]
+    public async Task ManagerPagerTagHelperGeneratesAHrefForNewAndExistingItems(int? id)
+    {
+        await using var app = new TestApp(); using var client = app.Browser();
+        var context = new DefaultHttpContext { RequestServices = app.Services };
+        context.Request.RouteValues["page"] = "/Admin/Items";
+        if (id.HasValue) context.Request.RouteValues["id"] = id.Value;
+        context.SetEndpoint(new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "catalog"));
+        var route = new RouteData(); route.Values["page"] = "/Admin/Items";
+        if (id.HasValue) route.Values["id"] = id.Value;
+        var view = new ViewContext { HttpContext = context, RouteData = route, ActionDescriptor = new PageActionDescriptor { ViewEnginePath = "/Admin/Items" } };
+        var helper = new AnchorTagHelper(app.Services.GetRequiredService<IHtmlGenerator>()) { ViewContext = view, Page = "/Admin/Items" };
+        var model = new BlueBox.Web.Pages.Admin.ItemsModel(null!, null!, null!) { Id = id };
+        foreach (var value in model.ItemRouteValues) helper.RouteValues[value.Key] = value.Value;
+        helper.RouteValues["PageNumber"] = "3"; helper.RouteValues["Search"] = "Paging fixture";
+        var output = new TagHelperOutput("a", [], (_, _) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+        helper.Process(new TagHelperContext([], new Dictionary<object, object>(), "pager"), output);
+        Assert.False(string.IsNullOrEmpty(output.Attributes["href"]?.Value?.ToString()));
+        var uri = new Uri(client.BaseAddress!, output.Attributes["href"].Value.ToString()!);
+        Assert.Equal(id.HasValue ? $"/Admin/Items/{id}" : "/Admin/Items", uri.AbsolutePath);
+        Assert.Equal("3", QueryHelpers.ParseQuery(uri.Query)["PageNumber"].ToString());
     }
 
     [Fact]
@@ -206,6 +236,9 @@ public sealed class MainReviewTests
         Assert.Contains("Page 2", await invalid.Content.ReadAsStringAsync());
         var editUrl = $"/Admin/Items/{catalog[100].ItemId}?Search=Paging%20fixture&PageNumber=2";
         var editHtml = await client.GetStringAsync(editUrl);
+        var newLink = ElementUrl(editHtml, "a", "id", "new-item-link", "href");
+        Assert.Equal("/Admin/Items", new Uri(client.BaseAddress!, newLink).AbsolutePath);
+        Assert.Contains("<h2>New item</h2>", await client.GetStringAsync(newLink));
         var editAction = ItemFormAction(editHtml);
         Assert.Equal($"/Admin/Items/{catalog[100].ItemId}", new Uri(client.BaseAddress!, editAction).AbsolutePath);
         Assert.Equal("Paging fixture", QueryHelpers.ParseQuery(new Uri(client.BaseAddress!, editAction).Query)["Search"].ToString());

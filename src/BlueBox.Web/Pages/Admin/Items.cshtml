@@ -6,7 +6,7 @@
 @if(TempData["Success"] is string message) { <div class="notice" role="status">@message</div> }
 <div class="admin-grid">
 <section class="panel"><h2>@(Model.Id.HasValue ? $"Edit item #{Model.Id}" : "New item")</h2>
-<form method="post" id="item-form" asp-page="/Admin/Items" asp-route-id="@Model.Id" asp-route-Search="@Model.Search" asp-route-PageNumber="@Model.PageNumber">
+<form method="post" id="item-form" asp-page="/Admin/Items" asp-all-route-data="Model.ItemRouteValues" asp-route-Search="@Model.Search" asp-route-PageNumber="@Model.PageNumber">
 
 <div asp-validation-summary="All" class="validation" role="alert"></div>
 <label asp-for="Input.Name">Title</label><input asp-for="Input.Name" maxlength="150" required />
@@ -22,9 +22,9 @@
 <label asp-for="Input.AgeRating">Age rating (optional)</label><input asp-for="Input.AgeRating" maxlength="20" placeholder="PG-13, E…" />
 <label asp-for="Input.Status">Status</label><select asp-for="Input.Status"><option value="ACTIVE">Active</option><option value="ARCHIVED">Archived</option></select>
 <p class="help">Archiving requires zero stock at every warehouse. History is retained.</p>
-<div class="form-actions"><a class="button" asp-page="Items" asp-route-id="">New item</a><button type="submit" class="button primary">Save item</button></div>
+<div class="form-actions"><a class="button" id="new-item-link" href="@Url.Page("/Admin/Items", new { id = (int?)null })">New item</a><button type="submit" class="button primary">Save item</button></div>
 </form></section>
-<section><form method="get" asp-page="Items" asp-route-id="" class="filter-bar"><label class="search-field"><span class="sr-only">Find an item</span><input asp-for="Search" placeholder="Find by title or ID" maxlength="150" /></label><button class="button" type="submit">Find</button></form>
+<section><form method="get" action="@Url.Page("/Admin/Items", new { id = (int?)null })" class="filter-bar"><label class="search-field"><span class="sr-only">Find an item</span><input asp-for="Search" placeholder="Find by title or ID" maxlength="150" /></label><button class="button" type="submit">Find</button></form>
 <div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Item / format</th><th>Status</th><th>Stock</th><th>Action</th></tr></thead><tbody>
 @foreach(var item in Model.Items) { <tr><td>@item.Name<small class="cell-subtitle">#@item.ItemId · @item.Format · @item.Type</small></td><td>@item.Status</td><td>@item.OnHand</td><td><a class="button small" asp-page="Items" asp-route-id="@item.ItemId" asp-route-Search="@Model.Search" asp-route-PageNumber="@Model.PageNumber">Edit</a></td></tr> }
 </tbody></table></div><div class="table-caption activity-pager">
@@ -32,11 +32,11 @@
     <nav aria-label="Manage catalog pages">
         @if (Model.PageNumber > 1)
         {
-            <a class="button small" asp-page="/Admin/Items" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-route-id="@Model.Id" rel="prev">← Previous</a>
+            <a class="button small" asp-page="/Admin/Items" asp-route-PageNumber="@(Model.PageNumber - 1)" asp-route-Search="@Model.Search" asp-all-route-data="Model.ItemRouteValues" rel="prev">← Previous</a>
         }
         @if (Model.HasNextPage && Model.PageNumber < int.MaxValue)
         {
-            <a class="button small" asp-page="/Admin/Items" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-route-id="@Model.Id" rel="next">Next →</a>
+            <a class="button small" asp-page="/Admin/Items" asp-route-PageNumber="@(Model.PageNumber + 1)" asp-route-Search="@Model.Search" asp-all-route-data="Model.ItemRouteValues" rel="next">Next →</a>
         }
     </nav>
 </div></div></section>
