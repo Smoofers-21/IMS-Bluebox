@@ -1,6 +1,6 @@
 # Demo and portfolio guide
 
-**Status:** walkthrough for the implemented Milestone 1 and 2 features. Check the [current validation record](validation.md#verified-results) and the current revision’s CI checks, then run the presentation on verified fake data in the intended Windows setup. The teacher-server walkthrough, live OMDb smoke check, and final screenshots remain review tasks; this guide is not proof they have been completed.
+**Status:** walkthrough for the implemented Milestone 1 and 2 features. The [Azure website](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net) is awaiting application launch and verification. Follow the [Azure setup guide](azure-portfolio-setup.md) for deployment, then check the [validation record](validation.md) and run this presentation on verified fake data. Live OMDb, Azure browser workflows, and final screenshots remain review tasks; teacher-server checks belong to the original class version.
 
 ## Fake data plan
 
@@ -48,8 +48,8 @@ Suggested screenshot set after validation:
 - Activity history with a linked correction.
 - Item details with movie metadata.
 
-The [validation record](validation.md) contains verified test results. Add screenshots and a live demo link after the corresponding manual verification/deployment. This is a fictional class/portfolio project, not a deployed business system.
+The [validation record](validation.md) contains verified test results. The website link is already listed with launch pending; update that label and add screenshots after manual verification. Before sharing a staff login, give the manager a different private password because the seeder initially gives both active accounts the same password. This is a fictional class/portfolio project.
 
-For class hand-in, follow the [submission guide](submission.md) and include the requested `.slnx` with its project files. Public hosting follows grading and uses a separate fake-data database.
+For class hand-in, follow the [submission guide](submission.md) and include the requested `.slnx` with its project files. The Azure portfolio uses a separate fake-data database and does not depend on the teacher's server.
 
 When demonstrating editing, show that an item’s type/format become fixed after its first movement, that resetting a staff password ends its old session, and that saving the signed-in manager’s own account gives a clear sign-out notice.

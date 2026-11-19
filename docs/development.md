@@ -1,6 +1,6 @@
 # Running and reviewing BlueBox
 
-For the current web-only portfolio transition, follow [Azure portfolio setup](azure-portfolio-setup.md). The instructions below also retain the original local/class setup.
+For the current web-only portfolio transition, follow [Azure portfolio setup](azure-portfolio-setup.md): private App Service settings, SQL outbound-IP firewall rules, publishing to the existing F1 website, fake-account initialization, and live checks. The [portfolio address](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net) is recorded but launch is pending. The instructions below also retain the original local/class setup.
 
 Milestones 1 and 2 implement sign-in, catalog/warehouse browsing, ordinary stock movements, manager administration, linked correction chains, safe retirement, optional OMDb metadata, and the overview dashboard. Complete the verification steps below before final class/portfolio sign-off.
 

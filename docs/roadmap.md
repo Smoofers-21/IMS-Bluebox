@@ -42,13 +42,15 @@ After the owner merges any follow-up PR being submitted, pull `main`, verify the
 The owner is transitioning to a web-only portfolio. Follow the [Azure setup guide](azure-portfolio-setup.md); the application workflows and five-table design stay the same.
 
 - [x] Prepare a guarded, transactional Azure-compatible fresh-schema installer and setup instructions.
+- [x] Record the owner-reported Azure SQL creation, schema-query execution, and App Service hostname.
+- [x] Add the [website address](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net) with an explicit launch-pending label.
 - [ ] Owner verifies the SQL free offer, monthly-limit auto-pause, and access in the chosen subscription/region.
-- [ ] Install the schema, configure private credentials, and seed fake portfolio data.
-- [ ] Create/publish an App Service F1 website and configure HTTPS, hostname, and database firewall access.
+- [ ] Confirm the five installed tables, configure private credentials, and seed fake portfolio data.
+- [ ] Confirm F1 Free, configure HTTPS/hostname and SQL firewall access, and publish to the existing App Service website.
 - [ ] Verify staff/manager workflows, OMDb, and behavior after free-tier idle shutdown/resume.
-- [ ] Add the verified live link and final fake-data screenshots.
+- [ ] Mark the website launched, publish verified staff access instructions, and add final fake-data screenshots.
 
-No Azure database or website has been modified by this workspace. The owner reports the empty cloud database exists; cloud resource state is not independently verified. Never reuse teacher credentials or other students' data.
+No Azure database or website has been modified by this workspace. The owner reports creating the resources and running the schema installer; the application has not been verified live. Never reuse teacher credentials or other students' data.
 
 ## Scope control
 

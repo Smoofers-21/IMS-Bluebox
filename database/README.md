@@ -6,6 +6,18 @@ The latest supplied DDL already contains the planned columns and constraints, wi
 
 For the new web-only portfolio database, use the [Azure setup guide](../docs/azure-portfolio-setup.md). It uses Azure Query editor and the guarded fresh installer; SSMS is not required. The older scripts and teacher-reference instructions below remain for the original class setup.
 
+## Azure portfolio process
+
+The owner reports creating the Azure SQL database and running the fresh installer. Do not rerun creation scripts to publish the website or populate accounts. Live schema and application connectivity still need verification.
+
+1. For a new installation only, create an empty Azure SQL database using the free offer with monthly-limit auto-pause, then run the guarded Azure installer through **Query editor**.
+2. Store the database connection privately in App Service as `ConnectionStrings__BlueBox`; use the actual password only in Azure settings. Keep encryption and certificate validation enabled.
+3. Allow the App Service's documented outbound IP addresses in the SQL server firewall. Visitors connect to the website, not directly to SQL Server.
+4. Publish the application and initialize fictional data once using its explicit setup command. Neither publishing nor ordinary startup changes the schema or seeds accounts.
+5. Verify login, stock updates, history, and idle database resume through the [portfolio website](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net), which is awaiting launch.
+
+See the [full Azure instructions](../docs/azure-portfolio-setup.md) for private configuration, publishing, and account setup. Automated create/drop tests run only against disposable SQL Server instances, never the portfolio database.
+
 ## Which file to use
 
 | Situation | Script |
@@ -72,4 +84,4 @@ The correction foreign key identifies an original transaction; it does not, by i
 
 ## Verified schema use
 
-The SQL Server CI suite applies `reference/current-schema.sql` only in generated disposable databases and passed for reviewed commit `6b37024`. See the [validation record](../docs/validation.md). It never targets the teacher’s server. The current-schema reference is also embedded by the test project, so retain the `database` folder when [packaging the solution](../docs/submission.md).
+The SQL Server CI suite applies the reference and guarded Azure installer only in generated disposable databases. PR #7 commit `ccaa453` passed [run 44627140027](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44627140027), with 91 tests passed across the SQL-enabled suite, including unit tests and expanded SQL cases. This is not a live Azure connectivity check; see the [validation record](../docs/validation.md). The suite never targets the teacher's or portfolio server. Both schema resources are embedded by the test project, so retain the `database` folder when [packaging the solution](../docs/submission.md).
