@@ -37,9 +37,18 @@ PR #5 merged the application, documentation, and schema-compatible review fixes 
 
 After the owner merges any follow-up PR being submitted, pull `main`, verify the Windows setup, and use the [submission guide](submission.md) to generate `.slnx` when required. Keep project folders and required build files alongside the solution. Submit according to the instructor’s requested format.
 
-## After grading — Public deployment
+## Current phase — Free Azure portfolio deployment
 
-Host the website and a separate protected database containing fake demo data. Configure the new connection string outside source control, then add the verified live link to the README. Never reuse teacher credentials or move other students' data.
+The owner is transitioning to a web-only portfolio. Follow the [Azure setup guide](azure-portfolio-setup.md); the application workflows and five-table design stay the same.
+
+- [x] Prepare a guarded, transactional Azure-compatible fresh-schema installer and setup instructions.
+- [ ] Owner verifies the SQL free offer, monthly-limit auto-pause, and access in the chosen subscription/region.
+- [ ] Install the schema, configure private credentials, and seed fake portfolio data.
+- [ ] Create/publish an App Service F1 website and configure HTTPS, hostname, and database firewall access.
+- [ ] Verify staff/manager workflows, OMDb, and behavior after free-tier idle shutdown/resume.
+- [ ] Add the verified live link and final fake-data screenshots.
+
+No Azure database or website has been modified by this workspace. The owner reports the empty cloud database exists; cloud resource state is not independently verified. Never reuse teacher credentials or other students' data.
 
 ## Scope control
 

@@ -71,7 +71,7 @@ public sealed partial class TestApp : WebApplicationFactory<Program>
         }
     }
 
-    public async Task InitializeAsync(string? password = null)
+    public async Task InitializeAsync(string? password = null, string schemaResource = "BlueBox.CurrentSchema.sql")
     {
         if (sqlServer is null) throw new InvalidOperationException("SQL Server tests require a disposable instance; no fake SQL backend is used.");
         await using var master = new SqlConnection(ConnectionString("master"));
@@ -79,8 +79,11 @@ public sealed partial class TestApp : WebApplicationFactory<Program>
         await using var create = new SqlCommand($"CREATE DATABASE [{databaseName}]", master);
         await create.ExecuteNonQueryAsync(); databaseCreated = true;
         await using var target = new SqlConnection(ConnectionString(databaseName)); await target.OpenAsync();
-        using var reader = new StreamReader(typeof(TestApp).Assembly.GetManifestResourceStream("BlueBox.CurrentSchema.sql")!);
-        foreach (var batch in Regex.Split(await reader.ReadToEndAsync(), @"^\s*GO\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase))
+        using var reader = new StreamReader(typeof(TestApp).Assembly.GetManifestResourceStream(schemaResource)!);
+        var schema = await reader.ReadToEndAsync();
+        if (schemaResource == "BlueBox.AzureSchema.sql")
+            schema = schema.Replace("N'YourAzureDatabaseName';", $"N'{databaseName}';", StringComparison.Ordinal);
+        foreach (var batch in Regex.Split(schema, @"^\s*GO\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase))
         {
             if (string.IsNullOrWhiteSpace(batch)) continue;
             await using var command = new SqlCommand(batch, target) { CommandTimeout = 60 };

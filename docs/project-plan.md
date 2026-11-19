@@ -1,6 +1,6 @@
 # BlueBox project plan
 
-**Project baseline, updated November 18, 2026:** this document records the agreed scope and current design decisions. Both milestones’ application features are implemented. See the [roadmap](roadmap.md) for remaining sign-off tasks and the [validation record](validation.md) for test evidence.
+**Project baseline, updated November 19, 2026:** this document records the agreed scope and current design decisions. Both milestones’ application features are implemented. See the [roadmap](roadmap.md) for remaining sign-off tasks and the [validation record](validation.md) for test evidence.
 
 ## Purpose
 
@@ -36,13 +36,13 @@ Build an internal warehouse inventory website for BlueBox, a fictional movie and
 | Application language | C# on .NET 10; SDK 10.0.404 pinned in `global.json` |
 | Web framework | ASP.NET Core Razor Pages |
 | Database | Microsoft SQL Server; CI uses a disposable SQL Server 2022 instance |
-| Database administration | SQL Server Management Studio (SSMS) |
+| Database administration | Azure browser tools for the portfolio; SSMS remains an optional tool for the original class database |
 | Movie lookup | OMDb API, called by the server |
 | Data access | ADO.NET with Microsoft.Data.SqlClient 7.1.2 and the instructor’s SqlConnection/SqlCommand/DataTable helpers |
 | Authentication | Cookie authentication and ASP.NET Core `PasswordHasher<Employee>`; Staff/Manager authorization |
 | Solution and submission | `BlueBox.sln` in source/CI; generate `.slnx` for submission when requested |
 
-SSMS administers the database; the application connects to SQL Server itself. The teacher’s actual server version and Windows connection still require local verification. Public hosting is deferred until after grading and will use a separate database containing fake data.
+SSMS administers the database; the application connects to SQL Server itself. The teacher’s actual server version and Windows connection still require local verification. The current goal is a free web-only portfolio deployment using Azure SQL and Azure App Service F1 with separate fake data. The owner reports an empty Azure database exists; connection, schema setup, and public website deployment have not been verified by this workspace. See the Azure setup guide.
 
 ## Screen plan
 
@@ -122,6 +122,7 @@ Where source documents differ, use the agreed decisions here: quantity-based inv
 - Stock writes and linked corrections are atomic. Retirement takes an exclusive parent lock before checking stock. The dashboard uses one READ COMMITTED batch and derives total units from its warehouse rows; counts/recent movements can reflect later commits without a serializable read transaction.
 - Each history entry can be fully reversed once, including correction entries. Corrections require active records, adequate stock, and a manager explanation.
 - PR #5 was merged into main at `13b4f43`. Follow-up review fixes use the existing DDL and go through a separate owner-reviewed PR. Catalog, Inventory, and Manage Catalog use 100-row pages with filter-preserving navigation. Check the validation record and the current revision’s CI for test evidence.
-- Complete the Windows/teacher-server walkthrough, live OMDb check, and final fake-data screenshots before class sign-off. Follow the submission guide if a `.slnx` file is required.
+- Prepare the current Azure portfolio deployment through a separate branch/PR, preserving the five-table schema and application behavior. The guarded Azure installer changes no business definitions. Free-tier eligibility/settings, live schema/connection setup, seeding, website deployment, and the browser walkthrough remain verification tasks.
+- Historical Windows/teacher-server and `.slnx` submission checks remain class-specific; they are not prerequisites for this portfolio transition. Live OMDb and fake-data screenshots remain pending for the public demo.
 
 See the [requirements](requirements.md), [database notes](architecture-and-database.md), [roadmap](roadmap.md), [validation record](validation.md), and [submission guide](submission.md).

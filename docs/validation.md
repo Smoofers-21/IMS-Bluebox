@@ -1,6 +1,14 @@
 # Validation record
 
-Updated November 18, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+Updated November 19, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+
+## Azure portfolio preparation
+
+The owner reports an empty Azure SQL portfolio database. No credentials were supplied to this workspace and no live connection, DDL, seed operation, Azure resource creation, or website publishing was performed here. The [setup guide](azure-portfolio-setup.md) keeps cloud verification explicit.
+
+The new fresh installer wraps the existing reference DDL in target/existing-object guards and an atomic transaction, with no `USE` or `GO` requirement. Existing reference definitions and migration scripts are unchanged. New disposable SQL regressions cover fresh installation plus stock use, rerun rejection with retained data, and wrong-target rejection. Their execution requires the SQL-enabled CI job; local skips are not proof of Azure compatibility.
+
+Preparation checks: locked restore and Release tests passed locally (**35 passed, 37 SQL groups skipped, 0 failures**). Both the reusable script and owner-targeted download parse as T-SQL. All 61 source DDL batches match the supplied reference; documentation links and the regenerated Word plan were checked. New SQL execution and the Azure smoke test remain pending; older PR #6 results below do not validate this installer.
 
 ## Main-review follow-up verification
 
@@ -66,10 +74,10 @@ CI runs on pull requests and main pushes. The concurrency key uses the PR number
 | Task | Status | Completion evidence |
 | --- | --- | --- |
 | Windows/Visual Studio build and browser walkthrough | Pending owner execution | Build the merged solution and walk through staff/manager workflows |
-| Teacher's actual SQL Server connection and assigned schema | Pending owner execution | Run from the intended Windows setup with private configuration; do not use this server for automated create/drop tests |
+| Teacher's actual SQL Server connection and assigned schema | Historical class check; outside current portfolio release | Run from the intended Windows setup with private configuration; do not use this server for automated create/drop tests |
 | Live OMDb lookup | Pending private key/setup | Select a movie/title-year match, review metadata, and verify manual fallback |
 | Final screenshots and class walkthrough | Pending | Capture fake-data screens after manual verification; follow the [demo guide](demo-guide.md) |
-| Public demo hosting | Deferred until after grading | Separate application host and database containing fake data |
+| Azure portfolio schema/connection, free-tier configuration, and public hosting | Pending owner verification/deployment | Separate Azure database and App Service F1 website with fake data; verify free limits and browser workflows |
 
 The teacher's database has not been accessed or changed from this workspace. Passing disposable SQL Server CI verifies the application against the supplied schema; it does not establish connectivity, credentials, certificate trust, or permissions on the teacher's server.
 
