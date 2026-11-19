@@ -1,5 +1,7 @@
 # Running and reviewing BlueBox
 
+For the current web-only portfolio transition, follow [Azure portfolio setup](azure-portfolio-setup.md). The instructions below also retain the original local/class setup.
+
 Milestones 1 and 2 implement sign-in, catalog/warehouse browsing, ordinary stock movements, manager administration, linked correction chains, safe retirement, optional OMDb metadata, and the overview dashboard. Complete the verification steps below before final class/portfolio sign-off.
 
 ## Prerequisites

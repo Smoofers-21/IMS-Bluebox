@@ -2,7 +2,7 @@
 
 A browser-based internal inventory management project for a fictional movie and game rental business. BlueBox lets employees track warehouse quantities, record stock movements, and review who changed inventory and when.
 
-**Status: both milestones’ planned application features are implemented.** PR #5 was merged into `main` at `13b4f43`. The follow-up [main-review fixes](docs/main-review-resolution.md) add login protection, paging, caching, and clearer error handling without DDL changes. See the [validation record](docs/validation.md) for evidence tied to each revision. Windows testing against the teacher’s database, a live OMDb check, and final screenshots remain before class/demo sign-off.
+**Status: both milestones’ planned application features are implemented.** PR #5 was merged into `main` at `13b4f43`. The follow-up [main-review fixes](docs/main-review-resolution.md) add login protection, paging, caching, and clearer error handling without DDL changes. See the [validation record](docs/validation.md) for evidence tied to each revision. The current goal is a web-only Azure portfolio deployment with the same application behavior. [Azure setup](docs/azure-portfolio-setup.md) is in preparation; the live connection, website publishing, OMDb smoke check, and screenshots remain pending. Historical class verification is separate.
 
 ## Project at a glance
 
@@ -11,7 +11,7 @@ A browser-based internal inventory management project for a fictional movie and 
 | Purpose | Class project and portfolio demonstration |
 | Interface | Browser-based internal employee website |
 | Application | C# / .NET 10 with ASP.NET Core Razor Pages |
-| Database | Microsoft SQL Server, managed through SQL Server Management Studio (SSMS) |
+| Database | SQL Server; Azure SQL portfolio setup through browser tools is in progress |
 | Data access | ADO.NET (`SqlConnection`, `SqlCommand`, `DataTable`), based on the instructor’s template |
 | External integration | OMDb for optional movie posters and age classifications |
 | Inventory model | Quantities per catalog item and warehouse location |
@@ -61,6 +61,7 @@ Check-in means adding units to a warehouse; check-out means removing units from 
 
 | Document | Contents |
 | --- | --- |
+| [Azure portfolio setup](docs/azure-portfolio-setup.md) | Free-tier settings, fresh cloud schema, private configuration, and deployment checklist |
 | [Development and Windows setup](docs/development.md) | SDK, private connection configuration, demo data, running, and tests |
 | [Project plan](docs/project-plan.md) | Agreed scope, screens, workflows, and decisions |
 | [Requirements](docs/requirements.md) | Permissions, business rules, and acceptance criteria |

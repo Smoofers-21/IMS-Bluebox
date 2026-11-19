@@ -4,10 +4,13 @@ These scripts target the five-table SQL Server design supplied during planning. 
 
 The latest supplied DDL already contains the planned columns and constraints, with `poster_url NVARCHAR(2048)`. **Do not rerun 001 against that updated database.** A sanitized [current schema reference](reference/current-schema.sql) is retained for empty test databases; it is not an upgrade script.
 
+For the new web-only portfolio database, use the [Azure setup guide](../docs/azure-portfolio-setup.md). It uses Azure Query editor and the guarded fresh installer; SSMS is not required. The older scripts and teacher-reference instructions below remain for the original class setup.
+
 ## Which file to use
 
 | Situation | Script |
 | --- | --- |
+| New, empty Azure SQL portfolio database | Use [azure/001_create_portfolio_schema.sql](azure/001_create_portfolio_schema.sql); set its expected database name first |
 | The tables match the latest supplied DDL, including statuses, metadata, and correction link | No migration needed; configure the application connection |
 | The original five-table baseline exists without the alignment columns/constraints | Review and run [001_align_warehouse_schema.sql](001_align_warehouse_schema.sql) once |
 | The schema is partial or its version is unknown | Compare with the reference and review differences before choosing a migration |
