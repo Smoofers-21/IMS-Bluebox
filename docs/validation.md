@@ -20,7 +20,9 @@ The [Azure review resolution](pr7-review-resolution.md) records the adopted find
 
 Local locked restore and Release tests passed: **48 passed, 38 SQL groups intentionally skipped, 0 failures**. The new local cases verify trusted HTTPS/client-address handling, independent login buckets, spoof rejection, invalid trust settings, transient open retry, immediate permanent-error failure, preserved SQL errors after exhaustion, and cancellation. Both Azure SQL scripts parse as T-SQL; documentation links and the synchronized Word plan were checked.
 
-The new index/upgrade SQL cases require PR #8's disposable SQL Server CI run, which is pending for these changes. CI tests the installer on **SQL Server 2022, not Azure SQL**. The owner reports running the earlier installer in Azure Query editor; applying the index upgrade, inspecting its result, and completing the live browser walkthrough remain the Azure SQL checks. No live portfolio database was contacted from this workspace.
+PR #8 source commit `0458754` passed [run 44633770879](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44633770879): both jobs succeeded and the SQL-enabled suite passed **105 tests, 0 failures** (unit tests plus expanded SQL cases). This includes index definitions on fresh install, index-upgrade rerun/data preservation, wrong-target rejection, competing corrections, and reversing a correction on the indexed schema. All 61 existing table/constraint/default DDL batches match the prior installer; the change adds only secondary indexes to that business schema. Documentation checks passed for **152 local links/fragments** and the regenerated Word plan.
+
+CI tests the installer on **SQL Server 2022, not Azure SQL**. The owner reports running the earlier installer in Azure Query editor; applying the index upgrade, inspecting its result, and completing the live browser walkthrough remain the Azure SQL checks. No live portfolio database was contacted from this workspace. Later documentation-only commits have their own CI runs; the result above is tied to `0458754`.
 
 ## Main-review follow-up verification
 
