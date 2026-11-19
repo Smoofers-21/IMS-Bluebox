@@ -83,6 +83,7 @@ Check-in means adding units to a warehouse; check-out means removing units from 
 | [Milestone 2 review](docs/milestone-2.md) | Manager administration, correction chains, retirement, and review fixes |
 | [PR #4 review resolution](docs/pr4-review-resolution.md) | Historical fixes delivered in merged PR #5 |
 | [Main review resolution](docs/main-review-resolution.md) | Adopted and deferred suggestions, with no DDL changes |
+| [PR #7 Azure review resolution](docs/pr7-review-resolution.md) | Portfolio indexes, safe proxy configuration, connection-open retry, and deployment checks |
 | [Validation record](docs/validation.md) | Verified build/test results, CI links, and checks still pending |
 | [Class submission and `.slnx`](docs/submission.md) | Pulling the merged code, converting the solution, and packaging source files |
 
@@ -92,7 +93,7 @@ The supplied warehouse conceptual model, database design, data dictionary, and s
 
 ## Running the project
 
-To deploy the portfolio website, follow the [Azure process](docs/azure-portfolio-setup.md): create the empty cloud schema once, configure private App Service settings, allow its outbound IPs through the SQL firewall, publish `BlueBox.Web` to the existing F1 website, initialize fake accounts, and verify the browser workflows. Publishing alone does not create tables or login accounts.
+To deploy the portfolio website, follow the [Azure process](docs/azure-portfolio-setup.md): create the empty cloud schema once (or apply the index-only upgrade to existing tables), configure private App Service settings and any required trusted proxy addresses, allow its outbound IPs through the SQL firewall, publish `BlueBox.Web` to the existing F1 website, initialize fake accounts, and verify the browser workflows. Publishing alone does not create tables or login accounts. Connection opening has bounded retries for Azure resume/throttling; SQL commands are not automatically replayed.
 
 For local development:
 

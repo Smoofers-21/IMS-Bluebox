@@ -94,6 +94,11 @@ public partial class Program
             return;
         }
 
+        // Host integration may already handle forwarding (for example IIS). For other
+        // verified proxies, opt in with exact addresses; never trust arbitrary headers.
+        if (TrustedProxyConfiguration.Read(app.Configuration) is { } proxyOptions)
+            app.UseForwardedHeaders(proxyOptions);
+
         app.Use(async (context, next) =>
         {
             context.Response.Headers.XContentTypeOptions = "nosniff";

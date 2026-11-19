@@ -12,7 +12,15 @@ PR #7 commit `ccaa453`, merged into `main` at `1959a24`, passed [run 44627140027
 
 Preparation checks at that revision: locked restore and Release tests passed locally (**35 passed, 37 SQL groups skipped, 0 failures**). Both the reusable script and owner-targeted download parse as T-SQL. All 61 source DDL batches match the supplied reference; documentation links and the regenerated Word plan were checked. The Azure smoke test remains pending.
 
-The November 19 launch-documentation update changes only documentation. Locked restore and Release tests again passed locally (**35 passed, 37 SQL groups skipped, 0 failures**); all **142 local documentation links/fragments** passed checks, and the regenerated Word plan matched its Markdown paragraphs and table cells. Public hostname links were checked for consistent spelling, not live application availability. No application, DDL, or deployment workflow changed.
+The initial November 19 launch-documentation update at `4a2b0cd` changed only documentation. Locked restore and Release tests passed locally (**35 passed, 37 SQL groups skipped, 0 failures**); all **142 local documentation links/fragments** passed checks, and the regenerated Word plan matched its Markdown paragraphs and table cells. Public hostname links were checked for consistent spelling, not live application availability.
+
+## PR #7 review fixes on PR #8
+
+The [Azure review resolution](pr7-review-resolution.md) records the adopted findings and safer alternatives. The current changes add four nonunique portfolio indexes with a separate existing-database upgrade, bounded connection-open retry, optional exact proxy trust, and deployment documentation. The supplied reference DDL and original class migrations remain unchanged; no business column or constraint changes are required.
+
+Local locked restore and Release tests passed: **48 passed, 38 SQL groups intentionally skipped, 0 failures**. The new local cases verify trusted HTTPS/client-address handling, independent login buckets, spoof rejection, invalid trust settings, transient open retry, immediate permanent-error failure, preserved SQL errors after exhaustion, and cancellation. Both Azure SQL scripts parse as T-SQL; documentation links and the synchronized Word plan were checked.
+
+The new index/upgrade SQL cases require PR #8's disposable SQL Server CI run, which is pending for these changes. CI tests the installer on **SQL Server 2022, not Azure SQL**. The owner reports running the earlier installer in Azure Query editor; applying the index upgrade, inspecting its result, and completing the live browser walkthrough remain the Azure SQL checks. No live portfolio database was contacted from this workspace.
 
 ## Main-review follow-up verification
 

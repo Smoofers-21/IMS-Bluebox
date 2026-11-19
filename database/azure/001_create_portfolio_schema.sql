@@ -1,10 +1,16 @@
 -- Fresh Azure SQL / SQL Server schema installer. Creates no database and seeds no data.
 -- Replace YourAzureDatabaseName below with the database selected in Azure Query editor.
--- Uses the supplied reference definitions unchanged. Not an upgrade for existing tables.
+-- Preserves reference tables/constraints and adds four portfolio performance indexes.
+-- Not an upgrade for existing tables; use 002_add_portfolio_indexes.sql instead.
 -- Execute the whole file together; no USE statement or GO separators are required.
 SET NOCOUNT ON;
 SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
+SET ANSI_PADDING ON;
+SET ANSI_WARNINGS ON;
+SET CONCAT_NULL_YIELDS_NULL ON;
+SET ARITHABORT ON;
+SET NUMERIC_ROUNDABORT OFF;
 
 DECLARE @ExpectedDatabase sysname = N'YourAzureDatabaseName';
 IF @ExpectedDatabase = N'YourAzureDatabaseName' OR DB_NAME() <> @ExpectedDatabase
@@ -211,6 +217,12 @@ ALTER TABLE [dbo].[TRANSACTION_LOG] CHECK CONSTRAINT [CK_TRANSACTION_LOG_quantit
 ALTER TABLE [dbo].[TRANSACTION_LOG] WITH CHECK ADD CONSTRAINT [CK_TRANSACTION_LOG_type] CHECK (((([transaction_type]) collate Latin1_General_100_BIN2='CHECK OUT' OR ([transaction_type]) collate Latin1_General_100_BIN2='CHECK IN') AND datalength([transaction_type])=len([transaction_type])));
 
 ALTER TABLE [dbo].[TRANSACTION_LOG] CHECK CONSTRAINT [CK_TRANSACTION_LOG_type];
+
+CREATE INDEX IX_TRANSACTION_LOG_corrects_transaction_id
+    ON dbo.TRANSACTION_LOG (corrects_transaction_id) WHERE corrects_transaction_id IS NOT NULL;
+CREATE INDEX IX_TRANSACTION_LOG_item_id ON dbo.TRANSACTION_LOG (item_id);
+CREATE INDEX IX_TRANSACTION_LOG_location_id ON dbo.TRANSACTION_LOG (location_id);
+CREATE INDEX IX_CURRENT_INVENTORY_location ON dbo.CURRENT_INVENTORY (location_id) INCLUDE (quantity_on_hand);
 
     COMMIT TRANSACTION;
 END TRY

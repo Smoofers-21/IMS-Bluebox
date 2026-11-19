@@ -15,5 +15,6 @@
     <ProjectReference Include="../../src/BlueBox.Web/BlueBox.Web.csproj" />
     <EmbeddedResource Include="../../database/reference/current-schema.sql" LogicalName="BlueBox.CurrentSchema.sql" />
     <EmbeddedResource Include="../../database/azure/001_create_portfolio_schema.sql" LogicalName="BlueBox.AzureSchema.sql" />
+    <EmbeddedResource Include="../../database/azure/002_add_portfolio_indexes.sql" LogicalName="BlueBox.AzureIndexes.sql" />
   </ItemGroup>
 </Project>
