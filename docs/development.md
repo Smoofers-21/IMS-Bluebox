@@ -1,6 +1,6 @@
 # Running and reviewing BlueBox
 
-For the current web-only portfolio transition, follow [Azure portfolio setup](azure-portfolio-setup.md). The instructions below also retain the original local/class setup.
+For the current web-only portfolio transition, follow [Azure portfolio setup](azure-portfolio-setup.md): the index-only upgrade for existing portfolio tables, private App Service settings, SQL outbound-IP firewall rules, publishing to the existing F1 website, fake-account initialization, and live checks. The [portfolio address](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net) is recorded but launch is pending. The instructions below also retain the original local/class setup.
 
 Milestones 1 and 2 implement sign-in, catalog/warehouse browsing, ordinary stock movements, manager administration, linked correction chains, safe retirement, optional OMDb metadata, and the overview dashboard. Complete the verification steps below before final class/portfolio sign-off.
 
@@ -110,7 +110,7 @@ The loopback URLs above are local development addresses, not a public portfolio 
 }
 ```
 
-For example, put this alongside the connection settings in User Secrets or `BLUEBOX_PRIVATE_CONFIG`, or set `AllowedHosts` as an environment variable. This host allowlist does not bind a listener, open a firewall, establish HTTPS certificate trust, or publish the app. Configure those on the hosting machine when needed. If deploying behind a reverse proxy later, configure forwarded headers with the proxy explicitly listed under `KnownProxies` (or a narrow trusted network) and HTTPS termination; arbitrary `X-Forwarded-For` headers are not trusted by this app.
+For example, put this alongside the connection settings in User Secrets or `BLUEBOX_PRIVATE_CONFIG`, or set `AllowedHosts` as an environment variable. This host allowlist does not bind a listener, open a firewall, establish HTTPS certificate trust, or publish the app. Configure those on the hosting machine when needed. For a verified reverse proxy not already handled by host integration, set `Hosting:KnownProxies` (`Hosting__KnownProxies` in App Service) to exact trusted proxy IPs separated by semicolons. The app processes one forwarding hop before HTTPS redirection and login limiting; untrusted peers cannot spoof the scheme/client address. Leave it unset for direct hosting and do not enable the unrestricted `ASPNETCORE_FORWARDEDHEADERS_ENABLED` shortcut. See [Azure setup](azure-portfolio-setup.md).
 
 Login permits 10 POSTs per minute per client address on each app instance; excess attempts return 429 with `Retry-After`. GETs do not consume permits. Addresses are shared when requests reach the app through the same unconfigured proxy; this simple in-memory limit resets on restart and is suitable for the single-instance demo. Unknown usernames still run a password-hash check; this reduces the obvious fast path without promising constant-time responses.
 

@@ -6,17 +6,32 @@ The latest supplied DDL already contains the planned columns and constraints, wi
 
 For the new web-only portfolio database, use the [Azure setup guide](../docs/azure-portfolio-setup.md). It uses Azure Query editor and the guarded fresh installer; SSMS is not required. The older scripts and teacher-reference instructions below remain for the original class setup.
 
+## Azure portfolio process
+
+The owner reports creating the Azure SQL database and running the fresh installer. Apply the new [index-only upgrade](azure/002_add_portfolio_indexes.sql) to that existing portfolio schema after setting its expected database name. It adds four nonunique indexes without changing records or business definitions. Do not rerun creation scripts to publish the website or populate accounts. Live schema and application connectivity still need verification.
+
+1. For a new installation only, create an empty Azure SQL database using the free offer with monthly-limit auto-pause, then run the guarded Azure installer through **Query editor**.
+2. Store the database connection privately in App Service as `ConnectionStrings__BlueBox`; use the actual password only in Azure settings. Keep encryption and certificate validation enabled.
+3. Allow the App Service's documented outbound IP addresses in the SQL server firewall. Visitors connect to the website, not directly to SQL Server.
+4. Publish the application and initialize fictional data once using its explicit setup command. Neither publishing nor ordinary startup changes the schema or seeds accounts.
+5. Verify login, stock updates, history, and idle database resume through the [portfolio website](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net), which is awaiting launch.
+
+See the [full Azure instructions](../docs/azure-portfolio-setup.md) for private configuration, publishing, and account setup. Automated create/drop tests run only against disposable SQL Server instances, never the portfolio database.
+
 ## Which file to use
 
 | Situation | Script |
 | --- | --- |
 | New, empty Azure SQL portfolio database | Use [azure/001_create_portfolio_schema.sql](azure/001_create_portfolio_schema.sql); set its expected database name first |
+| Existing portfolio tables created before the performance indexes | Use [azure/002_add_portfolio_indexes.sql](azure/002_add_portfolio_indexes.sql); set its expected database name first; preserve tables and data |
 | The tables match the latest supplied DDL, including statuses, metadata, and correction link | No migration needed; configure the application connection |
 | The original five-table baseline exists without the alignment columns/constraints | Review and run [001_align_warehouse_schema.sql](001_align_warehouse_schema.sql) once |
 | The schema is partial or its version is unknown | Compare with the reference and review differences before choosing a migration |
 | You are preparing a new, empty BlueBox development database | Run [000_create_baseline.sql](000_create_baseline.sql), then 001 |
 
 `000` preserves the original creation script supplied by the project owner. It is not an upgrade script and refuses to run if a target table already exists. Neither script creates a database or grants permissions.
+
+The Azure installer now includes `IX_TRANSACTION_LOG_corrects_transaction_id` (filtered to non-NULL references), `IX_TRANSACTION_LOG_item_id`, `IX_TRANSACTION_LOG_location_id`, and `IX_CURRENT_INVENTORY_location` (including `quantity_on_hand`). The matching `002` upgrade skips existing same-named indexes and is rerunnable; inspect manually altered definitions before applying it. The original class migration and sanitized reference remain unchanged. Indexes support lookups but do not replace transaction locks or manager authorization.
 
 ## Apply the one-time upgrade to an older baseline in SSMS
 
@@ -72,4 +87,4 @@ The correction foreign key identifies an original transaction; it does not, by i
 
 ## Verified schema use
 
-The SQL Server CI suite applies `reference/current-schema.sql` only in generated disposable databases and passed for reviewed commit `6b37024`. See the [validation record](../docs/validation.md). It never targets the teacher’s server. The current-schema reference is also embedded by the test project, so retain the `database` folder when [packaging the solution](../docs/submission.md).
+The SQL Server CI suite applies the reference, guarded Azure installer, and index-only upgrade only in generated disposable databases. PR #8 source commit `0458754` passed [run 44633770879](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44633770879), with 105 tests passed across the SQL-enabled suite, including unit tests and expanded SQL cases. This is SQL Server 2022 verification, not a live Azure connectivity check; see the [validation record](../docs/validation.md). The suite never targets the teacher's or portfolio server. All three schema resources are embedded by the test project, so retain the `database` folder when [packaging the solution](../docs/submission.md).

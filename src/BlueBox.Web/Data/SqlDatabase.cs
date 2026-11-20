@@ -1,4 +1,5 @@
 using System.Data;
+using System.Runtime.ExceptionServices;
 using Microsoft.Data.SqlClient;
 
 namespace BlueBox.Web.Data;
@@ -6,6 +7,16 @@ namespace BlueBox.Web.Data;
 /// <summary>ADO.NET helpers adapted from the instructor's starter template.</summary>
 public sealed class SqlDatabase(IConfiguration configuration, ILogger<SqlDatabase> logger)
 {
+    // Only connection establishment is retried. Never attach a retry provider to commands.
+    private static readonly SqlRetryLogicBaseProvider OpenRetry =
+        SqlConfigurableRetryFactory.CreateExponentialRetryProvider(new SqlRetryLogicOption
+        {
+            NumberOfTries = 3,
+            DeltaTime = TimeSpan.FromSeconds(2),
+            MaxTimeInterval = TimeSpan.FromSeconds(8),
+            TransientErrors = [40613, 40197, 40501, 49918, 49919, 49920, 4221]
+        });
+
     public string GetConnectionString()
     {
         var configured = configuration.GetConnectionString("BlueBox");
@@ -22,6 +33,7 @@ public sealed class SqlDatabase(IConfiguration configuration, ILogger<SqlDatabas
             InitialCatalog = database,
             UserID = username,
             Password = password,
+            ConnectTimeout = 60,
             Encrypt = true,
             TrustServerCertificate = configuration.GetValue<bool>("Database:TrustServerCertificate")
         }.ConnectionString;
@@ -30,8 +42,19 @@ public sealed class SqlDatabase(IConfiguration configuration, ILogger<SqlDatabas
     public async Task<SqlConnection> OpenConnectionAsync(CancellationToken ct = default)
     {
         var connection = new SqlConnection(GetConnectionString());
-        try { await connection.OpenAsync(ct); return connection; }
+        try { await OpenWithRetryAsync(connection, () => connection.OpenAsync(ct), ct); return connection; }
         catch { await connection.DisposeAsync(); throw; }
+    }
+
+    internal static async Task OpenWithRetryAsync(SqlConnection connection, Func<Task> open, CancellationToken ct)
+    {
+        try { await OpenRetry.ExecuteAsync(connection, open, ct); }
+        catch (AggregateException ex) when (ex.InnerExceptions.Count > 0 && ex.InnerExceptions.All(error => error is SqlException))
+        {
+            // SqlClient aggregates exhausted retries. Keep the original SQL error/503 classification.
+            ExceptionDispatchInfo.Capture(ex.InnerExceptions[^1]).Throw();
+            throw;
+        }
     }
 
     public async Task<DataTable> FillDataTableViaSqlAsync(string sql, CancellationToken ct = default)

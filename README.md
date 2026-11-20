@@ -2,7 +2,15 @@
 
 A browser-based internal inventory management project for a fictional movie and game rental business. BlueBox lets employees track warehouse quantities, record stock movements, and review who changed inventory and when.
 
-**Status: both milestones’ planned application features are implemented.** PR #5 was merged into `main` at `13b4f43`. The follow-up [main-review fixes](docs/main-review-resolution.md) add login protection, paging, caching, and clearer error handling without DDL changes. See the [validation record](docs/validation.md) for evidence tied to each revision. The current goal is a web-only Azure portfolio deployment with the same application behavior. [Azure setup](docs/azure-portfolio-setup.md) is in preparation; the live connection, website publishing, OMDb smoke check, and screenshots remain pending. Historical class verification is separate.
+**Status: both milestones’ planned application features are implemented.** The current phase is a web-only Azure portfolio deployment with the same inventory workflows and five-table design. The owner reports creating the Azure SQL database, running the schema installer, and creating the App Service website. Application publishing, live connectivity, demo accounts, OMDb verification, and screenshots remain pending. See the [Azure setup guide](docs/azure-portfolio-setup.md) and [validation record](docs/validation.md). Historical class verification is separate.
+
+## Website demo — launch pending
+
+**[Open BlueBox on Azure](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net)**
+
+This is the portfolio website address. BlueBox has not yet been confirmed running there; until publishing is complete, the link may show Azure's default page or an unavailable application. Once launched, visitors will use the website in their browser without installing Visual Studio or SSMS. Demo access instructions will be added after fake data and accounts are verified.
+
+The planned demo uses Azure App Service **F1 Free** and the **Azure SQL free offer**, subject to confirming the subscription settings. Free-tier idle shutdown, database resume, and usage limits can delay or temporarily interrupt access. GitHub hosts the source code; Azure runs the website and database.
 
 ## Project at a glance
 
@@ -11,7 +19,8 @@ A browser-based internal inventory management project for a fictional movie and 
 | Purpose | Class project and portfolio demonstration |
 | Interface | Browser-based internal employee website |
 | Application | C# / .NET 10 with ASP.NET Core Razor Pages |
-| Database | SQL Server; Azure SQL portfolio setup through browser tools is in progress |
+| Hosting | Azure App Service F1 Free; publishing and live verification pending |
+| Database | Azure SQL for the portfolio, using the existing SQL Server-compatible schema |
 | Data access | ADO.NET (`SqlConnection`, `SqlCommand`, `DataTable`), based on the instructor’s template |
 | External integration | OMDb for optional movie posters and age classifications |
 | Inventory model | Quantities per catalog item and warehouse location |
@@ -61,7 +70,7 @@ Check-in means adding units to a warehouse; check-out means removing units from 
 
 | Document | Contents |
 | --- | --- |
-| [Azure portfolio setup](docs/azure-portfolio-setup.md) | Free-tier settings, fresh cloud schema, private configuration, and deployment checklist |
+| [Azure portfolio setup](docs/azure-portfolio-setup.md) | Free tiers, browser database setup, private settings, SQL firewall rules, Visual Studio publishing, and launch checks |
 | [Development and Windows setup](docs/development.md) | SDK, private connection configuration, demo data, running, and tests |
 | [Project plan](docs/project-plan.md) | Agreed scope, screens, workflows, and decisions |
 | [Requirements](docs/requirements.md) | Permissions, business rules, and acceptance criteria |
@@ -74,6 +83,7 @@ Check-in means adding units to a warehouse; check-out means removing units from 
 | [Milestone 2 review](docs/milestone-2.md) | Manager administration, correction chains, retirement, and review fixes |
 | [PR #4 review resolution](docs/pr4-review-resolution.md) | Historical fixes delivered in merged PR #5 |
 | [Main review resolution](docs/main-review-resolution.md) | Adopted and deferred suggestions, with no DDL changes |
+| [PR #7 Azure review resolution](docs/pr7-review-resolution.md) | Portfolio indexes, safe proxy configuration, connection-open retry, and deployment checks |
 | [Validation record](docs/validation.md) | Verified build/test results, CI links, and checks still pending |
 | [Class submission and `.slnx`](docs/submission.md) | Pulling the merged code, converting the solution, and packaging source files |
 
@@ -82,6 +92,10 @@ Download the [Word version of the project plan](docs/BlueBox-Project-Plan.docx) 
 The supplied warehouse conceptual model, database design, data dictionary, and screen mockups informed this plan. [Source notes](docs/project-plan.md#planning-sources) explain how they relate to the original assignment brief. The original attachments are not bundled here.
 
 ## Running the project
+
+To deploy the portfolio website, follow the [Azure process](docs/azure-portfolio-setup.md): create the empty cloud schema once (or apply the index-only upgrade to existing tables), configure private App Service settings and any required trusted proxy addresses, allow its outbound IPs through the SQL firewall, publish `BlueBox.Web` to the existing F1 website, initialize fake accounts, and verify the browser workflows. Publishing alone does not create tables or login accounts. Connection opening has bounded retries for Azure resume/throttling; SQL commands are not automatically replayed.
+
+For local development:
 
 Install the SDK pinned in `global.json`, prepare the SQL Server tables, and configure `ConnectionStrings:BlueBox` privately. Follow the [development guide](docs/development.md) for Visual Studio setup and initial accounts, then run:
 
@@ -111,6 +125,6 @@ The repository and CI use `BlueBox.sln`. If the instructor requests `.slnx`, fir
 
 ## Portfolio focus
 
-The project demonstrates relational database design, employee authentication, role policy, transactional stock updates, and audit history in C#. It also includes server-side external API integration, manager administration, and linked audit corrections. Screenshots and a public demo link will be added after final validation and deployment.
+The project demonstrates requirements analysis, workflow design, relational database modeling, employee authentication, role policy, transactional stock updates, and audit history. It also includes server-side external API integration, manager administration, and linked audit corrections. The website address is listed above; verified demo access and fake-data screenshots will follow launch checks.
 
-Public hosting is planned after grading, using a separate database with fake data. GitHub hosts the source; the C# website must run on an application host to be available as a live demo.
+The Azure portfolio uses a separate database with fictional records. It does not depend on access to the teacher's server. Original Windows/class and `.slnx` submission instructions remain available for the class version.
