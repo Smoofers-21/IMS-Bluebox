@@ -8,9 +8,28 @@ A web-based warehouse inventory portfolio project for a fictional movie and game
 
 **[Open BlueBox on Azure](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net)**
 
-This is the portfolio website address; deployment and live verification are pending. Visitors will use the published application in their browser. Demo access instructions and screenshots will be added after the fictional accounts and website workflows are verified.
+This is the portfolio website address; deployment and live verification are pending. Visitors will use the published application in their browser with the public staff account below. The new login-page demo panel appears after this application update is deployed and its Azure display settings are added; screenshots will follow live verification.
 
 The planned demo uses Azure App Service **F1 Free** and the **Azure SQL free offer**, subject to confirming the subscription settings. Free-tier idle shutdown, database resume, and usage limits can delay or temporarily interrupt access. GitHub hosts the source code; Azure runs the website and database.
+
+## Try the demo
+
+**[Open the demo sign-in page](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net/Account/Login)**
+
+| Field | Public demo value |
+| --- | --- |
+| Username | `avery.chen` |
+| Password | `DEMO.PASS123321` |
+
+1. Open the sign-in page and select **Try the demo** to expand the credentials, or copy them from the table above.
+2. Use **Copy** beside the username, paste it into the normal Username field, then copy/paste the password into Password.
+3. Select **Sign in**. If clipboard access is unavailable, select and copy the visible credentials manually; the panel and normal sign-in also work without JavaScript.
+
+This is a **shared interactive demo with fictional data**. STAFF access allows the dashboard, catalog, inventory, movement history, and stock check-in/out. Changes are saved and visible to other visitors. Catalog/account/warehouse administration and transaction corrections remain restricted to managers. Stock submissions are limited to 20 per minute per client IP; application requests are limited to 300 per minute per IP on each instance. A 429 response asks you to wait a minute. These controls reduce bursts but do not guarantee free-tier availability.
+
+The sign-in page is the current source for credentials if the README has not yet caught up with a password change. The owner enables the panel using the two [Azure display settings](docs/azure-portfolio-setup.md#public-demo-display-settings); it is hidden when either setting is empty.
+
+These staff credentials are intentionally public. The owner has configured this account separately; the application still verifies its password, active status, and current database role through the ordinary sign-in flow. Manager passwords, SQL credentials, publish profiles, and API keys remain private. No public registration or automatic demo login is provided.
 
 ## Project at a glance
 
@@ -28,7 +47,7 @@ The planned demo uses Azure App Service **F1 Free** and the **Azure SQL free off
 
 ## Inventory workflows
 
-- Employee sign-in with staff and manager permissions, secure cookies, and a bounded login-attempt limit.
+- Employee sign-in with staff and manager permissions, secure cookies, and limits on login attempts, stock submissions, and repeated page requests.
 - Searchable movie/game catalog, including separate entries for different formats. Type/format are fixed after the first movement to preserve edition history.
 - Warehouse quantities, with 100-row Catalog, Inventory, and Manage Catalog pages that preserve filters.
 - Check-in and check-out with a preview of the resulting balance.
@@ -81,6 +100,7 @@ Check-in adds units to a warehouse; check-out removes units from it. These are w
 | [Manager workflow review](docs/milestone-2.md) | Administration, correction chains, retirement, and review fixes |
 | [PR #7 Azure review](docs/pr7-review-resolution.md) | Portfolio indexes, proxy configuration, connection-open retry, and deployment checks |
 | [PR #9 deployment review](docs/pr9-review-resolution.md) | Environment-scoped credentials, pinned deploy action, and post-upload startup check |
+| [PR #11 demo review](docs/pr11-review-resolution.md) | Request limits, optional demo display settings, and verification |
 | [Validation record](docs/validation.md) | Versioned build/test results, CI links, and pending live checks |
 
 Planning and review documents record the project's design and implementation history. The setup instructions in this README and the [database README](database/README.md) describe the current Azure portfolio configuration.
@@ -109,9 +129,19 @@ dotnet run --project src/BlueBox.Web
 
 Open `BlueBox.sln` in a Visual Studio release supporting .NET 10 on Windows, or use VS Code/the CLI on Mac. No database is created, altered, or seeded automatically when the website starts.
 
-Connection strings belong in user secrets or environment variables. Keep credentials, real employee data, and API keys outside source control. Configure `Omdb:ApiKey` privately to enable movie lookup; manual entry works without a key.
+Connection strings belong in user secrets or environment variables. Keep manager/deployment/database credentials, real employee data, and API keys outside source control; only the public staff demo login above is intentionally published. Configure `Omdb:ApiKey` privately to enable movie lookup; manual entry works without a key.
 
 ## Validation
+
+Run both the web application and SQL Server integration checks locally with Docker and the pinned SDK:
+
+```sh
+bash scripts/test-local.sh
+```
+
+This uses a disposable local SQL Server container and cleans it up after the run. It never uses the Azure portfolio connection. UI changes also receive browser checks.
+
+For unit/routing/provider checks alone:
 
 ```sh
 dotnet test BlueBox.sln --configuration Release

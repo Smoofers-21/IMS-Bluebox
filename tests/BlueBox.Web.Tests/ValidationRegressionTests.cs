@@ -65,7 +65,7 @@ public sealed class ValidationRegressionTests
         var hasher = new PasswordHasher<Employee>();
         var hash = hasher.HashPassword(employee, password);
         Assert.NotEqual(PasswordVerificationResult.Failed, hasher.VerifyHashedPassword(employee, hash, password));
-        var login = new LoginModel(null!, hasher) { Username = "test.user", Password = password };
+        var login = new LoginModel(null!, hasher, new ConfigurationBuilder().Build()) { Username = "test.user", Password = password };
         Assert.True(Validator.TryValidateObject(login, new ValidationContext(login), [], true));
     }
 
@@ -83,7 +83,7 @@ public sealed class ValidationRegressionTests
         Assert.Contains("12–256", seedError.Message);
         if (length > PasswordPolicy.MaximumLength)
         {
-            var login = new LoginModel(null!, hasher) { Username = "test.user", Password = password };
+            var login = new LoginModel(null!, hasher, new ConfigurationBuilder().Build()) { Username = "test.user", Password = password };
             Assert.False(Validator.TryValidateObject(login, new ValidationContext(login), [], true));
         }
     }

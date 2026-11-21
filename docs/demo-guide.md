@@ -1,14 +1,20 @@
 # Demo and portfolio guide
 
-**Status:** walkthrough for the implemented Milestone 1 and 2 features. The [Azure website](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net) is awaiting application launch and verification. Follow the [Azure setup guide](azure-portfolio-setup.md) for deployment, then check the [validation record](validation.md) and run this presentation on verified fake data. Live OMDb, Azure browser workflows, and final screenshots remain review tasks; teacher-server checks belong to the original class version.
+**Status:** portfolio walkthrough for the implemented inventory and manager workflows. Deployment and live verification of the [Azure website](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net) remain pending. Follow [Azure setup](azure-portfolio-setup.md), check the [validation record](validation.md), and use verified fictional data. The owner has configured a public staff account; the login-page update must be deployed and both PublicDemo display settings configured before its demo panel is visible.
+
+## Public visitor access
+
+The [README demo section](../README.md#try-the-demo) contains the current intentionally public `avery.chen` login. On the sign-in page, select **Try the demo**, copy each credential into the normal login form, then select **Sign in**. The fields remain selectable when clipboard access is blocked or JavaScript is disabled. There is no automatic authentication or new permission bypass.
+
+Visitors can browse stock/history and record stock movements. Manager administration and corrections stay restricted. Explain that this is a shared interactive dataset: one visitor's stock changes and free-text notes remain visible to others. Review Activity before presenting; use fictional content. Repeated submissions or refreshes can return 429; wait a minute before retrying. Keep the public account ACTIVE and STAFF, and keep its actual password synchronized with the displayed value and README. Do not promote that account to manager while its credentials are public. Set `PublicDemo__Username` and `PublicDemo__Password` in Azure as described in [display settings](azure-portfolio-setup.md#public-demo-display-settings). To rotate the password, change the actual account password, update the Azure display setting, then update the README through a PR. Settings-only changes do not require a code redeployment. Removing a display setting hides the panel but does not revoke account access.
 
 ## Fake data plan
 
 For the current Azure portfolio, the private starter SQL creates one active manager, four active staff, and Fayetteville/Bentonville warehouses. It deliberately creates no items, inventory balances, or transactions. Use the separate private login file; each initial account has its own password. After [deployment through Actions](github-actions-deployment.md), the owner will add catalog entries and opening check-ins through the application before presenting this walkthrough.
 
-For older class/disposable test demonstrations only, `--seed-demo` creates North Loop/West End warehouses, one active manager, one active staff member, one inactive staff member, six catalog entries, balances, and opening history. Do not run it on the account-only portfolio database. See [local initial data setup](development.md#3-choose-initial-data).
+For disposable test demonstrations only, `--seed-demo` creates North Loop/West End warehouses, one active manager, one active staff member, one inactive staff member, six catalog entries, balances, and opening history. Do not run it on the account-only portfolio database. See [local initial data setup](development.md#3-choose-initial-data).
 
-Prepare balances that cover zero stock, a small quantity, and enough stock for ordinary movements. Establish opening quantities through recorded check-ins so inventory and movement history reconcile. Do not publish working passwords or connection credentials in the guide.
+Prepare balances that cover zero stock, a small quantity, and enough stock for ordinary movements. Establish opening quantities through recorded check-ins so inventory and movement history reconcile. Only the explicitly public staff demo credentials belong in visitor instructions; manager, SQL, deployment, and API credentials remain private.
 
 ## Suggested walkthrough
 
@@ -50,8 +56,6 @@ Suggested screenshot set after validation:
 - Activity history with a linked correction.
 - Item details with movie metadata.
 
-The [validation record](validation.md) contains verified test results. The website link is already listed with launch pending; update that label and add screenshots after manual verification. Share only intended staff demo access and keep the manager password private. The portfolio's private starter file uses distinct passwords; if using the older class seeder elsewhere, its initially shared manager/staff password must be separated before public access. This is a fictional class/portfolio project.
-
-For class hand-in, follow the [submission guide](submission.md) and include the requested `.slnx` with its project files. The Azure portfolio uses a separate fake-data database and does not depend on the teacher's server.
+The [validation record](validation.md) contains verified test results. The website link is listed with deployment pending; update that label and add screenshots after manual verification. Share the designated staff demo account and keep manager passwords private. The Azure portfolio uses fictional data. The public staff password is intentionally different from the private manager password.
 
 When demonstrating editing, show that an item’s type/format become fixed after its first movement, that resetting a staff password ends its old session, and that saving the signed-in manager’s own account gives a clear sign-out notice.

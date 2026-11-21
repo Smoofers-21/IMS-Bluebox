@@ -19,6 +19,7 @@ Build an internal warehouse inventory website for BlueBox, a fictional movie and
 - OMDb movie lookup for optional posters and age classifications.
 - Overview dashboard, searchable inventory, and activity views.
 - Fake data for demonstration and validation.
+- Optional public staff demo credentials in an expandable login-page panel and README, with copy buttons and normal sign-in; the panel is hidden unless both PublicDemo display settings are configured. Shared stock changes are disclosed and manager access stays restricted.
 
 ### Excluded
 
@@ -100,7 +101,7 @@ A manager selects the mistaken transaction and records an opposite movement with
 - Managers create employee accounts and assign roles. No employee self-registration is provided.
 - Inactive or terminated employees cannot access the application. Password resets and username changes revoke existing sessions on the next request. Saving your own employee account explicitly signs you out, with a warning and sign-in message.
 - The first manager is created during setup. The last active manager cannot be deactivated or demoted.
-- Login POSTs are limited to 10 per minute per client address on each application instance; GETs remain available. Unknown usernames still receive a password-hash verification. Session cookies require HTTPS.
+- Login POSTs are limited to 10 and stock-movement POSTs to 20 per minute per client address on each application instance. A separate 300-application-request-per-minute limit includes GETs, excluding static files. Limits run before authentication, return 429 with Retry-After, and do not guarantee monthly free-tier availability. Unknown usernames still receive a password-hash verification. Session cookies require HTTPS.
 - Passwords are stored using a supported salted password-hashing facility, never as plaintext. There is no forced first-login password change. Blank passwords on account edits preserve the existing hash; login-time hash upgrades cannot overwrite an intervening manager password reset.
 
 ## Planning sources

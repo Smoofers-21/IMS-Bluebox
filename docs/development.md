@@ -112,7 +112,9 @@ The loopback URLs above are local development addresses, not a public portfolio 
 
 For example, put this alongside the connection settings in User Secrets or `BLUEBOX_PRIVATE_CONFIG`, or set `AllowedHosts` as an environment variable. This host allowlist does not bind a listener, open a firewall, establish HTTPS certificate trust, or publish the app. Configure those on the hosting machine when needed. For a verified reverse proxy not already handled by host integration, set `Hosting:KnownProxies` (`Hosting__KnownProxies` in App Service) to exact trusted proxy IPs separated by semicolons. The app processes one forwarding hop before HTTPS redirection and login limiting; untrusted peers cannot spoof the scheme/client address. Leave it unset for direct hosting and do not enable the unrestricted `ASPNETCORE_FORWARDEDHEADERS_ENABLED` shortcut. See [Azure setup](azure-portfolio-setup.md).
 
-Login permits 10 POSTs per minute per client address on each app instance; excess attempts return 429 with `Retry-After`. GETs do not consume permits. Addresses are shared when requests reach the app through the same unconfigured proxy; this simple in-memory limit resets on restart and is suitable for the single-instance demo. Unknown usernames still run a password-hash check; this reduces the obvious fast path without promising constant-time responses.
+Login permits 10 POSTs and stock movements permit 20 POSTs per minute per client address on each app instance; excess attempts return 429 with `Retry-After`. GETs do not consume those POST limits. A separate 300-application-request-per-minute limit also covers GETs before cookie/database validation; static files are excluded. Addresses are shared when requests reach the app through the same unconfigured proxy; this simple in-memory limit resets on restart and is suitable for the single-instance demo. Unknown usernames still run a password-hash check; this reduces the obvious fast path without promising constant-time responses.
+
+The public demo panel is optional and hidden by default. Set `PublicDemo:Username` and `PublicDemo:Password` in local user secrets, or `PublicDemo__Username` and `PublicDemo__Password` as environment variables, only for an intentionally public STAFF account. Settings control displayed values only; they never reset database credentials or bypass authentication. See [Azure display settings](azure-portfolio-setup.md#public-demo-display-settings).
 
 Static files with a correct `asp-append-version` hash can be cached for a year; unversioned/mismatched URLs use a one-hour cache. Application pages, errors, and authenticated responses remain `no-store`.
 
@@ -142,6 +144,22 @@ In Manage → Catalog items, choose Movie, enter a title, and select Search movi
 OMDb calls use a fixed HTTPS endpoint, a five-second timeout, no automatic retry, and disabled HTTP-client URL logging to keep the API key out of request logs. Provider errors show a manual-entry message. The tests use a fake provider and do not consume a real API key or quota.
 
 ## Automated checks
+
+The default local verification uses both the web application and real SQL Server integration tests on a disposable local instance. With Docker running and the pinned SDK installed, use Bash on Linux, macOS, or WSL:
+
+```sh
+bash scripts/test-local.sh
+```
+
+The helper prints the SDK and Docker versions, starts the same SQL Server 2022 CU28 image as CI, generates a private temporary password, binds a random loopback port, and overrides the test connection with that local target. It restores locked dependencies, runs the Release suite, then removes the container and temporary credential file, including on failure. The certificate exception applies only to this disposable local instance. Azure credentials are not used. The suite includes real HTTP page/authentication/stock workflows against SQL; additionally run browser checks for affected UI behavior.
+
+Extra arguments are forwarded to `dotnet test`, for example:
+
+```sh
+bash scripts/test-local.sh --logger "console;verbosity=minimal"
+```
+
+For unit/routing checks alone when deliberately working without a database, the underlying command is:
 
 ```sh
 dotnet test BlueBox.sln --configuration Release

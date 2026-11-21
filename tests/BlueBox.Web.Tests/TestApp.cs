@@ -41,13 +41,17 @@ public sealed partial class TestApp : WebApplicationFactory<Program>
     public ConcurrentQueue<Exception> ServerErrors { get; } = new();
     public ConcurrentQueue<string> DatabaseWarnings { get; } = new();
     public string? KnownProxies { get; init; }
+    public string? PublicDemoUsername { get; init; }
+    public string? PublicDemoPassword { get; init; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
         builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["Hosting:KnownProxies"] = KnownProxies
+            ["Hosting:KnownProxies"] = KnownProxies,
+            ["PublicDemo:Username"] = PublicDemoUsername,
+            ["PublicDemo:Password"] = PublicDemoPassword
         }));
         builder.ConfigureLogging(logging => logging.AddProvider(new ExceptionCapture(ServerErrors, DatabaseWarnings)));
         builder.ConfigureServices(services =>
