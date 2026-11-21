@@ -16,7 +16,9 @@ The [review resolution](pr9-review-resolution.md) records the adopted hardening,
 
 The pre-review source `ba89a24` passed [run 44864358871](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44864358871): both jobs succeeded, with **105 tests passed, 0 failed** in the SQL-enabled suite (unit tests plus expanded SQL cases). Current review changes again passed locked restore and local Release tests: **48 passed, 38 SQL groups intentionally skipped, 0 failures**. Actionlint 1.7.7 passed both workflows; existing preflight/ZIP checks passed. Eight controlled post-upload cases covered the correct form, cold start, Azure's default page, missing fields, wrong heading, redirects, transient network errors, and bounded failure without logging response bodies. Publish-profile ignore rules, local documentation links, and the synchronized Word plan were checked.
 
-The new post-upload check has not run against Azure. Anonymous GET login does not query SQL; authenticated database access and stock workflows remain manual live checks. Application code, packages, DDL, and the build/SQL workflow are unchanged. The updated branch's CI result is pending its new run; the earlier result above applies only to `ba89a24`.
+Review source commit `3329215` passed [run 44865499072](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44865499072): both jobs succeeded, and the SQL-enabled suite passed **105 tests, 0 failures**. Local documentation checks passed for **169 links/fragments** after recording this result, and the Word plan matches the Markdown. Later documentation-only commits have their own CI runs; these results are tied to the cited revision.
+
+The new post-upload check has not run against Azure. Anonymous GET login does not query SQL; authenticated database access and stock workflows remain manual live checks. Application code, packages, DDL, and the build/SQL workflow are unchanged.
 
 ## Azure portfolio preparation
 

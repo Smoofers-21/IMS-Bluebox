@@ -19,4 +19,4 @@ The main-only shell check alone cannot protect a repository-wide secret from a m
 
 ## Verification
 
-See the [validation record](validation.md) for local workflow and application checks and revision-specific CI results. The real Azure upload, environment settings, authenticated database workflow, and final launch remain pending owner execution.
+Review source commit `3329215` passed [run 44865499072](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44865499072): both jobs succeeded with **105 tests passed, 0 failures** in the SQL-enabled suite (unit tests plus expanded SQL cases). Local Release tests passed **48 tests**, with **38 SQL groups intentionally skipped**; the post-upload script passed eight controlled cases. See the [validation record](validation.md) for scope. The real Azure upload, environment settings, authenticated database workflow, and final launch remain pending owner execution.
