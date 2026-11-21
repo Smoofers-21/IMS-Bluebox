@@ -13,7 +13,7 @@ The owner reports creating the Azure SQL database and running the fresh installe
 1. For a new installation only, create an empty Azure SQL database using the free offer with monthly-limit auto-pause, then run the guarded Azure installer through **Query editor**.
 2. Store the database connection privately in App Service as `ConnectionStrings__BlueBox`; use the actual password only in Azure settings. Keep encryption and certificate validation enabled.
 3. Allow the App Service's documented outbound IP addresses in the SQL server firewall. Visitors connect to the website, not directly to SQL Server.
-4. Publish the application and initialize fictional data once using its explicit setup command. Neither publishing nor ordinary startup changes the schema or seeds accounts.
+4. [Publish through GitHub Actions](../docs/github-actions-deployment.md) and run the separately supplied private account/location starter SQL once if needed. The portfolio starts with one manager, four staff, and Fayetteville/Bentonville warehouses; the owner will add items and stock after launch. Do not use the older `--seed-demo` command for this setup. Neither publishing nor ordinary startup changes the schema or seeds accounts.
 5. Verify login, stock updates, history, and idle database resume through the [portfolio website](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net), which is awaiting launch.
 
 See the [full Azure instructions](../docs/azure-portfolio-setup.md) for private configuration, publishing, and account setup. Automated create/drop tests run only against disposable SQL Server instances, never the portfolio database.

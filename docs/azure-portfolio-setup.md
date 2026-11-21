@@ -2,7 +2,7 @@
 
 The portfolio transition keeps the C# application, five-table SQL Server design, permissions, stock transactions, corrections, and OMDb integration. Azure SQL replaces the teacher's database connection. Azure App Service will host the existing website; browsers use its HTTPS URL. SSMS is not required.
 
-**Current status, November 19, 2026:** the owner reports creating the Azure SQL database, running the fresh-schema query, and creating the App Service website. Publishing BlueBox, testing live connectivity, initializing fake accounts, and completing the browser walkthrough remain pending. This workspace has not connected to or changed Azure resources.
+**Current status, November 20, 2026:** the owner reports creating the Azure SQL database and website, running the schema and index update, and configuring app settings and SQL firewall rules. A manual GitHub Actions deployment workflow is prepared; its authentication setup, first deployment, live connectivity, and browser walkthrough remain pending. Account-only starter SQL has been supplied privately; its execution is not confirmed. This workspace has not connected to or changed Azure resources.
 
 **Website address — launch pending:** [Open BlueBox on Azure](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net). Until the application is published and verified, the address may show Azure's default page or an unavailable application. The public hostname can be shared; keep database connection details, credentials, and OMDb keys private.
 
@@ -12,7 +12,7 @@ Use the Azure SQL **free offer** with **Auto-pause until next month** when the m
 
 For the website, select an App Service **F1 (Free)** plan in an allowed region. Its shared CPU allowance and idle shutdown mean this is a limited portfolio demo. Use the included `azurewebsites.net` HTTPS address. Keep optional paid supporting services disabled. Check that the selected plan is F1 before creating it; a creation wizard can default to a paid tier.
 
-For a new website, choose **Publish: Code**, **.NET 10 LTS**, and **Windows** for the planned Visual Studio publishing flow. Select the existing resource group and a region allowed by the subscription. Disable zone redundancy, Managed Instance, and optional paid monitoring; do not create a second database in the Web App wizard. Confirm **F1 Free / $0** on review. If F1 is unavailable, review region/subscription availability before proceeding with another plan.
+For a new website, choose **Publish: Code**, **.NET 10 LTS**, and **Windows** for the planned host. Select the existing resource group and a region allowed by the subscription. Disable zone redundancy, Managed Instance, and optional paid monitoring; do not create a second database in the Web App wizard. Confirm **F1 Free / $0** on review. If F1 is unavailable, review region/subscription availability before proceeding with another plan. Publishing through Actions does not change the host runtime or pricing plan.
 
 ## 2. Create tables in the empty cloud database
 
@@ -49,7 +49,7 @@ For App Service, set these under **Settings → Environment variables → App se
 | `AllowedHosts` | `bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net` |
 | `ASPNETCORE_ENVIRONMENT` | `Production` |
 
-The double underscores are intentional: they map the environment variables to nested application settings. Select **Apply/Save** after adding them. `Omdb__ApiKey` contains only the key, without an API URL or query parameters. `AllowedHosts` contains no `https://` prefix or path; update it if the website hostname changes.
+Add each setting individually and leave **Deployment slot setting** unchecked for this single production F1 app. The double underscores are intentional: they map the environment variables to nested application settings. Select **Apply/Save** after adding them. `Omdb__ApiKey` contains only the key, without an API URL or query parameters. `AllowedHosts` contains no `https://` prefix or path; update it if the website hostname changes.
 
 Alternatively use `Database__Server`, `Database__Name`, `Database__Username`, and `Database__Password` separately and leave `ConnectionStrings__BlueBox` unset. The builder defaults to encryption with certificate validation. Do not turn off `Encrypt` or enable `TrustServerCertificate` to work around Azure configuration problems.
 
@@ -67,7 +67,11 @@ Browser visitors do not need SQL firewall rules; their browsers connect only to 
 
 ## 5. Publish BlueBox to the existing website
 
-Publishing uploads the application; it does not create tables or accounts. Keep the existing `net10.0` application and SDK from `global.json`. In Visual Studio on Windows:
+Publishing uploads the application; it does not create tables or accounts. Keep the existing `net10.0` application and SDK from `global.json`.
+
+**Current deployment path: GitHub Actions.** Follow [GitHub Actions deployment](github-actions-deployment.md) to keep the app-name repository variable, move the publish profile to the `azure-portfolio` environment secret, and restrict that environment to the exact main branch. Remove any repository-level copy of the credential. After merging the workflow PR and waiting for main's build/SQL CI run to succeed, choose **Actions → Deploy BlueBox to Azure → Run workflow → main**. GitHub builds and packages the selected commit, publishes it to the existing app using a pinned action, and checks that the BlueBox sign-in page loads. Your local Visual Studio does not need .NET 10 for this path; the Azure host does. Signing in manually remains the database check.
+
+**Alternative: Visual Studio on Windows**, if a compatible local SDK/editor is installed:
 
 1. After the owner merges the relevant PR, pull the latest `main` and open `BlueBox.sln`. Install the pinned .NET SDK if needed.
 2. Right-click **BlueBox.Web → Publish → Azure → Azure App Service**. Select the operating system used by the existing website; the planned host is Windows.
@@ -82,28 +86,21 @@ dotnet restore BlueBox.sln --locked-mode
 dotnet publish src/BlueBox.Web/BlueBox.Web.csproj --configuration Release --no-restore --output ./publish
 ```
 
-Deploy the complete publish output through the host's supported deployment tooling. Repository source uploads alone are not a substitute for a completed build/publish. Azure deployment is separate from merging a GitHub PR; the repository's current Actions workflow tests the application and does not deploy it.
+Deploy the complete publish output through the host's supported deployment tooling. Repository source uploads alone are not a substitute for a completed build/publish. The existing build workflow tests PRs/main; the separate deployment workflow runs only when manually selected. Merging a GitHub PR never starts a deployment automatically.
 
 ## 6. Initialize fake data once
 
-Use a privately configured local checkout to run the existing explicit setup command against the new cloud database. This does not require SSMS. Verify the selected connection first with this read-only query in Azure Query editor:
+The agreed portfolio setup is **one active manager, four active staff, and two warehouses in Fayetteville, AR and Bentonville, AR**. Catalog items, current inventory, and transaction history start empty. Verify the selected database in Azure Query editor:
 
 ```sql
 SELECT DB_NAME() AS selected_database;
 ```
 
-Ensure the local application's private connection selects that same database. Set `Demo:Password` privately to a password of 12–256 characters, then run:
+Run the separately supplied **private account/location starter SQL** once in the intended Azure database if it has not already been run. That file checks the target and requires all five tables to be empty before inserting employees and locations in one transaction. It contains app-compatible password hashes; the separate private login file contains distinct initial passwords. Neither file belongs in GitHub. No database password is needed in the SQL file.
 
-```sh
-dotnet restore BlueBox.sln --locked-mode
-dotnet run --project src/BlueBox.Web -- --seed-demo
-```
+**Do not run `--seed-demo` for this portfolio setup.** The older class/test seeder also creates catalog items, balances, and opening movements. It remains available for disposable test/class demonstrations, documented in [local development](development.md#3-choose-initial-data). After launch, the owner will add catalog entries and stock through the application.
 
-If the seeder cannot connect, allow this computer's exact public IP under **SQL server → Networking → Firewall rules**; it can differ from the browser's Query editor IP. Remove temporary local access after setup.
-
-The seeder requires all five tables to be empty. It creates fictional warehouses, catalog items, opening stock/history, `jordan.lee` (manager), `avery.chen` (staff), and `sam.rivera` (inactive). Remove `Demo:Password` after setup. It does not run automatically on website startup. Existing tables with records need the separate [first-manager procedure](development.md#tables-already-contain-data-but-no-active-manager), not reseeding.
-
-For public demo access, share only the staff account's app login. Before sharing it, use manager administration to give the manager a different private password: the seeder initially uses the same password for both active accounts. Do not publish the manager password or SQL credentials. Staff can change fictional inventory through normal movements; this is an interactive demo.
+Ordinary startup and Actions deployment do not apply schema or seed records. If tables already contain data, do not delete records to rerun setup; use the existing manager administration, or review the [first-manager procedure](development.md#tables-already-contain-data-but-no-active-manager) if no active manager exists. Share only intended staff demo access after verification; keep manager passwords and SQL credentials private.
 
 ## 7. Verify the public demo before announcing launch
 

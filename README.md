@@ -70,7 +70,8 @@ Check-in means adding units to a warehouse; check-out means removing units from 
 
 | Document | Contents |
 | --- | --- |
-| [Azure portfolio setup](docs/azure-portfolio-setup.md) | Free tiers, browser database setup, private settings, SQL firewall rules, Visual Studio publishing, and launch checks |
+| [Azure portfolio setup](docs/azure-portfolio-setup.md) | Free tiers, browser database setup, private settings, SQL firewall rules, and launch checks |
+| [GitHub Actions deployment](docs/github-actions-deployment.md) | Manual deployment from main to the existing Azure app, with no local .NET 10 installation |
 | [Development and Windows setup](docs/development.md) | SDK, private connection configuration, demo data, running, and tests |
 | [Project plan](docs/project-plan.md) | Agreed scope, screens, workflows, and decisions |
 | [Requirements](docs/requirements.md) | Permissions, business rules, and acceptance criteria |
@@ -84,6 +85,7 @@ Check-in means adding units to a warehouse; check-out means removing units from 
 | [PR #4 review resolution](docs/pr4-review-resolution.md) | Historical fixes delivered in merged PR #5 |
 | [Main review resolution](docs/main-review-resolution.md) | Adopted and deferred suggestions, with no DDL changes |
 | [PR #7 Azure review resolution](docs/pr7-review-resolution.md) | Portfolio indexes, safe proxy configuration, connection-open retry, and deployment checks |
+| [PR #9 deployment review](docs/pr9-review-resolution.md) | Environment-scoped credentials, pinned deploy action, and post-upload startup check |
 | [Validation record](docs/validation.md) | Verified build/test results, CI links, and checks still pending |
 | [Class submission and `.slnx`](docs/submission.md) | Pulling the merged code, converting the solution, and packaging source files |
 
@@ -93,7 +95,9 @@ The supplied warehouse conceptual model, database design, data dictionary, and s
 
 ## Running the project
 
-To deploy the portfolio website, follow the [Azure process](docs/azure-portfolio-setup.md): create the empty cloud schema once (or apply the index-only upgrade to existing tables), configure private App Service settings and any required trusted proxy addresses, allow its outbound IPs through the SQL firewall, publish `BlueBox.Web` to the existing F1 website, initialize fake accounts, and verify the browser workflows. Publishing alone does not create tables or login accounts. Connection opening has bounded retries for Azure resume/throttling; SQL commands are not automatically replayed.
+To deploy the portfolio website, follow the [Azure process](docs/azure-portfolio-setup.md) and [GitHub Actions deployment guide](docs/github-actions-deployment.md). Keep the app's Name as the `AZURE_WEBAPP_NAME` repository variable. Store `AZURE_WEBAPP_PUBLISH_PROFILE` on the **azure-portfolio environment**, restrict that environment to the exact **main branch**, and remove any repository-level copy of the credential. After merging the workflow PR and waiting for main's build/SQL checks, select **Actions → Deploy BlueBox to Azure → Run workflow → main**. GitHub builds with the pinned SDK, publishes to the existing F1 website, and checks the BlueBox sign-in page; a local .NET 10 installation is not needed for this path. A manual login still verifies Azure SQL connectivity.
+
+Publishing creates no tables, accounts, items, stock, or history. The agreed portfolio starter data is one manager, four staff, and Fayetteville/Bentonville warehouses, created through the separately supplied private SQL file. Do not run `--seed-demo` for that setup; add catalog items and stock through the deployed application. Database connection settings and the OMDb key remain private in Azure. Connection opening has bounded retries for Azure resume/throttling; SQL commands are not automatically replayed.
 
 For local development:
 

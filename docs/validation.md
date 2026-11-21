@@ -1,6 +1,24 @@
 # Validation record
 
-Updated November 19, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+Updated November 20, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+
+## Manual GitHub Actions deployment preparation
+
+The [deployment guide](github-actions-deployment.md) describes the new manually triggered workflow. It requires main and its latest successful build/SQL push CI run for the exact selected commit, then builds a portable Release ZIP and deploys it to the existing app using a private publish-profile secret. It runs no schema or seed commands. Application code, dependencies, schema, and the existing build/SQL workflow are unchanged.
+
+Verified locally: locked restore; Release tests (**48 passed, 38 SQL groups intentionally skipped, 0 failures**); framework-dependent publish with `UseAppHost=false`; ZIP root/runtime/IIS/static-asset checks; and Actionlint **1.7.7** on both workflows. Preflight checks covered main versus feature/tag refs, missing/invalid app names, pending/failed/canceled/missing CI results, API failure, and missing deployment credentials without secret output. Documentation links and the regenerated Markdown/Word plan were checked.
+
+The deployment workflow has not authenticated to Azure or uploaded the site from this workspace. The owner reports adding the app-name variable and profile secret; the review update below requires an environment-scoped secret and main-only deployment rule. The owner must complete those settings, merge the PR, wait for main CI, run deployment, and verify the live website. The separate private account/location SQL and initial passwords are not committed; catalog/stock/history remain owner-entered after launch. No automated test targets the portfolio or teacher database.
+
+## PR #9 deployment review
+
+The [review resolution](pr9-review-resolution.md) records the adopted hardening, deferred OIDC migration, and corrected smoke-check scope. The deploy action is pinned to the dereferenced official v3.0.8 commit; a bounded HTTPS check requires the actual BlueBox sign-in form after upload. Setup now requires the `azure-portfolio` environment secret and exact main-branch rule, with the repository secret copy removed. GitHub settings have not been changed or verified by this workspace; the API remains blocked.
+
+The pre-review source `ba89a24` passed [run 44864358871](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44864358871): both jobs succeeded, with **105 tests passed, 0 failed** in the SQL-enabled suite (unit tests plus expanded SQL cases). Current review changes again passed locked restore and local Release tests: **48 passed, 38 SQL groups intentionally skipped, 0 failures**. Actionlint 1.7.7 passed both workflows; existing preflight/ZIP checks passed. Eight controlled post-upload cases covered the correct form, cold start, Azure's default page, missing fields, wrong heading, redirects, transient network errors, and bounded failure without logging response bodies. Publish-profile ignore rules, local documentation links, and the synchronized Word plan were checked.
+
+Review source commit `3329215` passed [run 44865499072](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44865499072): both jobs succeeded, and the SQL-enabled suite passed **105 tests, 0 failures**. Local documentation checks passed for **169 links/fragments** after recording this result, and the Word plan matches the Markdown. Later documentation-only commits have their own CI runs; these results are tied to the cited revision.
+
+The new post-upload check has not run against Azure. Anonymous GET login does not query SQL; authenticated database access and stock workflows remain manual live checks. Application code, packages, DDL, and the build/SQL workflow are unchanged.
 
 ## Azure portfolio preparation
 

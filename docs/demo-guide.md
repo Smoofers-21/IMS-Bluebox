@@ -4,7 +4,9 @@
 
 ## Fake data plan
 
-The explicit `--seed-demo` command creates two fictional warehouses (North Loop and West End), one active manager (jordan.lee), one active staff member (avery.chen), one inactive staff member (sam.rivera), and six catalog entries. Moonlight Signal has separate Blu-ray/DVD entries; three games have separate platform formats. Set the shared initial demo password privately. See [initial data setup](development.md#3-choose-initial-data).
+For the current Azure portfolio, the private starter SQL creates one active manager, four active staff, and Fayetteville/Bentonville warehouses. It deliberately creates no items, inventory balances, or transactions. Use the separate private login file; each initial account has its own password. After [deployment through Actions](github-actions-deployment.md), the owner will add catalog entries and opening check-ins through the application before presenting this walkthrough.
+
+For older class/disposable test demonstrations only, `--seed-demo` creates North Loop/West End warehouses, one active manager, one active staff member, one inactive staff member, six catalog entries, balances, and opening history. Do not run it on the account-only portfolio database. See [local initial data setup](development.md#3-choose-initial-data).
 
 Prepare balances that cover zero stock, a small quantity, and enough stock for ordinary movements. Establish opening quantities through recorded check-ins so inventory and movement history reconcile. Do not publish working passwords or connection credentials in the guide.
 
@@ -48,7 +50,7 @@ Suggested screenshot set after validation:
 - Activity history with a linked correction.
 - Item details with movie metadata.
 
-The [validation record](validation.md) contains verified test results. The website link is already listed with launch pending; update that label and add screenshots after manual verification. Before sharing a staff login, give the manager a different private password because the seeder initially gives both active accounts the same password. This is a fictional class/portfolio project.
+The [validation record](validation.md) contains verified test results. The website link is already listed with launch pending; update that label and add screenshots after manual verification. Share only intended staff demo access and keep the manager password private. The portfolio's private starter file uses distinct passwords; if using the older class seeder elsewhere, its initially shared manager/staff password must be separated before public access. This is a fictional class/portfolio project.
 
 For class hand-in, follow the [submission guide](submission.md) and include the requested `.slnx` with its project files. The Azure portfolio uses a separate fake-data database and does not depend on the teacher's server.
 
