@@ -40,6 +40,7 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | INV-07 | Handle competing updates | If two check-outs together exceed available stock, they cannot both succeed and create a negative or inconsistent balance. |
 | INV-08 | Validate the final balance | The server rechecks stock when confirming a movement, regardless of the earlier screen preview. |
 | INV-09 | Use active records | Movements against archived items or inactive warehouses are rejected. |
+| INV-10 | Show stock on hand | Inventory shows only item/location balances above zero, for both All locations and a selected warehouse. Search, item-type filters, and pagination apply to those balances. Catalog item details still show zero-stock warehouses. |
 | HIST-01 | Attribute movements | Each entry stores the signed-in employee, item, location, direction, positive quantity, and server-generated UTC time. |
 | HIST-02 | Retain history | Application users cannot edit/delete historical movement entries or erase them through retirement; item type/format cannot be relabeled after history exists. |
 | COR-01 | Restrict corrections | Only managers can submit a correction; an explanation and original-transaction reference are required. |

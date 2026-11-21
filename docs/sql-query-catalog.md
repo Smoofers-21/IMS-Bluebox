@@ -239,13 +239,14 @@ LEFT JOIN dbo.CURRENT_INVENTORY AS b ON b.item_id = i.item_id AND b.location_id 
 WHERE (@search = '' OR CHARINDEX(@search, i.item_name) > 0 OR TRY_CONVERT(int, @search) = i.item_id)
     AND (@type = '' OR i.item_type = @type) AND (@location IS NULL OR l.location_id = @location)
     AND (@item IS NULL OR i.item_id = @item)
+    AND (@includeZeroStock = 1 OR b.quantity_on_hand > 0)
 ORDER BY i.item_name, l.location_name, i.media_format, i.item_id, l.location_id
 OFFSET @offset ROWS FETCH NEXT @take ROWS ONLY;
 ```
 
 ## 27. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L116)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L118)
 
 ```sql
 SELECT t.transaction_id, i.item_name, i.media_format, l.location_name,
@@ -264,7 +265,7 @@ OFFSET @offset ROWS FETCH NEXT @take ROWS ONLY;
 
 ## 28. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L154)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L156)
 
 ```sql
 SELECT t.transaction_id, t.transaction_type, t.quantity_moved, t.transaction_datetime, t.notes,
@@ -280,7 +281,7 @@ WHERE t.transaction_id=@id;
 
 ## 29. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L187)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L189)
 
 ```sql
 SELECT location_id, location_name, address, location_status FROM dbo.LOCATION WHERE @active = 0 OR location_status = 'ACTIVE' ORDER BY location_name, location_id;
@@ -288,7 +289,7 @@ SELECT location_id, location_name, address, location_status FROM dbo.LOCATION WH
 
 ## 30. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L200)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L202)
 
 ```sql
 SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item_status FROM dbo.ITEM WHERE item_status = 'ACTIVE' ORDER BY item_name, media_format, item_id;
@@ -296,7 +297,7 @@ SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item
 
 ## 31. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L206)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L208)
 
 ```sql
 SELECT TOP (1) transaction_id FROM dbo.TRANSACTION_LOG WHERE item_id=@id;
@@ -304,7 +305,7 @@ SELECT TOP (1) transaction_id FROM dbo.TRANSACTION_LOG WHERE item_id=@id;
 
 ## 32. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L213)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L215)
 
 ```sql
 SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item_status FROM dbo.ITEM WHERE item_id = @id;
@@ -312,7 +313,7 @@ SELECT item_id, item_name, item_type, media_format, poster_url, age_rating, item
 
 ## 33. InventoryQueries
 
-Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L221)
+Source: [src/BlueBox.Web/Services/InventoryQueries.cs](../src/BlueBox.Web/Services/InventoryQueries.cs#L223)
 
 ```sql
 SELECT quantity_on_hand FROM dbo.CURRENT_INVENTORY WHERE item_id = @item AND location_id = @location;

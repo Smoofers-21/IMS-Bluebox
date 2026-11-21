@@ -49,7 +49,7 @@ These staff credentials are intentionally public. The owner has configured this 
 
 - Employee sign-in with staff and manager permissions, secure cookies, and limits on login attempts, stock submissions, and repeated page requests.
 - Searchable movie/game catalog, including separate entries for different formats. Type/format are fixed after the first movement to preserve edition history.
-- Warehouse quantities, with 100-row Catalog, Inventory, and Manage Catalog pages that preserve filters.
+- Warehouse quantities, with 100-row Catalog, Inventory, and Manage Catalog pages that preserve filters. Inventory shows only positive stock for both All locations and a selected warehouse; catalog item details still show zero-stock warehouses.
 - Check-in and check-out with a preview of the resulting balance.
 - Protection against negative inventory and conflicting stock updates.
 - Permanent movement history identifying the item, warehouse, employee, quantity, and time.

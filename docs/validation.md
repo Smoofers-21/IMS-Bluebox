@@ -1,6 +1,14 @@
 # Validation record
 
-Updated November 20, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+Updated November 21, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+
+## Inventory stock visibility fix — November 21, 2026
+
+The owner requested hiding items with no stock from the Inventory tab, including **All locations** and individual warehouse filters. The query now defaults to positive item/location balances and applies that condition in SQL before paging. Missing inventory rows and saved zero balances are excluded. Catalog item details explicitly retain all warehouse balances, including zeros; the catalog, movement history, and stored quantities are preserved. No DDL or data update is required. The Inventory caption, README, requirements, and runtime SQL catalog match this rule.
+
+Locked restore and local Release tests passed: **56 passed, 42 SQL groups skipped, 0 failures**. Added disposable-SQL coverage checks all/selected warehouses, zero versus absent balances, stock at another warehouse, search by ID, item type, invalid locations, empty results, Reset, HTTP page rendering, catalog/detail preservation, and visibility after full check-out and check-in. The existing 201-row paging test now supplies real positive balances, checks all-location pages without zero rows, and retains exact-page and filter-link assertions.
+
+The requested local SQL helper was attempted, but the SQL Server container image download returned 403 before the database could start. No real SQL execution is claimed for this change; the added cases must pass the new PR's SQL-enabled CI. Local Chromium smoke checks cover anonymous inventory redirects with filters/return URLs and the responsive normal login. They do not establish authenticated inventory results; those require the SQL-enabled tests and the deployed walkthrough. No live Azure database was used, modified, or tested.
 
 ## Public staff demo access
 

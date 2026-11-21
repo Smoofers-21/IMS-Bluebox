@@ -20,7 +20,7 @@
 </tbody></table></div>
 @if(Model.Rows.Count == 0) { <div class="empty-state"><h2>No matching inventory</h2><p>Try another search or clear your filters.</p></div> }
 <div class="table-caption activity-pager">
-    <span>Page @Model.PageNumber · @Model.Rows.Count item/location balances, including zero stock.</span>
+    <span>Page @Model.PageNumber · @Model.Rows.Count item/location balances with stock on hand.</span>
     <nav aria-label="Inventory pages">
         @if (Model.PageNumber > 1)
         {
