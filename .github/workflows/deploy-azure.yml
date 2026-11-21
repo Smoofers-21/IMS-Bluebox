@@ -34,6 +34,7 @@ jobs:
             echo "::error::Set the AZURE_WEBAPP_NAME repository variable to the existing Azure app's Name, without a URL."
             exit 1
           fi
+          # Select the newest main push run for this exact SHA, including rerun results.
           passed="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/build.yml/runs" \
             -f head_sha="$GITHUB_SHA" -f branch=main -f event=push -f per_page=1 \
             --jq '.workflow_runs[0] | .status == "completed" and .conclusion == "success"')"
@@ -85,7 +86,7 @@ jobs:
           AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         run: |
           if [[ -z "$AZURE_WEBAPP_PUBLISH_PROFILE" ]]; then
-            echo "::error::Add AZURE_WEBAPP_PUBLISH_PROFILE as a GitHub Actions repository secret. Never put it in a file in the repository."
+            echo "::error::Add AZURE_WEBAPP_PUBLISH_PROFILE as a secret on the azure-portfolio GitHub environment. Never put it in a file in the repository."
             exit 1
           fi
       - uses: actions/download-artifact@v4
@@ -93,9 +94,29 @@ jobs:
           name: bluebox-webapp
           path: ${{ runner.temp }}/bluebox-artifact
       - name: Deploy to the existing Azure web app
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3.0.8
         with:
           app-name: ${{ vars.AZURE_WEBAPP_NAME }}
           slot-name: production
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ${{ runner.temp }}/bluebox-artifact/bluebox-webapp.zip
+      - name: Verify BlueBox sign-in page after deployment
+        shell: bash
+        timeout-minutes: 4
+        run: |
+          page="$RUNNER_TEMP/bluebox-login-check.html"
+          code=000
+          for attempt in {1..12}; do
+            : > "$page"
+            code="$(curl --silent --show-error --proto '=https' --connect-timeout 5 --max-time 10 \
+              --output "$page" --write-out '%{http_code}' \
+              'https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net/Account/Login' || true)"
+            if [[ "$code" == "200" ]] && grep -Fq 'Sign in to BlueBox' "$page" \
+              && grep -Fq 'name="Username"' "$page" && grep -Fq 'name="Password"' "$page"; then
+              echo "BlueBox sign-in page is available over HTTPS. Verify database access by signing in manually."
+              exit 0
+            fi
+            if [[ "$attempt" != "12" ]]; then sleep 5; fi
+          done
+          echo "::error::Upload completed, but the BlueBox sign-in page did not become available (last HTTP $code). Check private Azure logs."
+          exit 1

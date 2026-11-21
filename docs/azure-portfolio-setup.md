@@ -69,7 +69,7 @@ Browser visitors do not need SQL firewall rules; their browsers connect only to 
 
 Publishing uploads the application; it does not create tables or accounts. Keep the existing `net10.0` application and SDK from `global.json`.
 
-**Current deployment path: GitHub Actions.** Follow [GitHub Actions deployment](github-actions-deployment.md) to add the existing app name and private publish-profile secret. After merging the workflow PR and waiting for main's build/SQL CI run to succeed, choose **Actions → Deploy BlueBox to Azure → Run workflow → main**. GitHub builds and packages the selected commit, then publishes it to the existing app. Your local Visual Studio does not need .NET 10 for this path; the Azure host does.
+**Current deployment path: GitHub Actions.** Follow [GitHub Actions deployment](github-actions-deployment.md) to keep the app-name repository variable, move the publish profile to the `azure-portfolio` environment secret, and restrict that environment to the exact main branch. Remove any repository-level copy of the credential. After merging the workflow PR and waiting for main's build/SQL CI run to succeed, choose **Actions → Deploy BlueBox to Azure → Run workflow → main**. GitHub builds and packages the selected commit, publishes it to the existing app using a pinned action, and checks that the BlueBox sign-in page loads. Your local Visual Studio does not need .NET 10 for this path; the Azure host does. Signing in manually remains the database check.
 
 **Alternative: Visual Studio on Windows**, if a compatible local SDK/editor is installed:
 

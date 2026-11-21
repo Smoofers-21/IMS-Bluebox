@@ -49,7 +49,9 @@ The owner is transitioning to a web-only portfolio. Follow the [Azure setup guid
 - [ ] Owner verifies the SQL free offer, monthly-limit auto-pause, and access in the chosen subscription/region.
 - [x] Record the owner's report that the schema/index SQL, app settings, and outbound-IP firewall rules were applied.
 - [ ] Confirm account-only starter setup: one manager, four staff, Fayetteville/Bentonville warehouses, and no items/stock/history until entered in the app.
-- [ ] Merge the deployment workflow, set its app-name variable and private publish-profile secret, confirm F1/.NET 10, and run the first manual deployment.
+- [x] Implement the [PR #9 review changes](pr9-review-resolution.md): pinned Azure action, bounded post-upload sign-in check, and protected-environment setup instructions.
+- [ ] Keep the app-name repository variable, move the profile to an azure-portfolio environment secret, restrict that environment to main, and remove the repository secret copy.
+- [ ] Merge the deployment workflow, confirm F1/.NET 10, and run the first manual deployment with its startup check.
 - [ ] Verify staff/manager workflows, OMDb, and behavior after free-tier idle shutdown/resume.
 - [ ] Mark the website launched, publish verified staff access instructions, and add final fake-data screenshots.
 
