@@ -1,14 +1,14 @@
 # BlueBox Warehouse Inventory Manager
 
-A browser-based internal inventory management project for a fictional movie and game rental business. BlueBox lets employees track warehouse quantities, record stock movements, and review who changed inventory and when.
+A web-based warehouse inventory portfolio project for a fictional movie and game business. BlueBox lets employees track quantities across warehouses, record stock movements, and review who changed inventory and when. It demonstrates systems analysis, workflow design, relational data modeling, role-based access, and transactional data integrity.
 
-**Status: both milestones’ planned application features are implemented.** The current phase is a web-only Azure portfolio deployment with the same inventory workflows and five-table design. The owner reports creating the Azure SQL database, running the schema installer, and creating the App Service website. Application publishing, live connectivity, demo accounts, OMDb verification, and screenshots remain pending. See the [Azure setup guide](docs/azure-portfolio-setup.md) and [validation record](docs/validation.md). Historical class verification is separate.
+**Application features: implemented. Deployment: pending.** BlueBox uses Azure SQL Database and an existing Azure App Service website. The schema, performance indexes, app settings, and firewall setup have been reported complete; successful website deployment and the live browser walkthrough remain to be verified.
 
-## Website demo — launch pending
+## Website demo — deployment pending
 
 **[Open BlueBox on Azure](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net)**
 
-This is the portfolio website address. BlueBox has not yet been confirmed running there; until publishing is complete, the link may show Azure's default page or an unavailable application. Once launched, visitors will use the website in their browser without installing Visual Studio or SSMS. Demo access instructions will be added after fake data and accounts are verified.
+This is the portfolio website address; deployment and live verification are pending. Visitors will use the published application in their browser. Demo access instructions and screenshots will be added after the fictional accounts and website workflows are verified.
 
 The planned demo uses Azure App Service **F1 Free** and the **Azure SQL free offer**, subject to confirming the subscription settings. Free-tier idle shutdown, database resume, and usage limits can delay or temporarily interrupt access. GitHub hosts the source code; Azure runs the website and database.
 
@@ -16,38 +16,38 @@ The planned demo uses Azure App Service **F1 Free** and the **Azure SQL free off
 
 | Area | Implementation |
 | --- | --- |
-| Purpose | Class project and portfolio demonstration |
-| Interface | Browser-based internal employee website |
+| Purpose | Systems analysis and application development portfolio |
+| Interface | Browser-based employee website |
 | Application | C# / .NET 10 with ASP.NET Core Razor Pages |
-| Hosting | Azure App Service F1 Free; publishing and live verification pending |
-| Database | Azure SQL for the portfolio, using the existing SQL Server-compatible schema |
-| Data access | ADO.NET (`SqlConnection`, `SqlCommand`, `DataTable`), based on the instructor’s template |
+| Hosting | Azure App Service F1 Free; deployment pending |
+| Database | Azure SQL Database with a five-table SQL Server-compatible schema |
+| Data access | Parameterized ADO.NET (`SqlConnection`, `SqlCommand`, `DataTable`) |
 | External integration | OMDb for optional movie posters and age classifications |
 | Inventory model | Quantities per catalog item and warehouse location |
 | Users | Staff and managers |
 
-## Milestone 1 capabilities
+## Inventory workflows
 
 - Employee sign-in with staff and manager permissions, secure cookies, and a bounded login-attempt limit.
-- A searchable movie and game catalog, with separate entries for different formats. Type/format are fixed after the first movement to preserve edition history.
-- Inventory quantities across warehouse locations; Catalog, Inventory, and Manage Catalog support 100-row pages with preserved filters.
+- Searchable movie/game catalog, including separate entries for different formats. Type/format are fixed after the first movement to preserve edition history.
+- Warehouse quantities, with 100-row Catalog, Inventory, and Manage Catalog pages that preserve filters.
 - Check-in and check-out with a preview of the resulting balance.
 - Protection against negative inventory and conflicting stock updates.
 - Permanent movement history identifying the item, warehouse, employee, quantity, and time.
-- Private demo-data seeding and first-manager setup commands.
+- Private account initialization and an explicit first-manager setup command.
 
-## Milestone 2 capabilities
+## Manager tools and reporting
 
 - Manager screens for catalog items, employee accounts, and warehouses.
-- Last-active-manager protection, including competing account changes, and session revocation after password/username changes.
+- Last-active-manager protection and session revocation after password/username changes.
 - Full opposite-movement corrections with explanations and permanent links; a correction can itself be corrected once.
 - Zero-stock checks before item archival or warehouse deactivation.
 - Server-side OMDb search and movie selection, optional posters/age ratings, and manual fallback.
 - Overview totals, stock by warehouse, recent activity, and labeled Central time (or an explicit UTC fallback).
 
-The [roadmap](docs/roadmap.md) distinguishes implemented features from final verification. The [Milestone 2 review guide](docs/milestone-2.md) describes manager workflows and correction rules.
+The [manager workflow guide](docs/milestone-2.md) describes administration, correction chains, and retirement rules. Public release still requires the Azure sign-in and workflow checks described in the [deployment guide](docs/github-actions-deployment.md).
 
-**Scope:** warehouse stock only. Customer rentals, payments, late fees, streaming, and kiosk inventory are outside the initial project.
+**Scope:** warehouse stock only. Customer rentals, payments, late fees, streaming, and kiosk inventory are outside the project.
 
 ## Employee workflow
 
@@ -64,44 +64,42 @@ flowchart LR
     G --> I[Review activity]
 ```
 
-Check-in means adding units to a warehouse; check-out means removing units from it. These are warehouse movements, not customer rental transactions.
+Check-in adds units to a warehouse; check-out removes units from it. These are warehouse movements, not customer rental transactions.
 
 ## Documentation
 
 | Document | Contents |
 | --- | --- |
-| [Azure portfolio setup](docs/azure-portfolio-setup.md) | Free tiers, browser database setup, private settings, SQL firewall rules, and launch checks |
+| [Azure portfolio setup](docs/azure-portfolio-setup.md) | Free tiers, browser database setup, private settings, firewall rules, and launch checks |
 | [GitHub Actions deployment](docs/github-actions-deployment.md) | Manual deployment from main to the existing Azure app, with no local .NET 10 installation |
-| [Development and Windows setup](docs/development.md) | SDK, private connection configuration, demo data, running, and tests |
-| [Project plan](docs/project-plan.md) | Agreed scope, screens, workflows, and decisions |
+| [Development setup](docs/development.md) | SDK, private connection configuration, running, and tests |
 | [Requirements](docs/requirements.md) | Permissions, business rules, and acceptance criteria |
-| [Architecture and database](docs/architecture-and-database.md) | Implemented application structure, entities, relationships, and schema alignment |
-| [Roadmap](docs/roadmap.md) | Build sequence and completion criteria |
-| [Demo guide](docs/demo-guide.md) | Fake demonstration data, presentation walkthrough, and screenshot plan |
-| [SQL Server scripts](database/README.md) | When no migration is needed, older-baseline upgrades, and fresh-database setup |
-| [Instructor template adaptation](docs/instructor-template.md) | Required structure, corrections, and review findings |
+| [Architecture and database](docs/architecture-and-database.md) | Application structure, entities, relationships, and schema alignment |
+| [Database setup and scripts](database/README.md) | Azure SQL installation, indexes, starter data, and disposable test databases |
+| [Demo guide](docs/demo-guide.md) | Fictional demonstration data, workflow walkthrough, and screenshots |
 | [Runtime SQL query catalog](docs/sql-query-catalog.md) | Runtime SQL batches, with source links |
-| [Milestone 2 review](docs/milestone-2.md) | Manager administration, correction chains, retirement, and review fixes |
-| [PR #4 review resolution](docs/pr4-review-resolution.md) | Historical fixes delivered in merged PR #5 |
-| [Main review resolution](docs/main-review-resolution.md) | Adopted and deferred suggestions, with no DDL changes |
-| [PR #7 Azure review resolution](docs/pr7-review-resolution.md) | Portfolio indexes, safe proxy configuration, connection-open retry, and deployment checks |
+| [Manager workflow review](docs/milestone-2.md) | Administration, correction chains, retirement, and review fixes |
+| [PR #7 Azure review](docs/pr7-review-resolution.md) | Portfolio indexes, proxy configuration, connection-open retry, and deployment checks |
 | [PR #9 deployment review](docs/pr9-review-resolution.md) | Environment-scoped credentials, pinned deploy action, and post-upload startup check |
-| [Validation record](docs/validation.md) | Verified build/test results, CI links, and checks still pending |
-| [Class submission and `.slnx`](docs/submission.md) | Pulling the merged code, converting the solution, and packaging source files |
+| [Validation record](docs/validation.md) | Versioned build/test results, CI links, and pending live checks |
 
-Download the [Word version of the project plan](docs/BlueBox-Project-Plan.docx) for sharing or class submission. The Word copy is synchronized with the maintained Markdown plan; update both when project decisions change.
+Planning and review documents record the project's design and implementation history. The setup instructions in this README and the [database README](database/README.md) describe the current Azure portfolio configuration.
 
-The supplied warehouse conceptual model, database design, data dictionary, and screen mockups informed this plan. [Source notes](docs/project-plan.md#planning-sources) explain how they relate to the original assignment brief. The original attachments are not bundled here.
+## Deploying the website
 
-## Running the project
+Follow the [Azure process](docs/azure-portfolio-setup.md) and [GitHub Actions deployment guide](docs/github-actions-deployment.md). Keep the app's Name as the `AZURE_WEBAPP_NAME` repository variable. Store `AZURE_WEBAPP_PUBLISH_PROFILE` on the **azure-portfolio environment**, restrict that environment to the exact **main branch**, and remove any repository-level copy of the credential.
 
-To deploy the portfolio website, follow the [Azure process](docs/azure-portfolio-setup.md) and [GitHub Actions deployment guide](docs/github-actions-deployment.md). Keep the app's Name as the `AZURE_WEBAPP_NAME` repository variable. Store `AZURE_WEBAPP_PUBLISH_PROFILE` on the **azure-portfolio environment**, restrict that environment to the exact **main branch**, and remove any repository-level copy of the credential. After merging the workflow PR and waiting for main's build/SQL checks, select **Actions → Deploy BlueBox to Azure → Run workflow → main**. GitHub builds with the pinned SDK, publishes to the existing F1 website, and checks the BlueBox sign-in page; a local .NET 10 installation is not needed for this path. A manual login still verifies Azure SQL connectivity.
+After main's build/SQL checks pass, select **Actions → Deploy BlueBox to Azure → Run workflow → main**. GitHub builds with the pinned SDK, publishes to the existing F1 website, and checks the BlueBox sign-in page. A local .NET 10 installation is not needed for this path. A manual login still verifies Azure SQL connectivity.
 
-Publishing creates no tables, accounts, items, stock, or history. The agreed portfolio starter data is one manager, four staff, and Fayetteville/Bentonville warehouses, created through the separately supplied private SQL file. Do not run `--seed-demo` for that setup; add catalog items and stock through the deployed application. Database connection settings and the OMDb key remain private in Azure. Connection opening has bounded retries for Azure resume/throttling; SQL commands are not automatically replayed.
+Publishing creates no tables, accounts, items, stock, or history. The intended starter data is **one active manager, four active staff, and warehouses in Fayetteville, AR and Bentonville, AR**, initialized through the separately supplied private SQL file if it has not already been run. Items, current inventory, and transactions start empty and will be added through the application. Do not run `--seed-demo` for that setup: it also creates catalog entries and opening stock.
 
-For local development:
+Database connection settings and the OMDb key remain private in Azure. Connection opening has bounded retries for Azure resume/throttling; SQL commands are not automatically replayed.
 
-Install the SDK pinned in `global.json`, prepare the SQL Server tables, and configure `ConnectionStrings:BlueBox` privately. Follow the [development guide](docs/development.md) for Visual Studio setup and initial accounts, then run:
+**README-only changes do not require republishing or restarting the Azure application.** They take effect on GitHub when merged. Deployment is a separate manual action for the initial launch and subsequent application releases.
+
+## Local development
+
+Install the SDK pinned in `global.json`, prepare a development database matching the Azure schema, and configure `ConnectionStrings:BlueBox` privately. Then run:
 
 ```sh
 dotnet restore BlueBox.sln --locked-mode
@@ -109,9 +107,9 @@ dotnet build BlueBox.sln --no-restore
 dotnet run --project src/BlueBox.Web
 ```
 
-Open `BlueBox.sln` in a Visual Studio release supporting .NET 10 on Windows, or use VS Code/the CLI on Mac. No database is created, altered, or seeded automatically when the website starts. The teacher's database has not been accessed or changed from this workspace.
+Open `BlueBox.sln` in a Visual Studio release supporting .NET 10 on Windows, or use VS Code/the CLI on Mac. No database is created, altered, or seeded automatically when the website starts.
 
-The connection string belongs in user secrets or an environment variable. Never commit credentials, real employee data, or API keys. Configure `Omdb:ApiKey` privately to enable movie lookup; manual entry works without a key.
+Connection strings belong in user secrets or environment variables. Keep credentials, real employee data, and API keys outside source control. Configure `Omdb:ApiKey` privately to enable movie lookup; manual entry works without a key.
 
 ## Validation
 
@@ -119,16 +117,14 @@ The connection string belongs in user secrets or an environment variable. Never 
 dotnet test BlueBox.sln --configuration Release
 ```
 
-The default suite runs local unit/routing/provider checks and skips SQL Server groups when no disposable test instance is configured. SQL Server CI applies the supplied schema to generated disposable databases and runs real HTTP/stock/concurrency tests. The [validation record](docs/validation.md) distinguishes current results from historical baseline counts.
+The default suite runs local unit/routing/provider checks and skips SQL Server groups when no disposable test instance is configured. SQL Server CI applies the schema to generated disposable SQL Server 2022 databases and runs real HTTP/stock/concurrency tests. Automated create/drop tests never target the Azure portfolio database.
 
-GitHub Actions runs on pull requests and pushes to `main`. A newer commit cancels an older run of the same PR; feature pushes no longer start duplicate push/PR jobs. Check the completed run for the current revision in [GitHub Actions](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) before merging a follow-up PR. The Windows walkthrough against the teacher’s SQL Server remains required before final class sign-off; automated create/drop tests belong only on disposable instances.
+The merged baseline at `cb72cd6` passed [main CI run 44866843871](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44866843871): both jobs succeeded, with **105 tests passed, 0 failures** in the SQL-enabled suite (unit tests plus expanded SQL cases). Check the completed run for the current revision in [GitHub Actions](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) before merging changes.
 
-## Class submission
-
-The repository and CI use `BlueBox.sln`. If the instructor requests `.slnx`, first pull the merged `main`, then run `dotnet sln BlueBox.sln migrate` and build `BlueBox.slnx`. Submit the solution with its project folders and required build/database files, following the [submission guide](docs/submission.md). The solution file alone does not contain the application code.
+Public launch requires manual verification of Azure sign-in, stock workflows, OMDb, and free-tier idle resume. The deployment check confirms the sign-in page renders; that anonymous page does not query the database.
 
 ## Portfolio focus
 
-The project demonstrates requirements analysis, workflow design, relational database modeling, employee authentication, role policy, transactional stock updates, and audit history. It also includes server-side external API integration, manager administration, and linked audit corrections. The website address is listed above; verified demo access and fake-data screenshots will follow launch checks.
+BlueBox demonstrates requirements analysis, workflow design, relational database modeling, employee authentication, role policy, transactional stock updates, and audit history. It also includes server-side external API integration, manager administration, and linked audit corrections.
 
-The Azure portfolio uses a separate database with fictional records. It does not depend on access to the teacher's server. Original Windows/class and `.slnx` submission instructions remain available for the class version.
+The application uses Azure SQL Database with fictional records and is presented as an independent portfolio project. GitHub hosts the source, documentation, test evidence, and manual deployment workflow. Verified demo access and screenshots will follow launch checks.
