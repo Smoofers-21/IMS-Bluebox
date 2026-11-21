@@ -1,6 +1,6 @@
 # BlueBox project plan
 
-**Project baseline, updated November 19, 2026:** this document records the agreed scope and current design decisions. Both milestones’ application features are implemented. See the [roadmap](roadmap.md) for remaining sign-off tasks and the [validation record](validation.md) for test evidence.
+**Project baseline, updated November 20, 2026:** this document records the agreed scope and current design decisions. Both milestones’ application features are implemented. See the [roadmap](roadmap.md) for remaining sign-off tasks and the [validation record](validation.md) for test evidence.
 
 ## Purpose
 
@@ -41,8 +41,9 @@ Build an internal warehouse inventory website for BlueBox, a fictional movie and
 | Data access | ADO.NET with Microsoft.Data.SqlClient 7.1.2 and the instructor’s SqlConnection/SqlCommand/DataTable helpers |
 | Authentication | Cookie authentication and ASP.NET Core `PasswordHasher<Employee>`; Staff/Manager authorization |
 | Solution and submission | `BlueBox.sln` in source/CI; generate `.slnx` for submission when requested |
+| Portfolio deployment | Manual GitHub Actions deployment from main after its build/SQL checks pass; SDK from `global.json`, existing App Service F1 host |
 
-The portfolio uses Azure SQL browser tools for administration and Azure App Service F1 for website hosting, with separate fake data. SSMS remains optional for the original class setup. The owner reports creating the Azure database, running the schema installer, and creating the App Service website. Publishing, live connectivity, account initialization, free-tier settings, and browser verification remain pending. See the [Azure setup guide](azure-portfolio-setup.md).
+The portfolio uses Azure SQL browser tools for administration and Azure App Service F1 for website hosting, with separate fake data. SSMS remains optional for the original class setup. The owner reports creating the Azure resources, applying schema/index SQL, and configuring app settings/firewall access. The agreed starter data is one manager, four staff, and Fayetteville/Bentonville warehouses; items, current inventory, and transactions remain empty until the owner adds them through the application. Initial setup files stay private. Publishing, live connectivity, starter-data execution, free-tier confirmation, and browser verification remain pending. See [Azure setup](azure-portfolio-setup.md) and [GitHub Actions deployment](github-actions-deployment.md).
 
 Website address, awaiting launch: [BlueBox on Azure](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net). Visitors will use a browser; no Visual Studio or database administration tool is required to use the deployed demo.
 
@@ -124,7 +125,7 @@ Where source documents differ, use the agreed decisions here: quantity-based inv
 - Stock writes and linked corrections are atomic. Retirement takes an exclusive parent lock before checking stock. The dashboard uses one READ COMMITTED batch and derives total units from its warehouse rows; counts/recent movements can reflect later commits without a serializable read transaction.
 - Each history entry can be fully reversed once, including correction entries. Corrections require active records, adequate stock, and a manager explanation.
 - PR #5 was merged into main at `13b4f43`. Follow-up review fixes use the existing DDL and go through a separate owner-reviewed PR. Catalog, Inventory, and Manage Catalog use 100-row pages with filter-preserving navigation. Check the validation record and the current revision’s CI for test evidence.
-- Continue the Azure portfolio deployment through separate branches/PRs, preserving the five-table business schema and application behavior. The guarded Azure installer adds four nonunique performance indexes, with an index-only upgrade for existing portfolio tables. Connection opening has bounded transient retries; commands are not replayed. Optional exact proxy addresses support trusted HTTPS/client forwarding. Next steps are the index upgrade, private settings, SQL outbound-IP firewall rules, publishing to the existing F1 website, fake-account initialization, and the live walkthrough. The public link remains labeled launch pending until verified.
+- Continue the Azure portfolio deployment through separate branches/PRs, preserving the five-table business schema and application behavior. The guarded Azure installer adds four nonunique performance indexes, with an index-only upgrade for existing portfolio tables. Connection opening has bounded transient retries; commands are not replayed. Optional exact proxy addresses support trusted HTTPS/client forwarding. A manual Actions workflow checks main's successful CI, builds a portable Release package, and publishes to the existing F1 app using a private publish-profile secret. Next steps are merging/configuring the workflow, deploying, confirming account-only starter data, and the live walkthrough. Deployment runs no schema or seed commands; the public link remains labeled launch pending until verified.
 - Historical Windows/teacher-server and `.slnx` submission checks remain class-specific; they are not prerequisites for this portfolio transition. Live OMDb and fake-data screenshots remain pending for the public demo.
 
 See the [requirements](requirements.md), [database notes](architecture-and-database.md), [roadmap](roadmap.md), [validation record](validation.md), and [submission guide](submission.md).

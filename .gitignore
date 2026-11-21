@@ -4,6 +4,8 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # User-specific files
+# Azure deployment profiles contain credentials and belong only in private settings.
+*.PublishSettings
 # Local application configuration (use user secrets for credentials).
 **/appsettings.Development.json
 **/appsettings.*.Local.json

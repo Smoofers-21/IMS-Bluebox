@@ -45,9 +45,11 @@ The owner is transitioning to a web-only portfolio. Follow the [Azure setup guid
 - [x] Record the owner-reported Azure SQL creation, schema-query execution, and App Service hostname.
 - [x] Add the [website address](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net) with an explicit launch-pending label.
 - [x] Implement portfolio index scripts, bounded connection-open retry, and optional exact trusted-proxy configuration; see the [Azure review resolution](pr7-review-resolution.md).
+- [x] Prepare a [manual GitHub Actions deployment workflow](github-actions-deployment.md), limited to main with successful CI; no local SDK installation required for deployment.
 - [ ] Owner verifies the SQL free offer, monthly-limit auto-pause, and access in the chosen subscription/region.
-- [ ] Confirm the five installed tables, apply the index-only portfolio upgrade, configure private credentials, and seed fake portfolio data.
-- [ ] Confirm F1 Free, configure HTTPS/hostname and SQL firewall access, and publish to the existing App Service website.
+- [x] Record the owner's report that the schema/index SQL, app settings, and outbound-IP firewall rules were applied.
+- [ ] Confirm account-only starter setup: one manager, four staff, Fayetteville/Bentonville warehouses, and no items/stock/history until entered in the app.
+- [ ] Merge the deployment workflow, set its app-name variable and private publish-profile secret, confirm F1/.NET 10, and run the first manual deployment.
 - [ ] Verify staff/manager workflows, OMDb, and behavior after free-tier idle shutdown/resume.
 - [ ] Mark the website launched, publish verified staff access instructions, and add final fake-data screenshots.
 

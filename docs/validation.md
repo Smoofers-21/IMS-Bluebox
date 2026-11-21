@@ -1,6 +1,14 @@
 # Validation record
 
-Updated November 19, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+Updated November 20, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+
+## Manual GitHub Actions deployment preparation
+
+The [deployment guide](github-actions-deployment.md) describes the new manually triggered workflow. It requires main and its latest successful build/SQL push CI run for the exact selected commit, then builds a portable Release ZIP and deploys it to the existing app using a private publish-profile secret. It runs no schema or seed commands. Application code, dependencies, schema, and the existing build/SQL workflow are unchanged.
+
+Verified locally: locked restore; Release tests (**48 passed, 38 SQL groups intentionally skipped, 0 failures**); framework-dependent publish with `UseAppHost=false`; ZIP root/runtime/IIS/static-asset checks; and Actionlint **1.7.7** on both workflows. Preflight checks covered main versus feature/tag refs, missing/invalid app names, pending/failed/canceled/missing CI results, API failure, and missing deployment credentials without secret output. Documentation links and the regenerated Markdown/Word plan were checked.
+
+The deployment workflow has not authenticated to Azure or uploaded the site from this workspace. The owner must merge the PR, configure the repository app-name variable and private publish-profile secret, wait for main CI, run deployment, and verify the live website. The separate private account/location SQL and initial passwords are not committed; catalog/stock/history remain owner-entered after launch. No automated test targets the portfolio or teacher database.
 
 ## Azure portfolio preparation
 
