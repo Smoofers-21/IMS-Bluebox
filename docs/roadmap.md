@@ -54,6 +54,8 @@ The owner is transitioning to a web-only portfolio. Follow the [Azure setup guid
 - [ ] Keep the app-name repository variable, move the profile to an azure-portfolio environment secret, restrict that environment to main, and remove the repository secret copy.
 - [ ] Merge the deployment workflow, confirm F1/.NET 10, and run the first manual deployment with its startup check.
 - [ ] Verify staff/manager workflows, OMDb, and behavior after free-tier idle shutdown/resume.
+- [x] Apply the [PR #11 review](pr11-review-resolution.md): per-IP request/stock-submission limits and optional configured demo disclosure.
+- [ ] Set both PublicDemo display settings in Azure; confirm the displayed password matches the ACTIVE STAFF account and README.
 - [ ] Deploy the demo-panel update and verify public staff sign-in, copy/fallback behavior, shared stock changes, and manager restrictions on Azure.
 - [ ] Mark the website launched, publish verified staff access instructions, and add final fake-data screenshots.
 

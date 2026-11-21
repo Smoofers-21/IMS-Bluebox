@@ -9,8 +9,13 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BlueBox.Web.Pages.Account;
 
-public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Employee> hasher) : PageModel
+public sealed class LoginModel(EmployeeRepository employees, IPasswordHasher<Employee> hasher, IConfiguration configuration) : PageModel
 {
+    // Display-only values: the normal database-backed login still verifies the account.
+    public string? PublicDemoUsername => configuration["PublicDemo:Username"];
+    public string? PublicDemoPassword => configuration["PublicDemo:Password"];
+    public bool PublicDemoEnabled => !string.IsNullOrWhiteSpace(PublicDemoUsername)
+        && !string.IsNullOrWhiteSpace(PublicDemoPassword);
     // One process-wide dummy credential avoids skipping the expensive hash check for unknown usernames.
     private static readonly Employee UnknownEmployee = new();
     private static readonly string DummyHash = new PasswordHasher<Employee>().HashPassword(UnknownEmployee,

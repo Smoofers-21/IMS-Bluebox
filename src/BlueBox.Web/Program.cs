@@ -47,6 +47,14 @@ public partial class Program
         builder.Services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            // Runs before authentication, so rejected bursts do not trigger cookie/database validation.
+            // Partition by client address: the public STAFF account is shared by many visitors.
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 300, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true
+                    }));
             options.AddPolicy("login", context => HttpMethods.IsPost(context.Request.Method)
                 ? RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                     _ => new FixedWindowRateLimiterOptions
@@ -54,13 +62,20 @@ public partial class Program
                         PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true
                     })
                 : RateLimitPartition.GetNoLimiter("login-read"));
+            options.AddPolicy("stock-movement", context => HttpMethods.IsPost(context.Request.Method)
+                ? RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 20, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true
+                    })
+                : RateLimitPartition.GetNoLimiter("movement-read"));
             options.OnRejected = async (rejected, ct) =>
             {
                 rejected.HttpContext.Response.ContentType = "text/plain; charset=utf-8";
                 if (rejected.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
                     rejected.HttpContext.Response.Headers.RetryAfter = Math.Ceiling(retryAfter.TotalSeconds)
                         .ToString(System.Globalization.CultureInfo.InvariantCulture);
-                await rejected.HttpContext.Response.WriteAsync("Too many sign-in attempts. Wait a minute and try again.", ct);
+                await rejected.HttpContext.Response.WriteAsync("Too many requests. Wait a minute and try again.", ct);
             };
         });
         builder.Services.AddRazorPages(options =>
@@ -71,6 +86,8 @@ public partial class Program
             options.Conventions.AllowAnonymousToPage("/Account/Login");
             options.Conventions.AddPageApplicationModelConvention("/Account/Login",
                 model => model.EndpointMetadata.Add(new EnableRateLimitingAttribute("login")));
+            options.Conventions.AddPageApplicationModelConvention("/Inventory/Move",
+                model => model.EndpointMetadata.Add(new EnableRateLimitingAttribute("stock-movement")));
         });
         var app = builder.Build();
 

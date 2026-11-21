@@ -51,7 +51,7 @@ These are nonunique performance indexes. They support lookups without changing t
 
 Do not run `--seed-demo` for this portfolio setup: that optional full sample-data command also creates catalog items, balances, and opening history. Publishing and ordinary startup apply no SQL scripts and seed no data. README-only changes require no database update or website redeployment.
 
-The owner separately configured `avery.chen` as the public STAFF account. See [public demo access](../README.md#try-the-demo) for the current intentionally public credentials and copy/paste instructions. Other account passwords, the initial-login file, SQL credentials, deployment profiles, and API keys remain private. Publishing the demo panel changes no account password or database role; its login continues to use the normal authentication and authorization rules.
+The owner separately configured `avery.chen` as the public STAFF account. See [public demo access](../README.md#try-the-demo) for the current intentionally public credentials and copy/paste instructions. Other account passwords, the initial-login file, SQL credentials, deployment profiles, and API keys remain private. The panel is hidden until both [PublicDemo display settings](../docs/azure-portfolio-setup.md#public-demo-display-settings) are configured. Publishing the demo panel or changing those settings changes no account password or database role; its login continues to use the normal authentication and authorization rules.
 
 ## Rules implemented by the application
 

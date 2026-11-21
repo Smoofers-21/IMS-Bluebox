@@ -17,24 +17,27 @@
         <p class="eyebrow">EMPLOYEE ACCESS</p>
         <h2>Sign in to BlueBox</h2>
         <p class="muted">Use your employee account to continue.</p>
-        <details class="demo-access" id="demo-access">
-            <summary>Try the demo</summary>
-            <div class="demo-access-content">
-                <p class="help">Shared demo with fictional data. Staff access allows inventory changes; manager tools are restricted. Changes are saved and visible to other visitors.</p>
-                <p class="help">Copy these credentials into the sign-in form below, then choose Sign in. You can also select the text to copy it manually.</p>
-                <label for="demo-username">Demo username</label>
-                <div class="demo-credential-row">
-                    <input id="demo-username" type="text" value="avery.chen" readonly autocomplete="off" autocapitalize="none" spellcheck="false" />
-                    <button type="button" class="button small" data-demo-copy="demo-username" data-demo-label="Username" aria-label="Copy demo username" hidden>Copy</button>
+        @if (Model.PublicDemoEnabled)
+        {
+            <details class="demo-access" id="demo-access">
+                <summary>Try the demo</summary>
+                <div class="demo-access-content">
+                    <p class="help">Shared demo with fictional data. Staff access allows inventory changes; manager tools are restricted. Changes are saved and visible to other visitors.</p>
+                    <p class="help">Copy these credentials into the sign-in form below, then choose Sign in. You can also select the text to copy it manually.</p>
+                    <label for="demo-username">Demo username</label>
+                    <div class="demo-credential-row">
+                        <input id="demo-username" type="text" value="@Model.PublicDemoUsername" readonly autocomplete="off" autocapitalize="none" spellcheck="false" />
+                        <button type="button" class="button small" data-demo-copy="demo-username" data-demo-label="Username" aria-label="Copy demo username" hidden>Copy</button>
+                    </div>
+                    <label for="demo-password">Demo password</label>
+                    <div class="demo-credential-row">
+                        <input id="demo-password" type="text" value="@Model.PublicDemoPassword" readonly autocomplete="off" autocapitalize="none" spellcheck="false" />
+                        <button type="button" class="button small" data-demo-copy="demo-password" data-demo-label="Password" aria-label="Copy demo password" hidden>Copy</button>
+                    </div>
+                    <p class="help demo-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
                 </div>
-                <label for="demo-password">Demo password</label>
-                <div class="demo-credential-row">
-                    <input id="demo-password" type="text" value="DEMO.PASS123321" readonly autocomplete="off" autocapitalize="none" spellcheck="false" />
-                    <button type="button" class="button small" data-demo-copy="demo-password" data-demo-label="Password" aria-label="Copy demo password" hidden>Copy</button>
-                </div>
-                <p class="help demo-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
-            </div>
-        </details>
+            </details>
+        }
         <form method="post">
             <input type="hidden" asp-for="ReturnUrl" />
             <div asp-validation-summary="ModelOnly" class="validation" role="alert"></div>
@@ -50,5 +53,8 @@
     </section>
 </div>
 @section Scripts {
-    <script src="~/js/demo-login.js" asp-append-version="true" defer></script>
+    @if (Model.PublicDemoEnabled)
+    {
+        <script src="~/js/demo-login.js" asp-append-version="true" defer></script>
+    }
 }

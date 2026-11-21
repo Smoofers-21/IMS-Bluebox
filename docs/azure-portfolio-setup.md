@@ -42,7 +42,7 @@ For a local setup using Visual Studio, put `ConnectionStrings:BlueBox` in **Blue
 
 For App Service, set these under **Settings → Environment variables → App settings**:
 
-| Name | Private value |
+| Name | Value |
 | --- | --- |
 | `ConnectionStrings__BlueBox` | The complete portfolio database connection string |
 | `Omdb__ApiKey` | The existing OMDb key, if using movie lookup |
@@ -50,6 +50,23 @@ For App Service, set these under **Settings → Environment variables → App se
 | `ASPNETCORE_ENVIRONMENT` | `Production` |
 
 Add each setting individually and leave **Deployment slot setting** unchecked for this single production F1 app. The double underscores are intentional: they map the environment variables to nested application settings. Select **Apply/Save** after adding them. `Omdb__ApiKey` contains only the key, without an API URL or query parameters. `AllowedHosts` contains no `https://` prefix or path; update it if the website hostname changes.
+
+### Public demo display settings
+
+To show **Try the demo**, add these two App settings individually on the same Web App, leave **Deployment slot setting** unchecked, and Apply/Save:
+
+| Name | Intentionally public value |
+| --- | --- |
+| `PublicDemo__Username` | `avery.chen` |
+| `PublicDemo__Password` | `DEMO.PASS123321` |
+
+These values are displayed to anonymous visitors. Use only the designated STAFF credentials, never a manager password. Both must be nonblank; otherwise the panel and its copy script are omitted. Local runs hide the panel by default. The ordinary login form continues to work without these settings.
+
+The settings do not create an account, change its password or role, or disable an existing account. Keep the database account ACTIVE/STAFF. To rotate its password, use Manage → Employees with a private manager account, update `PublicDemo__Password` in App Service, Apply/Save and restart if requested, then update the README through a PR. No application redeployment is required just to change these display settings. Remove either setting to hide the panel; deactivate the account or reset its actual password to revoke access. Previously published credentials remain in repository history.
+
+Use a unique manager password of at least 20 random characters and keep it private. Movement notes remain shared free text: use fictional content and check Activity before presenting. Do not enter personal information.
+
+### Database and proxy alternatives
 
 Alternatively use `Database__Server`, `Database__Name`, `Database__Username`, and `Database__Password` separately and leave `ConnectionStrings__BlueBox` unset. The builder defaults to encryption with certificate validation. Do not turn off `Encrypt` or enable `TrustServerCertificate` to work around Azure configuration problems.
 
@@ -113,3 +130,9 @@ Use the [demo guide](demo-guide.md) to check staff/manager login, catalog and al
 Connection opening retries up to three total attempts for explicit Azure availability/throttling failures, with bounded exponential delays and cancellation support. SQL commands and ambiguous writes are never replayed by this policy. Resume can still exceed the retry budget or fail when the free allowance is exhausted; the existing 503 response remains the fallback.
 
 Automated tests that create/drop databases continue to run only on disposable SQL Server instances in CI, never on this Azure portfolio database. After the live walkthrough, update the README's launch status, add verified staff access instructions, and capture fake-data screenshots. Keep the manager password private. Passing local or disposable SQL tests alone does not prove Azure connectivity or free-tier settings.
+
+## Monitor the free demo
+
+Application requests are limited to 300 per minute per client IP, with separate limits of 10 login POSTs and 20 stock-movement POSTs per minute per IP. Static files do not consume the application-request limit. Limits run before cookie authentication, use trusted forwarded addresses only, apply per running app instance, and reset on restart. People behind the same public IP share limits. Distributed or sustained low-rate use can still exhaust free resources; these limits are not a spending or monthly-usage guarantee.
+
+Keep Azure SQL's monthly-limit auto-pause enabled. Check the database's **Free offer** usage in Azure Portal and App Service's free CPU quota before sharing widely. If the subscription exposes a supported free-usage metric alert, review its pricing and configure a notification only if it stays free; no monitoring resource or alert has been created here. Cost budgets track monetary spend and do not replace checking a zero-cost compute allowance. Do not enable paid overages to resolve an exhausted free allowance.

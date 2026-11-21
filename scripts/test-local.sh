@@ -8,6 +8,8 @@ command -v docker >/dev/null
 command -v dotnet >/dev/null
 command -v openssl >/dev/null
 docker info >/dev/null
+dotnet --version
+docker version --format 'Docker client {{.Client.Version}}; server {{.Server.Version}}'
 
 umask 077
 sql_test_dir="$(mktemp -d "${TMPDIR:-/tmp}/bluebox-local-sql.XXXXXX")"
