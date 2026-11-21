@@ -356,6 +356,8 @@ tbody tr:last-child td {
   min-width: 170px;
 }
 .mini-cover {
+  position: relative;
+  overflow: hidden;
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
@@ -370,6 +372,20 @@ tbody tr:last-child td {
 .mini-cover.game {
   background: linear-gradient(145deg, #745281, #29233d);
   font-size: 25px;
+}
+.mini-cover-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mini-cover-image[hidden],
+#movement-item-picker[hidden],
+#movement-item-options[hidden],
+#Input_ItemId[hidden],
+#movement-item-select-label[hidden] {
+  display: none;
 }
 .table-caption {
   font-size: 11px;
@@ -1016,4 +1032,24 @@ tbody tr:last-child td {
   .app-header nav a { font-size: 11px; padding: 6px 9px; }
   .summary-grid { gap: 10px; }
   .metric strong { font-size: 28px; }
+}
+
+.movement-item-options {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #12152b;
+}
+.movement-item-options li {
+  padding: 10px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.movement-item-options li:hover,
+.movement-item-options li[aria-selected="true"] {
+  background: #382442;
 }

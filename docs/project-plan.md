@@ -16,7 +16,7 @@ Build an internal warehouse inventory website for BlueBox, a fictional movie and
 - Check-in, check-out, and permanent movement history.
 - Manager corrections linked to the original transaction.
 - Item, employee, and location administration.
-- OMDb movie lookup for optional posters and age classifications.
+- OMDb movie lookup for optional posters and age classifications; stored posters also appear as Catalog/Inventory thumbnails with icon fallback.
 - Overview dashboard, searchable inventory, and activity views.
 - Fake data for demonstration and validation.
 - Optional public staff demo credentials in an expandable login-page panel and README, with copy buttons and normal sign-in; the panel is hidden unless both PublicDemo display settings are configured. Shared stock changes are disclosed and manager access stays restricted.
@@ -82,7 +82,7 @@ Posters and age ratings are optional. No match or an unavailable API must not pr
 
 ### Check stock in or out
 
-1. Select Check in or Check out, an active item, and an active warehouse.
+1. Select Check in or Check out, search active items by title/format or exact item ID (with or without #), and choose an active warehouse. The original item select remains available without JavaScript.
 2. Enter a positive whole-number quantity and optional notes.
 3. Review the proposed resulting balance.
 4. Confirm the movement.

@@ -15,7 +15,7 @@
 <section class="panel table-panel" aria-label="Warehouse stock"><div class="table-scroll"><table><thead><tr><th>Title</th><th>Format</th><th>Warehouse</th><th>On hand</th><th>Action</th></tr></thead><tbody>
 @foreach (var item in Model.Rows)
 {
-    <tr><td><a class="item-name" asp-page="/Catalog/Details" asp-route-id="@item.ItemId"><span class="mini-cover @(item.Type == "GAME" ? "game" : "")" aria-hidden="true">@(item.Type == "GAME" ? "◇" : "◒")</span>@item.Name</a>@if(item.ItemStatus != "ACTIVE") { <span class="badge">Archived</span> }</td><td>@item.Format</td><td>@item.Location @if(item.LocationStatus != "ACTIVE") { <span class="badge">Inactive</span> }</td><td><strong class="@(item.OnHand == 0 ? "muted" : "")">@item.OnHand</strong></td><td>@if(item.ItemStatus == "ACTIVE" && item.LocationStatus == "ACTIVE") { <a class="button small" asp-page="Move" asp-route-itemId="@item.ItemId" asp-route-locationId="@item.LocationId">Move <span aria-hidden="true">→</span></a> }</td></tr>
+    <tr><td><a class="item-name" asp-page="/Catalog/Details" asp-route-id="@item.ItemId"><partial name="_ItemThumbnail" model="@(new BlueBox.Web.Models.ItemThumbnail(item.PosterUrl, item.Type))" />@item.Name</a>@if(item.ItemStatus != "ACTIVE") { <span class="badge">Archived</span> }</td><td>@item.Format</td><td>@item.Location @if(item.LocationStatus != "ACTIVE") { <span class="badge">Inactive</span> }</td><td><strong class="@(item.OnHand == 0 ? "muted" : "")">@item.OnHand</strong></td><td>@if(item.ItemStatus == "ACTIVE" && item.LocationStatus == "ACTIVE") { <a class="button small" asp-page="Move" asp-route-itemId="@item.ItemId" asp-route-locationId="@item.LocationId">Move <span aria-hidden="true">→</span></a> }</td></tr>
 }
 </tbody></table></div>
 @if(Model.Rows.Count == 0) { <div class="empty-state"><h2>No matching inventory</h2><p>Try another search or clear your filters.</p></div> }
@@ -32,3 +32,7 @@
         }
     </nav>
 </div></section>
+
+@section Scripts {
+    <script src="~/js/item-thumbnails.js" asp-append-version="true" defer></script>
+}

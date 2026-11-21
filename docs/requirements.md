@@ -31,6 +31,7 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | CAT-03 | Keep metadata optional | Items can be saved without a poster or age rating. |
 | CAT-04 | Use OMDb for movies | A manager selects a movie match and can review its returned poster and age classification before saving. |
 | CAT-05 | Handle missing external data | Failed lookup, no match, or unavailable fields leave manual item entry usable. Games use manual metadata. |
+| CAT-06 | Show poster thumbnails | Catalog and Inventory show a stored HTTPS poster beside the title. Missing, invalid, or failed images retain the movie/game icon; external images use no-referrer and lazy loading. |
 | INV-01 | Maintain location balances | Each item/location pair has at most one balance. New balances start at zero; creating an item adds no units. |
 | INV-02 | Check stock in | With 5 on hand, checking in 10 results in 15 and one new movement entry. |
 | INV-03 | Check stock out | With 15 on hand, checking out 4 results in 11 and one new movement entry. |
@@ -41,6 +42,7 @@ Permissions must be enforced by the server, not only by hiding buttons.
 | INV-08 | Validate the final balance | The server rechecks stock when confirming a movement, regardless of the earlier screen preview. |
 | INV-09 | Use active records | Movements against archived items or inactive warehouses are rejected. |
 | INV-10 | Show stock on hand | Inventory shows only item/location balances above zero, for both All locations and a selected warehouse. Search, item-type filters, and pagination apply to those balances. Catalog item details still show zero-stock warehouses. |
+| INV-11 | Find an item for movements | With JavaScript, users search active items by title/format or enter an exact numeric or # item ID. Suggestions distinguish editions by format and ID. Editing to an invalid value clears the prior selection; the ordinary validated item ID is submitted. Without JavaScript, retain the item select. |
 | HIST-01 | Attribute movements | Each entry stores the signed-in employee, item, location, direction, positive quantity, and server-generated UTC time. |
 | HIST-02 | Retain history | Application users cannot edit/delete historical movement entries or erase them through retirement; item type/format cannot be relabeled after history exists. |
 | COR-01 | Restrict corrections | Only managers can submit a correction; an explanation and original-transaction reference are required. |

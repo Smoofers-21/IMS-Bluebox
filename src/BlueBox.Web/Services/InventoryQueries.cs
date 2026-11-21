@@ -12,6 +12,7 @@ public sealed record CatalogRow
     public string Type { get; init; } = "";
     public string Format { get; init; } = "";
     public string? Rating { get; init; }
+    public string? PosterUrl { get; init; }
     public string Status { get; init; } = "";
     public long OnHand { get; init; }
 }
@@ -22,6 +23,7 @@ public sealed record InventoryRow
     public string Type { get; init; } = "";
     public string Format { get; init; } = "";
     public string ItemStatus { get; init; } = "";
+    public string? PosterUrl { get; init; }
     public int LocationId { get; init; }
     public string Location { get; init; } = "";
     public string LocationStatus { get; init; } = "";
@@ -54,12 +56,12 @@ public sealed class InventoryQueries(SqlDatabase database)
     {
         using var command = SearchCommand("""
             SELECT i.item_id, i.item_name, i.item_type, i.media_format,
-                i.age_rating, i.item_status, COALESCE(SUM(CAST(b.quantity_on_hand AS bigint)), 0) AS on_hand
+                i.age_rating, i.poster_url, i.item_status, COALESCE(SUM(CAST(b.quantity_on_hand AS bigint)), 0) AS on_hand
             FROM dbo.ITEM AS i
             LEFT JOIN dbo.CURRENT_INVENTORY AS b ON b.item_id = i.item_id
             WHERE (@search = '' OR CHARINDEX(@search, i.item_name) > 0 OR TRY_CONVERT(int, @search) = i.item_id)
                 AND (@type = '' OR i.item_type = @type)
-            GROUP BY i.item_id, i.item_name, i.item_type, i.media_format, i.age_rating, i.item_status
+            GROUP BY i.item_id, i.item_name, i.item_type, i.media_format, i.age_rating, i.poster_url, i.item_status
             ORDER BY i.item_name, i.media_format, i.item_id
             OFFSET @offset ROWS FETCH NEXT @take ROWS ONLY;
             """, search, type);
@@ -72,6 +74,7 @@ public sealed class InventoryQueries(SqlDatabase database)
             Type = r.Field<string>("item_type")!,
             Format = r.Field<string>("media_format")!,
             Rating = r.Field<string?>("age_rating"),
+            PosterUrl = r.Field<string?>("poster_url"),
             Status = r.Field<string>("item_status")!,
             OnHand = r.Field<long>("on_hand")
         }).ToList();
@@ -81,7 +84,7 @@ public sealed class InventoryQueries(SqlDatabase database)
     public async Task<QueryPage<InventoryRow>> InventoryAsync(string? search, string? type, int? location, int? itemId = null, int pageNumber = 1, bool includeZeroStock = false, CancellationToken ct = default)
     {
         using var command = SearchCommand("""
-            SELECT i.item_id, i.item_name, i.item_type, i.media_format, i.item_status,
+            SELECT i.item_id, i.item_name, i.item_type, i.media_format, i.item_status, i.poster_url,
                 l.location_id, l.location_name, l.location_status, COALESCE(b.quantity_on_hand, 0) AS on_hand
             FROM dbo.ITEM AS i CROSS JOIN dbo.LOCATION AS l
             LEFT JOIN dbo.CURRENT_INVENTORY AS b ON b.item_id = i.item_id AND b.location_id = l.location_id
@@ -104,6 +107,7 @@ public sealed class InventoryQueries(SqlDatabase database)
             Type = r.Field<string>("item_type")!,
             Format = r.Field<string>("media_format")!,
             ItemStatus = r.Field<string>("item_status")!,
+            PosterUrl = r.Field<string?>("poster_url"),
             LocationId = r.Field<int>("location_id"),
             Location = r.Field<string>("location_name")!,
             LocationStatus = r.Field<string>("location_status")!,
