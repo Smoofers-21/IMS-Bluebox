@@ -2,13 +2,13 @@
 
 A web-based warehouse inventory portfolio project for a fictional movie and game business. BlueBox lets employees track quantities across warehouses, record stock movements, and review who changed inventory and when. It demonstrates systems analysis, workflow design, relational data modeling, role-based access, and transactional data integrity.
 
-**Application features: implemented. Deployment: pending.** BlueBox uses Azure SQL Database and an existing Azure App Service website. The schema, performance indexes, app settings, and firewall setup have been reported complete; successful website deployment and the live browser walkthrough remain to be verified.
+**Application features: implemented. Deployment: deployed.** BlueBox uses Azure SQL Database and an existing Azure App Service website. The schema, performance indexes, app settings, and firewall setup have been reported complete; the website is deployed, and the live browser walkthrough remains to be verified.
 
-## Website demo — deployment pending
+## Website demo — deployed
 
 **[Open BlueBox on Azure](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net)**
 
-This is the portfolio website address; deployment and live verification are pending. Visitors will use the published application in their browser with the public staff account below. The new login-page demo panel appears after this application update is deployed and its Azure display settings are added; screenshots will follow live verification.
+This is the portfolio website address; the application is deployed, and live verification is pending. Visitors will use the published application in their browser with the public staff account below. The new login-page demo panel appears after this application update is deployed and its Azure display settings are added; screenshots will follow live verification.
 
 The planned demo uses Azure App Service **F1 Free** and the **Azure SQL free offer**, subject to confirming the subscription settings. Free-tier idle shutdown, database resume, and usage limits can delay or temporarily interrupt access. GitHub hosts the source code; Azure runs the website and database.
 
@@ -38,7 +38,7 @@ These staff credentials are intentionally public. The owner has configured this 
 | Purpose | Systems analysis and application development portfolio |
 | Interface | Browser-based employee website |
 | Application | C# / .NET 10 with ASP.NET Core Razor Pages |
-| Hosting | Azure App Service F1 Free; deployment pending |
+| Hosting | Azure App Service F1 Free; deployed |
 | Database | Azure SQL Database with a five-table SQL Server-compatible schema |
 | Data access | Parameterized ADO.NET (`SqlConnection`, `SqlCommand`, `DataTable`) |
 | External integration | OMDb for optional movie posters and age classifications |

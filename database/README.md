@@ -2,7 +2,7 @@
 
 BlueBox uses **Azure SQL Database** for its portfolio website. The application accesses the five-table SQL Server-compatible schema through parameterized ADO.NET. Database administration uses Azure Portal's **Query editor**; no desktop database tool is required.
 
-**Website deployment: pending.** The owner reports completing the schema/index scripts, app settings, and SQL firewall rules. Authenticated application access and the live stock workflows remain to be verified after deployment. See the [project README](../README.md), [Azure setup](../docs/azure-portfolio-setup.md), and [manual deployment guide](../docs/github-actions-deployment.md).
+**Website deployment: deployed.** The owner reports completing the schema/index scripts, app settings, and SQL firewall rules. Authenticated application access and the live stock workflows remain to be verified after deployment. See the [project README](../README.md), [Azure setup](../docs/azure-portfolio-setup.md), and [manual deployment guide](../docs/github-actions-deployment.md).
 
 ## Current schema
 
