@@ -1,6 +1,32 @@
 # Validation record
 
-Updated November 20, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+Updated November 21, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
+
+## PR #13 review fixes — November 21, 2026
+
+The [review resolution](pr13-review-resolution.md) records the numeric title/ID ambiguity fix, explicit selection commits, clearer empty-stock guidance, separate stocked/all-warehouse query paths, explicit thumbnail dimensions, and debounced screen-reader counts. Bare and # ID lookup remain supported; ambiguous numeric text requires a result choice. Typing clears stale selection without requesting another item's balance. No DDL or live data update is required.
+
+Locked restore and local Release tests passed **63 tests**, with **44 SQL groups skipped** and no failures. New SQL coverage checks empty-stock and filtered empty messages with check-in/Catalog links; existing filter, paging, catalog-details, and poster cases exercise the split queries. The local SQL helper was attempted but the image download again returned 403 before startup. No local SQL execution is claimed. The reviewed source `3bc2384` passed [run 44943383445](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44943383445) with **127 SQL-enabled tests**, independently verified before these changes; the new head needs its own completed CI run.
+
+Chromium component tests passed 300/1917 numeric title collisions, explicit commits, no intermediate balance fetches during ID typing, 300-ms count announcements, immediate selection feedback, keyboard/pointer/format search, safe submitted IDs, preselection/no-JavaScript fallback, poster fallback/no-referrer, strict CSP, and four layout widths (320/375/768/1440). The tests use controlled fixtures and balance responses, not Azure or local SQL. JavaScript syntax, documentation links, regenerated SQL catalog, and Markdown/Word agreement were checked.
+
+## PR #13 poster thumbnails and movement item search — November 21, 2026
+
+The owner requested two additions to the inventory-visibility branch: show stored poster images in the purple title icons and replace scrolling through the movement item select with a search field, including item-ID lookup. Catalog/Inventory now carry the existing poster_url field into a shared thumbnail partial. Only valid HTTPS URLs render; images are lazy-loaded with no-referrer and a CSP-compatible external script restores the icon when loading fails. The browser fetches posters directly; no server image proxy, new API key, database field, or DDL change is added.
+
+The movement item search progressively replaces the existing select using a keyboard-accessible list of up to ten matching results. Titles, formats, and IDs appear in suggestions; an exact numeric or # ID also selects directly. The existing validated Input.ItemId remains the submitted value and drives the unchanged stock preview. Partial/invalid edits clear stale selections. Preselected items are preserved, and the original select remains available without JavaScript or active items. Search is local to the active-item list already loaded by the page, adding no lookup requests.
+
+Locked restore and local Release tests passed: **63 passed, 43 SQL groups skipped, 0 failures**. New Razor tests verify safe/unsafe/missing URL rendering and fallback markup. Added disposable-SQL coverage checks poster projections/rendering in Catalog and all/selected-location Inventory, item preselection, the search asset/markup, and ordinary item-ID stock submission. The container pull was attempted again and returned 403 before SQL Server started; no local SQL execution or live Azure database access is claimed. Check the current PR's SQL-enabled CI before merging.
+
+Chromium component checks used production JavaScript/CSS and the production search-field/preview markup with controlled fixture data and balance responses. They passed title/format filtering, numeric/# IDs, keyboard and pointer selection, the ten-result limit/refinement, edition selection, stale-ID clearing, invalid input, selected-ID submission, preselection, quantity/preview rules, successful/failed posters, no-referrer, no-JavaScript fallback, strict CSP, and layout widths of 320/375/768/1440 pixels. Screenshots were inspected. This verifies client components rather than a live browser-to-SQL connection. JavaScript syntax, Markdown links, runtime SQL catalog, and regenerated Word plan were checked.
+
+## Inventory stock visibility fix — November 21, 2026
+
+The owner requested hiding items with no stock from the Inventory tab, including **All locations** and individual warehouse filters. The query now defaults to positive item/location balances and applies that condition in SQL before paging. Missing inventory rows and saved zero balances are excluded. Catalog item details explicitly retain all warehouse balances, including zeros; the catalog, movement history, and stored quantities are preserved. No DDL or data update is required. The Inventory caption, README, requirements, and runtime SQL catalog match this rule.
+
+Locked restore and local Release tests passed: **56 passed, 42 SQL groups skipped, 0 failures**. Added disposable-SQL coverage checks all/selected warehouses, zero versus absent balances, stock at another warehouse, search by ID, item type, invalid locations, empty results, Reset, HTTP page rendering, catalog/detail preservation, and visibility after full check-out and check-in. The existing 201-row paging test now supplies real positive balances, checks all-location pages without zero rows, and retains exact-page and filter-link assertions.
+
+The requested local SQL helper was attempted, but the SQL Server container image download returned 403 before the database could start. No real SQL execution is claimed for this change; the added cases must pass the new PR's SQL-enabled CI. Local Chromium smoke checks cover anonymous inventory redirects with filters/return URLs and the responsive normal login. They do not establish authenticated inventory results; those require the SQL-enabled tests and the deployed walkthrough. No live Azure database was used, modified, or tested.
 
 ## Public staff demo access
 

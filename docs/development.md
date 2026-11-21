@@ -121,7 +121,7 @@ Static files with a correct `asp-append-version` hash can be cached for a year; 
 ## 5. Review the workflow
 
 1. Sign in as staff; review Overview totals, then browse Catalog and Inventory. Use Previous/Next to reach all matches in pages of 100, preserving filters. Manage → Catalog items uses the same paging; submitting new filters starts at page 1.
-2. Select a warehouse/item, check in a positive quantity, and compare the preview with the saved balance.
+2. Select a warehouse and find an item by title/format or its exact ID (`12` or `#12`), choose a result or confirm the ID with Enter, check in a positive quantity, and compare the preview with the saved balance. A bare number matching a title/format requires a result choice; # identifies the ID explicitly. Typing clears the previous selection and does not fetch a new balance. Search suggestions include the format and ID so editions stay distinct; the original item select works without JavaScript.
 3. Check out available stock and find the attributed entry in Activity.
 4. Attempt to check out too much; verify stock/history remain unchanged.
 5. Try zero, negative, fractional, and excessive quantities; verify rejection.

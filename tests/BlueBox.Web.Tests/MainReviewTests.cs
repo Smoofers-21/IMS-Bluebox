@@ -179,6 +179,8 @@ public sealed class MainReviewTests
             INSERT INTO dbo.ITEM (item_name,item_type,media_format,item_status)
             SELECT TOP (201) CONCAT('Paging fixture ', RIGHT(CONCAT('000', ROW_NUMBER() OVER (ORDER BY object_id)), 3)),
                 'MOVIE','DVD','ACTIVE' FROM sys.all_objects ORDER BY object_id;
+            INSERT INTO dbo.CURRENT_INVENTORY (item_id,location_id,quantity_on_hand,last_updated_at)
+            SELECT item_id,1,1,SYSUTCDATETIME() FROM dbo.ITEM WHERE item_name LIKE 'Paging fixture %';
             """);
         await using var scope = app.Services.CreateAsyncScope();
         var queries = scope.ServiceProvider.GetRequiredService<InventoryQueries>();
@@ -190,21 +192,22 @@ public sealed class MainReviewTests
             Assert.Equal(number < 3, page.HasNextPage); Assert.Equal(number < 3, balances.HasNextPage);
             Assert.Equal(number < 3 ? 100 : 1, page.Rows.Count);
             Assert.Equal(page.Rows.Select(row => row.ItemId), balances.Rows.Select(row => row.ItemId));
-            Assert.All(balances.Rows, row => { Assert.Equal(1, row.LocationId); Assert.Equal(0, row.OnHand); });
+            Assert.All(balances.Rows, row => { Assert.Equal(1, row.LocationId); Assert.Equal(1, row.OnHand); });
             catalog.AddRange(page.Rows); inventory.AddRange(balances.Rows);
         }
         Assert.Equal(201, catalog.Select(row => row.ItemId).Distinct().Count());
         Assert.Equal(201, inventory.Select(row => (row.ItemId, row.LocationId)).Distinct().Count());
         Assert.Equal("Paging fixture 001", catalog[0].Name); Assert.Equal("Paging fixture 201", catalog[^1].Name);
         var allBalances = new List<InventoryRow>();
-        for (var number = 1; number <= 5; number++)
+        for (var number = 1; number <= 3; number++)
         {
             var page = await queries.InventoryAsync("Paging fixture", "MOVIE", null, pageNumber: number);
             allBalances.AddRange(page.Rows);
-            Assert.Equal(number < 5, page.HasNextPage);
+            Assert.Equal(number < 3, page.HasNextPage);
         }
-        Assert.Equal(402, allBalances.Count); // Both seeded warehouses, including zero stock.
-        Assert.Equal(402, allBalances.Select(row => (row.ItemId, row.LocationId)).Distinct().Count());
+        Assert.Equal(201, allBalances.Count); // Only the warehouse with stock, even with no location selected.
+        Assert.Equal(201, allBalances.Select(row => (row.ItemId, row.LocationId)).Distinct().Count());
+        Assert.All(allBalances, row => Assert.True(row.OnHand > 0));
         Assert.Empty((await queries.CatalogAsync("Paging fixture", "GAME")).Rows);
         Assert.Empty((await queries.InventoryAsync("Paging fixture", "MOVIE", 1, pageNumber: 4)).Rows);
         using var client = app.Browser(); await TestApp.LoginAsync(client, "jordan.lee");
@@ -256,7 +259,7 @@ public sealed class MainReviewTests
         Assert.Equal(countBeforeEdit, await app.ScalarAsync("SELECT COUNT(*) FROM dbo.ITEM"));
         Assert.Equal("PG", (await queries.ItemAsync(catalog[100].ItemId))!.AgeRating);
         // An exact final page of 100 rows must not advertise a phantom next page.
-        await app.ExecuteAsync("DELETE FROM dbo.ITEM WHERE item_name='Paging fixture 201'");
+        await app.ExecuteAsync("UPDATE dbo.ITEM SET item_name='Outside pagination' WHERE item_name='Paging fixture 201'");
         Assert.False((await queries.CatalogAsync("Paging fixture", "MOVIE", 2)).HasNextPage);
         Assert.False((await queries.InventoryAsync("Paging fixture", "MOVIE", 1, pageNumber: 2)).HasNextPage);
     }

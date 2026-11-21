@@ -1,0 +1,8 @@
+@model BlueBox.Web.Models.ItemThumbnail
+<span class="mini-cover @(Model.Type == "GAME" ? "game" : "")" aria-hidden="true">
+    <span>@(Model.Type == "GAME" ? "◇" : "◒")</span>
+    @if (!string.IsNullOrWhiteSpace(Model.PosterUrl) && new BlueBox.Web.Models.HttpsUrlAttribute().IsValid(Model.PosterUrl))
+    {
+        <img class="mini-cover-image" src="@Model.PosterUrl" alt="" width="28" height="38" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-item-thumbnail />
+    }
+</span>

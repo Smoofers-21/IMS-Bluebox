@@ -48,9 +48,9 @@ These staff credentials are intentionally public. The owner has configured this 
 ## Inventory workflows
 
 - Employee sign-in with staff and manager permissions, secure cookies, and limits on login attempts, stock submissions, and repeated page requests.
-- Searchable movie/game catalog, including separate entries for different formats. Type/format are fixed after the first movement to preserve edition history.
-- Warehouse quantities, with 100-row Catalog, Inventory, and Manage Catalog pages that preserve filters.
-- Check-in and check-out with a preview of the resulting balance.
+- Searchable movie/game catalog, including separate entries for different formats. Catalog and Inventory display stored poster thumbnails beside titles, with the purple icon as fallback. Type/format are fixed after the first movement to preserve edition history.
+- Warehouse quantities, with 100-row Catalog, Inventory, and Manage Catalog pages that preserve filters. Inventory shows only positive stock for both All locations and a selected warehouse; catalog item details still show zero-stock warehouses.
+- Check-in and check-out with item search by title, format, or exact item ID (such as `12` or `#12`), plus a preview of the resulting balance. Choose a result or confirm an ID with Enter; numeric title/ID conflicts require choosing a result, and `#` identifies an ID explicitly.
 - Protection against negative inventory and conflicting stock updates.
 - Permanent movement history identifying the item, warehouse, employee, quantity, and time.
 - Private account initialization and an explicit first-manager setup command.
