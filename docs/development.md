@@ -143,6 +143,16 @@ OMDb calls use a fixed HTTPS endpoint, a five-second timeout, no automatic retry
 
 ## Automated checks
 
+The default local verification uses both the web application and real SQL Server integration tests on a disposable local instance. With Docker running and the pinned SDK installed, use Bash on Linux, macOS, or WSL:
+
+```sh
+bash scripts/test-local.sh
+```
+
+The helper starts the same SQL Server 2022 CU28 image as CI, generates a private temporary password, binds a random loopback port, and overrides the test connection with that local target. It restores locked dependencies, runs the Release suite, then removes the container and temporary credential file, including on failure. The certificate exception applies only to this disposable local instance. Azure credentials are not used. The suite includes real HTTP page/authentication/stock workflows against SQL; additionally run browser checks for affected UI behavior.
+
+For unit/routing checks alone when deliberately working without a database, the underlying command is:
+
 ```sh
 dotnet test BlueBox.sln --configuration Release
 ```

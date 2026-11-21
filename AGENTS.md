@@ -6,7 +6,7 @@
 - Keep SQL Server credentials, connection strings, OMDb keys, and real personal data outside source control. Use fake demonstration data.
 - Never run schema changes, seeding, or automated create/drop tests against the teacher's shared database without explicit authorization and the correct connection context.
 - Follow the instructor's Program.Main/MapRoutes and ADO.NET SqlConnection/SqlCommand/DataTable baseline. Do not reintroduce Entity Framework without the owner's approval. Razor Pages render the existing screens.
-- Follow global.json. Restore with locked dependencies and run dotnet test BlueBox.sln. Distinguish local unit/routing results, skipped SQL Server integration tests, and Windows/teacher-server checks.
+- Follow global.json. Run both web application and real SQL Server tests locally with `bash scripts/test-local.sh` (Docker and the pinned SDK required). It uses a disposable local SQL Server container, locked restore, and the full Release suite; never point automated create/drop tests at the Azure portfolio database. Report actual SQL execution separately from any skips. For web UI changes, also run browser checks for the affected flow.
 - Manager administration, corrections, retirement workflows, OMDb, and the overview dashboard are Milestone 2; do not claim they are delivered by Milestone 1.
 - Keep the README, project plan and Word copy, setup, roadmap, and validation record aligned with delivered behavior. Cite verified commits/runs; keep Windows/teacher-server checks, live OMDb checks, screenshots, and public deployment pending until completed.
 - `BlueBox.sln` remains the checked-in/CI solution. Follow docs/submission.md to generate `.slnx` for hand-in; changing the repository solution format is a separate branch/PR change.

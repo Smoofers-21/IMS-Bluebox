@@ -62,7 +62,9 @@ The agreed portfolio setup is **one active manager, four active staff accounts, 
 
 **Do not run `--seed-demo` for this portfolio setup.** That older class/test command also creates catalog items, inventory balances, and movement history. Leave those three tables empty; the owner will add items and record stock through the deployed website. Deployment itself creates no accounts or data and does not rerun setup on future releases.
 
-Sign in using the private starter-login file. Keep the manager password private; publish only intended staff demo access after the [live walkthrough](demo-guide.md). No public registration is provided.
+The owner separately configured the public `avery.chen` staff login documented in the [README](../README.md#try-the-demo). After deploying the login-page update, visitors can select **Try the demo**, copy its username/password, and sign in through the normal form. Use the private credentials for manager testing and keep that manager password private. No public registration, automatic demo login, or database update is introduced by the panel.
+
+Unlike README-only edits, this login-page/JavaScript/CSS update needs a manual deployment after merge and successful main CI. Confirm the expanded panel, both copy buttons, manual-copy fallback, actual STAFF sign-in, and manager-access denial in the live walkthrough before updating launch status.
 
 ## Troubleshooting
 

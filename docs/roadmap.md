@@ -50,9 +50,11 @@ The owner is transitioning to a web-only portfolio. Follow the [Azure setup guid
 - [x] Record the owner's report that the schema/index SQL, app settings, and outbound-IP firewall rules were applied.
 - [ ] Confirm account-only starter setup: one manager, four staff, Fayetteville/Bentonville warehouses, and no items/stock/history until entered in the app.
 - [x] Implement the [PR #9 review changes](pr9-review-resolution.md): pinned Azure action, bounded post-upload sign-in check, and protected-environment setup instructions.
+- [x] Implement the public staff demo disclosure with username/password copy controls, manual-copy fallback, and matching README instructions; account permissions and database records are unchanged by deployment.
 - [ ] Keep the app-name repository variable, move the profile to an azure-portfolio environment secret, restrict that environment to main, and remove the repository secret copy.
 - [ ] Merge the deployment workflow, confirm F1/.NET 10, and run the first manual deployment with its startup check.
 - [ ] Verify staff/manager workflows, OMDb, and behavior after free-tier idle shutdown/resume.
+- [ ] Deploy the demo-panel update and verify public staff sign-in, copy/fallback behavior, shared stock changes, and manager restrictions on Azure.
 - [ ] Mark the website launched, publish verified staff access instructions, and add final fake-data screenshots.
 
 No Azure database or website has been modified by this workspace. The owner reports creating the resources and running the schema installer; the application has not been verified live. Never reuse teacher credentials or other students' data.

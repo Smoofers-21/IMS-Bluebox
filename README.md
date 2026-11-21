@@ -8,9 +8,26 @@ A web-based warehouse inventory portfolio project for a fictional movie and game
 
 **[Open BlueBox on Azure](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net)**
 
-This is the portfolio website address; deployment and live verification are pending. Visitors will use the published application in their browser. Demo access instructions and screenshots will be added after the fictional accounts and website workflows are verified.
+This is the portfolio website address; deployment and live verification are pending. Visitors will use the published application in their browser with the public staff account below. The new login-page demo panel appears after this application update is deployed; screenshots will follow live verification.
 
 The planned demo uses Azure App Service **F1 Free** and the **Azure SQL free offer**, subject to confirming the subscription settings. Free-tier idle shutdown, database resume, and usage limits can delay or temporarily interrupt access. GitHub hosts the source code; Azure runs the website and database.
+
+## Try the demo
+
+**[Open the demo sign-in page](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net/Account/Login)**
+
+| Field | Public demo value |
+| --- | --- |
+| Username | `avery.chen` |
+| Password | `DEMO.PASS123321` |
+
+1. Open the sign-in page and select **Try the demo** to expand the credentials, or copy them from the table above.
+2. Use **Copy** beside the username, paste it into the normal Username field, then copy/paste the password into Password.
+3. Select **Sign in**. If clipboard access is unavailable, select and copy the visible credentials manually; the panel and normal sign-in also work without JavaScript.
+
+This is a **shared interactive demo with fictional data**. STAFF access allows the dashboard, catalog, inventory, movement history, and stock check-in/out. Changes are saved and visible to other visitors. Catalog/account/warehouse administration and transaction corrections remain restricted to managers.
+
+These staff credentials are intentionally public. The owner has configured this account separately; the application still verifies its password, active status, and current database role through the ordinary sign-in flow. Manager passwords, SQL credentials, publish profiles, and API keys remain private. No public registration or automatic demo login is provided.
 
 ## Project at a glance
 
@@ -109,9 +126,19 @@ dotnet run --project src/BlueBox.Web
 
 Open `BlueBox.sln` in a Visual Studio release supporting .NET 10 on Windows, or use VS Code/the CLI on Mac. No database is created, altered, or seeded automatically when the website starts.
 
-Connection strings belong in user secrets or environment variables. Keep credentials, real employee data, and API keys outside source control. Configure `Omdb:ApiKey` privately to enable movie lookup; manual entry works without a key.
+Connection strings belong in user secrets or environment variables. Keep manager/deployment/database credentials, real employee data, and API keys outside source control; only the public staff demo login above is intentionally published. Configure `Omdb:ApiKey` privately to enable movie lookup; manual entry works without a key.
 
 ## Validation
+
+Run both the web application and SQL Server integration checks locally with Docker and the pinned SDK:
+
+```sh
+bash scripts/test-local.sh
+```
+
+This uses a disposable local SQL Server container and cleans it up after the run. It never uses the Azure portfolio connection. UI changes also receive browser checks.
+
+For unit/routing/provider checks alone:
 
 ```sh
 dotnet test BlueBox.sln --configuration Release

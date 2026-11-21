@@ -19,6 +19,7 @@ Build an internal warehouse inventory website for BlueBox, a fictional movie and
 - OMDb movie lookup for optional posters and age classifications.
 - Overview dashboard, searchable inventory, and activity views.
 - Fake data for demonstration and validation.
+- Public staff demo credentials in an expandable login-page panel and README, with copy buttons and normal sign-in; shared stock changes are disclosed and manager access stays restricted.
 
 ### Excluded
 

@@ -2,6 +2,18 @@
 
 Updated November 20, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
 
+## Public staff demo access
+
+The owner explicitly designated the `avery.chen` STAFF login and its current demo password as public. The login page now has an expandable **Try the demo** panel with separate copy controls, selectable read-only credentials, polite status feedback, and a note that fictional stock is shared and editable. The README publishes the same intentional demo credentials. Other account passwords, SQL credentials, deployment profiles, and API keys remain private. The panel performs no login request, credential reset, role change, or database setup; the ordinary sign-in and role policies remain in place.
+
+Locked restore and local Release tests passed before further testing was canceled: **49 passed, 39 SQL groups intentionally skipped, 0 failures**. New local coverage checks anonymous rendering, normal form/antiforgery fields, script delivery, and unchanged security headers. The new SQL regression uses displayed credentials with an explicitly configured STAFF account only in its disposable test database, verifies stock/audit attribution, rejects manager routes, and confirms the manager's separate password still works. That SQL case remains pending the branch's SQL-enabled CI run.
+
+At the owner's request, local verification now has a repeatable `scripts/test-local.sh` helper for the web application and SQL Server suite. Docker was available, but the real container pull was blocked by 403 responses from Microsoft's regional image-download hosts. The owner then canceled further testing for this change. No local SQL execution is claimed. The helper's loopback-only connection override, private-config isolation, failure status, and cleanup were checked with controlled command substitutes before cancellation; actual SQL execution requires a successful image download on a later run.
+
+Real Chromium testing over local HTTPS passed native disclosure/keyboard interaction, actual clipboard copy and keyboard paste for both credentials, no form POST during copying, denied/unavailable clipboard fallback, JavaScript-disabled access, CSP checks, and layout widths of **320, 375, 768, and 1440 pixels**. Screenshots were inspected. Read-only demo fields have no submitted names and do not overwrite normal sign-in fields. A small heading whitespace correction preserves spacing when its line break is hidden on mobile.
+
+The expanded panel must be deployed after merge and successful main CI. Live Azure verification of this UI/account remains pending; no live database was contacted or changed here. Deployment status remains pending as requested. The project plan/Word copy, demo guide, deployment guide, and README instructions are aligned with this feature.
+
 ## Manual GitHub Actions deployment preparation
 
 The [deployment guide](github-actions-deployment.md) describes the new manually triggered workflow. It requires main and its latest successful build/SQL push CI run for the exact selected commit, then builds a portable Release ZIP and deploys it to the existing app using a private publish-profile secret. It runs no schema or seed commands. Application code, dependencies, schema, and the existing build/SQL workflow are unchanged.
