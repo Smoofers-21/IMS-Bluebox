@@ -1,90 +1,64 @@
-# BlueBox SQL Server scripts
+# BlueBox Azure SQL database
 
-These scripts target the five-table SQL Server design supplied during planning. The C# application uses this schema through ADO.NET and does not apply DDL automatically. No script has been run against the teacher's server by this project workspace.
+BlueBox uses **Azure SQL Database** for its portfolio website. The application accesses the five-table SQL Server-compatible schema through parameterized ADO.NET. Database administration uses Azure Portal's **Query editor**; no desktop database tool is required.
 
-The latest supplied DDL already contains the planned columns and constraints, with `poster_url NVARCHAR(2048)`. **Do not rerun 001 against that updated database.** A sanitized [current schema reference](reference/current-schema.sql) is retained for empty test databases; it is not an upgrade script.
+**Website deployment: pending.** The owner reports completing the schema/index scripts, app settings, and SQL firewall rules. Authenticated application access and the live stock workflows remain to be verified after deployment. See the [project README](../README.md), [Azure setup](../docs/azure-portfolio-setup.md), and [manual deployment guide](../docs/github-actions-deployment.md).
 
-For the new web-only portfolio database, use the [Azure setup guide](../docs/azure-portfolio-setup.md). It uses Azure Query editor and the guarded fresh installer; SSMS is not required. The older scripts and teacher-reference instructions below remain for the original class setup.
+## Current schema
 
-## Azure portfolio process
-
-The owner reports creating the Azure SQL database and running the fresh installer. Apply the new [index-only upgrade](azure/002_add_portfolio_indexes.sql) to that existing portfolio schema after setting its expected database name. It adds four nonunique indexes without changing records or business definitions. Do not rerun creation scripts to publish the website or populate accounts. Live schema and application connectivity still need verification.
-
-1. For a new installation only, create an empty Azure SQL database using the free offer with monthly-limit auto-pause, then run the guarded Azure installer through **Query editor**.
-2. Store the database connection privately in App Service as `ConnectionStrings__BlueBox`; use the actual password only in Azure settings. Keep encryption and certificate validation enabled.
-3. Allow the App Service's documented outbound IP addresses in the SQL server firewall. Visitors connect to the website, not directly to SQL Server.
-4. [Publish through GitHub Actions](../docs/github-actions-deployment.md) and run the separately supplied private account/location starter SQL once if needed. The portfolio starts with one manager, four staff, and Fayetteville/Bentonville warehouses; the owner will add items and stock after launch. Do not use the older `--seed-demo` command for this setup. Neither publishing nor ordinary startup changes the schema or seeds accounts.
-5. Verify login, stock updates, history, and idle database resume through the [portfolio website](https://bluebox-ims-portfolio-hkc4ckdjhtd5a2gk.westus3-01.azurewebsites.net), which is awaiting launch.
-
-See the [full Azure instructions](../docs/azure-portfolio-setup.md) for private configuration, publishing, and account setup. Automated create/drop tests run only against disposable SQL Server instances, never the portfolio database.
-
-## Which file to use
-
-| Situation | Script |
+| Table | Purpose |
 | --- | --- |
-| New, empty Azure SQL portfolio database | Use [azure/001_create_portfolio_schema.sql](azure/001_create_portfolio_schema.sql); set its expected database name first |
-| Existing portfolio tables created before the performance indexes | Use [azure/002_add_portfolio_indexes.sql](azure/002_add_portfolio_indexes.sql); set its expected database name first; preserve tables and data |
-| The tables match the latest supplied DDL, including statuses, metadata, and correction link | No migration needed; configure the application connection |
-| The original five-table baseline exists without the alignment columns/constraints | Review and run [001_align_warehouse_schema.sql](001_align_warehouse_schema.sql) once |
-| The schema is partial or its version is unknown | Compare with the reference and review differences before choosing a migration |
-| You are preparing a new, empty BlueBox development database | Run [000_create_baseline.sql](000_create_baseline.sql), then 001 |
+| `EMPLOYEE` | App accounts, password hashes, Staff/Manager roles, and employment status |
+| `ITEM` | Movie/game catalog editions, optional poster/age classification, and archival status |
+| `LOCATION` | Warehouses, addresses, and active/inactive status |
+| `CURRENT_INVENTORY` | Quantity and last-update time for each item/location pair |
+| `TRANSACTION_LOG` | Attributed stock movements and links to correction entries |
 
-`000` preserves the original creation script supplied by the project owner. It is not an upgrade script and refuses to run if a target table already exists. Neither script creates a database or grants permissions.
+The inventory primary key is `(item_id, location_id)`. Foreign keys preserve relationships, and constraints reject invalid statuses, nonpositive movement quantities, and negative balances. Passwords use the application's supported salted hashing facility. `ITEM.poster_url` supports nullable `NVARCHAR(2048)` metadata.
 
-The Azure installer now includes `IX_TRANSACTION_LOG_corrects_transaction_id` (filtered to non-NULL references), `IX_TRANSACTION_LOG_item_id`, `IX_TRANSACTION_LOG_location_id`, and `IX_CURRENT_INVENTORY_location` (including `quantity_on_hand`). The matching `002` upgrade skips existing same-named indexes and is rerunnable; inspect manually altered definitions before applying it. The original class migration and sanitized reference remain unchanged. Indexes support lookups but do not replace transaction locks or manager authorization.
+## Which script to use
 
-## Apply the one-time upgrade to an older baseline in SSMS
-
-1. Use a copy of your BlueBox database to check compatibility first when available. Confirm that you are changing only your assigned database.
-2. Open `001_align_warehouse_schema.sql` in a fresh SSMS query window connected to the intended server.
-3. Select your BlueBox database in the database dropdown.
-4. Replace `YourBlueBoxDatabaseName` in `@ExpectedDatabase` with that database's exact name. Do not add credentials to the script.
-5. Execute the entire file together. It requires permission to alter the tables; it does not need server-administrator access.
-6. Confirm the success message. The first result set should show four new columns. The second should show six check constraints and one foreign key, all with `is_disabled = 0` and `is_not_trusted = 0`.
-7. Refresh the tables in Object Explorer to see the added columns.
-
-The migration is intentionally one-time. Rerunning it stops with a message rather than silently skipping an unknown or partial schema. Do not rerun `000` or drop existing tables to recover from an error.
-
-## What changes
-
-| Table | Change |
+| Situation | File/action |
 | --- | --- |
-| ITEM | Nullable `poster_url NVARCHAR(2048)` |
-| ITEM | Nullable `age_rating VARCHAR(20)` |
-| ITEM | `item_status VARCHAR(10) NOT NULL`, default ACTIVE, allowed ACTIVE/ARCHIVED |
-| ITEM | Reject blank/ASCII-whitespace-only media formats |
-| EMPLOYEE | Restrict roles to STAFF/MANAGER and employment statuses to ACTIVE/INACTIVE/TERMINATED |
-| LOCATION | Restrict statuses to ACTIVE/INACTIVE |
-| TRANSACTION_LOG | Nullable `corrects_transaction_id BIGINT` referencing an original transaction, with an index |
-| TRANSACTION_LOG | Corrections must have nonblank notes and cannot reference themselves |
+| New, empty Azure SQL database | Run [azure/001_create_portfolio_schema.sql](azure/001_create_portfolio_schema.sql) after setting its expected database name |
+| Existing aligned tables created before the portfolio indexes | Run [azure/002_add_portfolio_indexes.sql](azure/002_add_portfolio_indexes.sql) after setting its expected database name |
+| Current tables and all four indexes already installed | No schema script is needed for publishing or README updates |
+| Reference definitions for inspection or disposable tests | [reference/current-schema.sql](reference/current-schema.sql); this is not an upgrade script |
+| Partial or manually changed schema | Compare definitions and inspect differences before choosing an upgrade |
 
-Allowed role/status values use exact uppercase spelling without trailing spaces, consistently with the supplied baseline's item/movement types. Optional metadata stays NULL on existing rows. All existing items become ACTIVE. No quantities or historical movements are rewritten.
+The older [000_create_baseline.sql](000_create_baseline.sql) and [001_align_warehouse_schema.sql](001_align_warehouse_schema.sql) remain as historical schema revisions. They are not the current Azure installation path; do not run them against an already aligned database.
 
-## If the update stops
+For a fresh installation, select the intended database in Query editor, set `@ExpectedDatabase`, and execute the whole Azure installer. It creates the schema and indexes together in a guarded transaction, without creating a database or inserting records. It refuses existing BlueBox objects. Do not drop tables or rerun installation to fix a connection or publishing problem.
 
-- **Wrong database:** select the correct database and set `@ExpectedDatabase` to its exact name.
-- **Missing tables:** compare your schema with the supplied baseline; do not create duplicates in another schema.
-- **Column already exists:** inspect the current definitions. The update may already have been applied, or a manual change needs reconciliation.
-- **CHECK constraint conflict:** inspect the named table and constraint. Existing invalid roles/statuses or blank media formats must be corrected intentionally before retrying. The migration does not guess replacements or disable validation.
-- **Permission error:** the database owner may need to grant the appropriate rights or apply the reviewed script.
+The index-only upgrade preserves existing records, adds missing portfolio indexes in one transaction, and can be rerun. Inspect manually changed index definitions first because it does not replace existing same-named indexes.
 
-Changes within the migration transaction roll back if a schema or data constraint fails. This does not replace checking that the script targets the expected schema and database.
+## Portfolio indexes
 
-## What DDL does not implement
+- `IX_TRANSACTION_LOG_corrects_transaction_id`: filtered lookup for non-NULL correction references.
+- `IX_TRANSACTION_LOG_item_id`: movement history by item.
+- `IX_TRANSACTION_LOG_location_id`: movement history by warehouse.
+- `IX_CURRENT_INVENTORY_location`: warehouse stock lookup, including `quantity_on_hand`.
 
-These application-level rules are implemented by the C# services and authorization policies; DDL alone does not provide them:
+These are nonunique performance indexes. They support lookups without changing the business columns or replacing application authorization and transaction rules. The sanitized reference retains the table/constraint definitions; the Azure installer adds these four secondary indexes.
 
-- Manager-only corrections, with the same item/location and opposite movement direction as the original.
-- Active employee, item, and warehouse checks.
-- Zero stock before archiving an item or deactivating a warehouse.
-- A single atomic balance update and history insert, safe under competing movements.
-- Updating `last_updated_at` on each stock change; its default only initializes a new row.
-- Permanent history through application behavior and appropriate database access.
-- Last-active-manager protection.
-- Fixed item type/format after history exists, and credential-stamped session revocation after username/password changes, using the existing columns.
+## Connection and initial data
 
-The correction foreign key identifies an original transaction; it does not, by itself, enforce manager authorization or compare values between the two rows. The application permits one full reversal per history entry, including correction entries, forming a chain. It locks the selected entry and checks for an existing child within the same transaction. No uniqueness constraint alone enforces that one-child policy for direct SSMS writes. See the [correction guide](../docs/milestone-2.md#agreed-correction-policy).
+1. Store the complete encrypted connection string privately in App Service as `ConnectionStrings__BlueBox`, or use the supported separate `Database__*` fields. Keep certificate validation enabled.
+2. Allow each App Service outbound IP individually in the SQL server firewall. Browser visitors connect to the website; they do not connect directly to SQL.
+3. If needed, run the separately supplied **private account/location starter SQL** once in the intended database. It requires all five tables to be empty and inserts employees/locations atomically. Keep its login hashes and separate initial-password file outside GitHub.
+4. The intended initial dataset is **one active manager, four active staff, and Fayetteville, AR/Bentonville, AR warehouses**. It deliberately contains no items, current inventory, or transactions. The owner adds catalog entries and stock through the application after launch.
+5. Publish through the manual Actions workflow, then sign in and verify the Azure connection and stock workflows. A successful anonymous sign-in-page check alone does not query SQL.
 
-## Verified schema use
+Do not run `--seed-demo` for this portfolio setup: that optional full sample-data command also creates catalog items, balances, and opening history. Publishing and ordinary startup apply no SQL scripts and seed no data. README-only changes require no database update or website redeployment.
 
-The SQL Server CI suite applies the reference, guarded Azure installer, and index-only upgrade only in generated disposable databases. PR #8 source commit `0458754` passed [run 44633770879](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44633770879), with 105 tests passed across the SQL-enabled suite, including unit tests and expanded SQL cases. This is SQL Server 2022 verification, not a live Azure connectivity check; see the [validation record](../docs/validation.md). The suite never targets the teacher's or portfolio server. All three schema resources are embedded by the test project, so retain the `database` folder when [packaging the solution](../docs/submission.md).
+## Rules implemented by the application
+
+The services enforce manager-only corrections, active-record checks, zero stock before item/warehouse retirement, last-active-manager protection, session revocation after credential changes, and fixed edition type/format once history exists. Each stock operation saves the quantity and audit entry together in a serializable transaction.
+
+Corrections add an opposite movement with an explanation; they preserve the original entry. Each movement may have one correction, and a correction can itself be corrected once to form a chain. That policy is enforced by the application transaction; the correction foreign key and nonunique index do not enforce all business rules for direct SQL writes. See the [correction guide](../docs/milestone-2.md#agreed-correction-policy).
+
+## Validation
+
+The merged application baseline `cb72cd6` passed [main CI run 44866843871](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44866843871), with both jobs successful and **105 tests passed, 0 failures** in the SQL-enabled suite (unit tests plus expanded SQL cases). CI applies the reference, guarded Azure installer, and index-only upgrade only in generated disposable SQL Server 2022 databases. It tests stock rules, rollback, concurrent updates, correction chains, installer guards, index definitions, and data preservation.
+
+Never configure automated create/drop tests with the Azure portfolio server. Disposable SQL Server verification and live Azure verification are separate: the latter still requires actual sign-in, workflows, and idle-resume checks. The test project embeds all three schema resources, so retain the `database` folder when building/testing the solution.
