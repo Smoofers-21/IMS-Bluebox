@@ -2,6 +2,14 @@
 
 Updated November 21, 2026. PR #5 was merged into main at `13b4f43`. The [main-review follow-up](main-review-resolution.md) makes no DDL changes. Every result below is tied to the revision/run actually checked; use the current head’s completed [GitHub Actions run](https://github.com/Smoofers-21/IMS-Bluebox/actions/workflows/build.yml) for a later revision.
 
+## PR #13 review fixes — November 21, 2026
+
+The [review resolution](pr13-review-resolution.md) records the numeric title/ID ambiguity fix, explicit selection commits, clearer empty-stock guidance, separate stocked/all-warehouse query paths, explicit thumbnail dimensions, and debounced screen-reader counts. Bare and # ID lookup remain supported; ambiguous numeric text requires a result choice. Typing clears stale selection without requesting another item's balance. No DDL or live data update is required.
+
+Locked restore and local Release tests passed **63 tests**, with **44 SQL groups skipped** and no failures. New SQL coverage checks empty-stock and filtered empty messages with check-in/Catalog links; existing filter, paging, catalog-details, and poster cases exercise the split queries. The local SQL helper was attempted but the image download again returned 403 before startup. No local SQL execution is claimed. The reviewed source `3bc2384` passed [run 44943383445](https://github.com/Smoofers-21/IMS-Bluebox/actions/runs/44943383445) with **127 SQL-enabled tests**, independently verified before these changes; the new head needs its own completed CI run.
+
+Chromium component tests passed 300/1917 numeric title collisions, explicit commits, no intermediate balance fetches during ID typing, 300-ms count announcements, immediate selection feedback, keyboard/pointer/format search, safe submitted IDs, preselection/no-JavaScript fallback, poster fallback/no-referrer, strict CSP, and four layout widths (320/375/768/1440). The tests use controlled fixtures and balance responses, not Azure or local SQL. JavaScript syntax, documentation links, regenerated SQL catalog, and Markdown/Word agreement were checked.
+
 ## PR #13 poster thumbnails and movement item search — November 21, 2026
 
 The owner requested two additions to the inventory-visibility branch: show stored poster images in the purple title icons and replace scrolling through the movement item select with a search field, including item-ID lookup. Catalog/Inventory now carry the existing poster_url field into a shared thumbnail partial. Only valid HTTPS URLs render; images are lazy-loaded with no-referrer and a CSP-compatible external script restores the icon when loading fails. The browser fetches posters directly; no server image proxy, new API key, database field, or DDL change is added.

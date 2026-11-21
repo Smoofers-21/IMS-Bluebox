@@ -83,7 +83,7 @@ public sealed class InventoryQueries(SqlDatabase database)
 
     public async Task<QueryPage<InventoryRow>> InventoryAsync(string? search, string? type, int? location, int? itemId = null, int pageNumber = 1, bool includeZeroStock = false, CancellationToken ct = default)
     {
-        using var command = SearchCommand("""
+        using var command = SearchCommand(includeZeroStock ? """
             SELECT i.item_id, i.item_name, i.item_type, i.media_format, i.item_status, i.poster_url,
                 l.location_id, l.location_name, l.location_status, COALESCE(b.quantity_on_hand, 0) AS on_hand
             FROM dbo.ITEM AS i CROSS JOIN dbo.LOCATION AS l
@@ -91,13 +91,23 @@ public sealed class InventoryQueries(SqlDatabase database)
             WHERE (@search = '' OR CHARINDEX(@search, i.item_name) > 0 OR TRY_CONVERT(int, @search) = i.item_id)
                 AND (@type = '' OR i.item_type = @type) AND (@location IS NULL OR l.location_id = @location)
                 AND (@item IS NULL OR i.item_id = @item)
-                AND (@includeZeroStock = 1 OR b.quantity_on_hand > 0)
+            ORDER BY i.item_name, l.location_name, i.media_format, i.item_id, l.location_id
+            OFFSET @offset ROWS FETCH NEXT @take ROWS ONLY;
+            """ : """
+            SELECT i.item_id, i.item_name, i.item_type, i.media_format, i.item_status, i.poster_url,
+                l.location_id, l.location_name, l.location_status, b.quantity_on_hand AS on_hand
+            FROM dbo.CURRENT_INVENTORY AS b
+            INNER JOIN dbo.ITEM AS i ON i.item_id = b.item_id
+            INNER JOIN dbo.LOCATION AS l ON l.location_id = b.location_id
+            WHERE b.quantity_on_hand > 0
+                AND (@search = '' OR CHARINDEX(@search, i.item_name) > 0 OR TRY_CONVERT(int, @search) = i.item_id)
+                AND (@type = '' OR i.item_type = @type) AND (@location IS NULL OR l.location_id = @location)
+                AND (@item IS NULL OR i.item_id = @item)
             ORDER BY i.item_name, l.location_name, i.media_format, i.item_id, l.location_id
             OFFSET @offset ROWS FETCH NEXT @take ROWS ONLY;
             """, search, type);
         command.Parameters.Add(SqlDatabase.Parameter("@location", SqlDbType.Int, location));
         command.Parameters.Add(SqlDatabase.Parameter("@item", SqlDbType.Int, itemId));
-        command.Parameters.Add(SqlDatabase.Parameter("@includeZeroStock", SqlDbType.Bit, includeZeroStock));
         AddPaging(command, pageNumber);
         var table = await database.FillDataTableViaCommandAsync(command, ct);
         var rows = table.AsEnumerable().Take(PageSize).Select(r => new InventoryRow

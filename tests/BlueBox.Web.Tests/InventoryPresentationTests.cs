@@ -49,6 +49,8 @@ public sealed class InventoryPresentationTests
             Assert.Contains("referrerpolicy=\"no-referrer\"", html);
             Assert.Contains("loading=\"lazy\"", html);
             Assert.Contains("alt=\"\"", html);
+            Assert.Contains("width=\"28\"", html);
+            Assert.Contains("height=\"38\"", html);
         }
         Assert.DoesNotContain("onerror=", html);
     }

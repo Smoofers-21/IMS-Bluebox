@@ -15,7 +15,7 @@
             <input id="movement-item-search" type="search" role="combobox" aria-autocomplete="list" aria-controls="movement-item-options" aria-expanded="false" placeholder="Search by title, format, or item ID" autocomplete="off" maxlength="210" aria-describedby="movement-item-help" disabled />
             <ul id="movement-item-options" class="movement-item-options" role="listbox" aria-label="Matching items" hidden></ul>
             <p id="movement-item-status" class="help" role="status" aria-live="polite"></p>
-            <p id="movement-item-help" class="help">Choose a matching title and format, or enter the exact item ID (for example, #12).</p>
+            <p id="movement-item-help" class="help">Choose a matching title and format, or enter an item ID and press Enter. Use #12 to identify an ID explicitly; numeric titles require choosing a result.</p>
         </div>
         <label asp-for="Input.ItemId" id="movement-item-select-label">Item</label><select asp-for="Input.ItemId" required><option value="">Select an item</option>@foreach (var item in Model.Items) { <option value="@item.ItemId">@item.ItemName · @item.MediaFormat · #@item.ItemId</option> }</select>
         <div class="form-row"><div><label asp-for="Input.LocationId">Warehouse</label><select asp-for="Input.LocationId" required><option value="">Select a warehouse</option>@foreach (var location in Model.Locations) { <option value="@location.LocationId">@location.LocationName</option> }</select></div><div><label asp-for="Input.Quantity">Quantity</label><input asp-for="Input.Quantity" type="number" min="1" max="2147483647" step="1" required /></div></div>

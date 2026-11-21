@@ -76,6 +76,31 @@ public sealed class InventoryVisibilityTests
     }
 
     [SqlServerFact]
+    public async Task EmptyInventoryExplainsHowToCheckInAndKeepsFilterGuidance()
+    {
+        await using var app = new TestApp(); await app.InitializeAsync();
+        // Fixture-only: retain active catalog items while every warehouse has zero stock.
+        await app.ExecuteAsync("UPDATE dbo.CURRENT_INVENTORY SET quantity_on_hand=0");
+        using var client = app.Browser();
+        Assert.Equal(HttpStatusCode.Redirect, (await TestApp.LoginAsync(client)).StatusCode);
+        var html = await client.GetStringAsync("/Inventory");
+        Assert.Contains("No stock on hand", html);
+        Assert.Contains("Only items with stock on hand are listed here", html);
+        Assert.Contains("href=\"/Inventory/Move\"", html);
+        Assert.Contains("href=\"/Catalog\"", html);
+        Assert.Contains("choose Check in", html);
+        Assert.DoesNotContain("Try another search or clear your filters", html);
+        foreach (var query in new[] { "Search=Missing", "Type=GAME", "LocationId=1" })
+        {
+            var filtered = await client.GetStringAsync("/Inventory?" + query);
+            Assert.Contains("No matching inventory", filtered);
+            Assert.Contains("Try another search or clear your filters", filtered);
+            Assert.Contains("choose Check in", filtered);
+        }
+        Assert.Empty(app.ServerErrors);
+    }
+
+    [SqlServerFact]
     public async Task FullyCheckedOutItemDisappearsAndReturnsAfterCheckIn()
     {
         await using var app = new TestApp(); await app.InitializeAsync();

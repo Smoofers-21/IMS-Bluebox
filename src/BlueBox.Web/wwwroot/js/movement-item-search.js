@@ -17,37 +17,49 @@
   }
   if (byId.size === 0) return; // Preserve the original empty-state control.
   let active = -1;
+  let statusTimer;
+  const announce = (text, immediate = false) => {
+    clearTimeout(statusTimer);
+    const update = () => { if (status.textContent !== text) status.textContent = text; };
+    if (immediate) update();
+    else statusTimer = setTimeout(update, 300);
+  };
   const close = () => {
+    clearTimeout(statusTimer);
     suggestions.hidden = true;
     search.setAttribute("aria-expanded", "false");
     search.removeAttribute("aria-activedescendant");
     active = -1;
   };
+  const titleAndFormat = (label) => label.replace(/ · #\d+$/, "").toLowerCase();
   const resolve = () => {
     const text = search.value.trim();
-    const numericId = /^#?\d+$/.test(text) ? String(Number(text.replace(/^#/, ""))) : "";
-    return byLabel.get(text.toLowerCase()) || (byId.has(numericId) ? numericId : "");
+    const labelId = byLabel.get(text.toLowerCase());
+    if (labelId) return labelId;
+    const match = /^(#?)(\d+)$/.exec(text);
+    if (!match) return "";
+    const id = String(Number(match[2]));
+    if (!byId.has(id)) return "";
+    // Bare numbers can be titles (for example, 300 or 1917). Require a choice
+    // when a title/format also matches; # explicitly identifies an item ID.
+    if (!match[1] && [...byId.values()].some((label) => titleAndFormat(label).includes(text))) return "";
+    return id;
   };
-  const sync = () => {
-    const id = resolve();
-    search.setCustomValidity(search.value && !id
-      ? "Choose a matching item or enter its exact item ID." : "");
+  const choose = (id) => {
+    search.value = byId.get(id);
+    search.setCustomValidity("");
     if (select.value !== id) {
       select.value = id;
       select.dispatchEvent(new Event("change", { bubbles: true }));
     }
-  };
-  const choose = (id) => {
-    search.value = byId.get(id);
-    sync();
     close();
-    status.textContent = `Selected: ${search.value}`;
+    announce(`Selected: ${search.value}`, true);
   };
   const showMatches = () => {
     const text = search.value.trim().toLowerCase();
     suggestions.replaceChildren();
     close();
-    if (!text) { status.textContent = ""; return; }
+    if (!text) { announce("", true); return; }
     const matches = [...byId].filter(([id, label]) => label.toLowerCase().includes(text) || id === text.replace(/^#/, ""));
     for (const [id, label] of matches.slice(0, 10)) {
       const option = document.createElement("li");
@@ -58,9 +70,9 @@
       option.textContent = label;
       suggestions.append(option);
     }
-    status.textContent = matches.length > 10
+    announce(matches.length > 10
       ? `Showing 10 of ${matches.length} matches. Keep typing to narrow the results.`
-      : matches.length ? `${matches.length} matching item${matches.length === 1 ? "" : "s"}.` : "No matching active items.";
+      : matches.length ? `${matches.length} matching item${matches.length === 1 ? "" : "s"}.` : "No matching active items.");
     suggestions.hidden = matches.length === 0;
     search.setAttribute("aria-expanded", String(matches.length > 0));
   };
@@ -68,10 +80,20 @@
   search.disabled = false;
   search.required = true;
   picker.hidden = false;
+  // Keep the select as the sole submitted item ID; search text is presentation only.
   select.hidden = true;
   select.required = false;
   document.getElementById("movement-item-select-label").hidden = true;
-  search.addEventListener("input", () => { sync(); showMatches(); });
+  search.addEventListener("input", () => {
+    // Typing invalidates the previous choice immediately but never selects a new
+    // item or requests its balance until Enter, a result click, or unambiguous blur.
+    if (select.value) {
+      select.value = "";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    search.setCustomValidity(search.value ? "Choose a matching item, or confirm an exact item ID with Enter." : "");
+    showMatches();
+  });
   search.addEventListener("focus", showMatches);
   search.addEventListener("keydown", (event) => {
     if (event.key === "Escape") { event.preventDefault(); close(); return; }
@@ -99,8 +121,9 @@
   });
   picker.addEventListener("focusout", (event) => {
     if (!picker.contains(event.relatedTarget)) {
-      if (select.value) search.value = byId.get(select.value);
-      close();
+      const id = resolve();
+      if (id) choose(id);
+      else close();
     }
   });
 })();

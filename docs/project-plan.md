@@ -82,7 +82,7 @@ Posters and age ratings are optional. No match or an unavailable API must not pr
 
 ### Check stock in or out
 
-1. Select Check in or Check out, search active items by title/format or exact item ID (with or without #), and choose an active warehouse. The original item select remains available without JavaScript.
+1. Select Check in or Check out, search active items by title/format or exact item ID (with or without #), confirm a result, and choose an active warehouse. Bare numeric title/ID conflicts require an explicit result choice; # identifies an ID. The original item select remains available without JavaScript.
 2. Enter a positive whole-number quantity and optional notes.
 3. Review the proposed resulting balance.
 4. Confirm the movement.
